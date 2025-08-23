@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Search, Loader2 } from "lucide-react";
 import { useNews } from "@/hooks/useNews";
+import { useContentRatings } from "@/hooks/useContentRatings";
 
 const News = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -15,6 +16,9 @@ const News = () => {
   const [selectedNews, setSelectedNews] = useState<any>(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const { news, loading, error } = useNews();
+  
+  const newsItems = news.map(item => ({ id: item.id, type: 'news' }));
+  const { ratingsData } = useContentRatings(newsItems);
 
   const categories = ["all", "1", "2", "3", "red"];
 
@@ -109,18 +113,24 @@ const News = () => {
             {!loading && !error && (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {filteredNews.map((item, index) => (
-                    <div key={item.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
-                      <NewsCard
-                        title={item.title}
-                        description={item.description}
-                        date={new Date(item.created_at).toLocaleDateString()}
-                        category={`Level ${item.level}`}
-                        image={item.image_url || "/placeholder.svg"}
-                        onClick={() => handleNewsClick(item)}
-                      />
-                    </div>
-                  ))}
+                  {filteredNews.map((item, index) => {
+                    const ratingData = ratingsData[item.id];
+                    return (
+                      <div key={item.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
+                        <NewsCard
+                          title={item.title}
+                          description={item.description}
+                          date={new Date(item.created_at).toLocaleDateString()}
+                          category={`Level ${item.level}`}
+                          image={item.image_url || "/placeholder.svg"}
+                          averageRating={ratingData?.averageRating}
+                          totalVotes={ratingData?.totalVotes}
+                          isBookmarked={ratingData?.isBookmarked}
+                          onClick={() => handleNewsClick(item)}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {filteredNews.length === 0 && news.length > 0 && (

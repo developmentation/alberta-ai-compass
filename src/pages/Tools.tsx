@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Search, Loader2 } from "lucide-react";
 import { useTools } from "@/hooks/useTools";
+import { useContentRatings } from "@/hooks/useContentRatings";
 
 const Tools = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -15,6 +16,9 @@ const Tools = () => {
   const [selectedTool, setSelectedTool] = useState<any>(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const { tools, loading, error } = useTools();
+  
+  const toolItems = tools.map(item => ({ id: item.id, type: 'tool' }));
+  const { ratingsData } = useContentRatings(toolItems);
 
   const categories = ["all", "open_source", "saas", "commercial"];
 
@@ -117,23 +121,29 @@ const Tools = () => {
             {!loading && !error && (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {filteredTools.map((tool, index) => (
-                    <div key={tool.id} style={{ animationDelay: `${index * 0.05}s` }} className="animate-fade-in-up">
-                      <ToolCard
-                        title={tool.name}
-                        description={tool.description}
-                        category={tool.type}
-                        icon="wrench"
-                        image={tool.image_url}
-                        video={tool.video_url}
-                        url={tool.url}
-                        costIndicator={tool.cost_indicator}
-                        stars={tool.stars}
-                        onClick={() => handleToolClick(tool)}
-                        onOpenTool={() => tool.url && handleOpenTool(tool.url)}
-                      />
-                    </div>
-                  ))}
+                  {filteredTools.map((tool, index) => {
+                    const ratingData = ratingsData[tool.id];
+                    return (
+                      <div key={tool.id} style={{ animationDelay: `${index * 0.05}s` }} className="animate-fade-in-up">
+                        <ToolCard
+                          title={tool.name}
+                          description={tool.description}
+                          category={tool.type}
+                          icon="wrench"
+                          image={tool.image_url}
+                          video={tool.video_url}
+                          url={tool.url}
+                          costIndicator={tool.cost_indicator}
+                          stars={tool.stars}
+                          averageRating={ratingData?.averageRating}
+                          totalVotes={ratingData?.totalVotes}
+                          isBookmarked={ratingData?.isBookmarked}
+                          onClick={() => handleToolClick(tool)}
+                          onOpenTool={() => tool.url && handleOpenTool(tool.url)}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {filteredTools.length === 0 && tools.length > 0 && (

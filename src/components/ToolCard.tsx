@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Wrench, Database, Box, ExternalLink, Star } from "lucide-react";
+import { Wrench, Database, Box, ExternalLink, Star, BookmarkCheck } from "lucide-react";
 
 interface ToolCardProps {
   title: string;
@@ -14,6 +14,9 @@ interface ToolCardProps {
   stars?: number;
   onClick?: () => void;
   onOpenTool?: () => void;
+  averageRating?: number;
+  totalVotes?: number;
+  isBookmarked?: boolean;
 }
 
 export const ToolCard = ({
@@ -27,7 +30,10 @@ export const ToolCard = ({
   costIndicator,
   stars,
   onClick,
-  onOpenTool
+  onOpenTool,
+  averageRating = 0,
+  totalVotes = 0,
+  isBookmarked = false
 }: ToolCardProps) => {
   const getIcon = () => {
     switch (icon) {
@@ -82,6 +88,13 @@ export const ToolCard = ({
           >
             {category}
           </Badge>
+          
+          {/* Bookmark indicator */}
+          {isBookmarked && (
+            <div className="absolute top-4 right-4">
+              <BookmarkCheck className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+            </div>
+          )}
         </div>
       )}
 
@@ -114,24 +127,28 @@ export const ToolCard = ({
 
         {/* Stars and Cost */}
         <div className="flex items-center justify-between mb-4">
-          {stars && stars > 0 && (
-            <div className="flex items-center gap-1">
-              {Array.from({ length: 5 }, (_, i) => (
-                <Star
-                  key={i}
-                  className={`w-3 h-3 ${
-                    i < stars ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'
-                  }`}
-                />
-              ))}
-              <span className="text-xs text-muted-foreground ml-1">({stars})</span>
-            </div>
-          )}
-          {costIndicator && (
-            <Badge variant="outline" className="text-xs">
-              {costIndicator}
-            </Badge>
-          )}
+          <div className="flex items-center gap-1">
+            {averageRating > 0 ? (
+              <>
+                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                <span className="text-sm text-muted-foreground">
+                  {averageRating.toFixed(1)} ({totalVotes})
+                </span>
+              </>
+            ) : (
+              <span className="text-sm text-muted-foreground">No ratings yet</span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {costIndicator && (
+              <Badge variant="outline" className="text-xs">
+                {costIndicator}
+              </Badge>
+            )}
+            {isBookmarked && !image && !video && (
+              <BookmarkCheck className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+            )}
+          </div>
         </div>
         
         <Button 

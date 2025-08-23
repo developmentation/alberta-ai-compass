@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { Star, Bookmark, BookmarkCheck } from "lucide-react";
 
 interface NewsCardProps {
   title: string;
@@ -7,6 +8,9 @@ interface NewsCardProps {
   category: string;
   image: string;
   onClick?: () => void;
+  averageRating?: number;
+  totalVotes?: number;
+  isBookmarked?: boolean;
 }
 
 export const NewsCard = ({
@@ -15,7 +19,10 @@ export const NewsCard = ({
   date,
   category,
   image,
-  onClick
+  onClick,
+  averageRating = 0,
+  totalVotes = 0,
+  isBookmarked = false
 }: NewsCardProps) => {
   // Truncate description to 100 characters
   const truncatedDescription = description.length > 100 
@@ -24,7 +31,7 @@ export const NewsCard = ({
 
   return (
     <article 
-      className="group rounded-2xl border border-border overflow-hidden bg-card/40 backdrop-blur-sm hover:bg-card-hover transition-all duration-500 hover:shadow-elegant hover:scale-[1.02] hover:-translate-y-1 cursor-pointer"
+      className="group rounded-2xl border border-border overflow-hidden bg-card/40 backdrop-blur-sm hover:bg-card-hover transition-all duration-500 hover:shadow-elegant hover:scale-[1.02] hover:-translate-y-1 cursor-pointer relative"
       onClick={onClick}
     >
       {/* Image Section */}
@@ -41,6 +48,13 @@ export const NewsCard = ({
         >
           {category}
         </Badge>
+        
+        {/* Bookmark indicator */}
+        {isBookmarked && (
+          <div className="absolute top-4 right-4">
+            <BookmarkCheck className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+          </div>
+        )}
       </div>
 
       {/* Content Section */}
@@ -51,8 +65,24 @@ export const NewsCard = ({
         <p className="text-muted-foreground mb-4 leading-relaxed">
           {truncatedDescription}
         </p>
-        <div className="text-xs text-muted-foreground">
-          {date}
+        
+        {/* Rating and Date */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            {averageRating > 0 ? (
+              <>
+                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                <span className="text-sm text-muted-foreground">
+                  {averageRating.toFixed(1)} ({totalVotes})
+                </span>
+              </>
+            ) : (
+              <span className="text-sm text-muted-foreground">No ratings yet</span>
+            )}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {date}
+          </div>
         </div>
       </div>
 
