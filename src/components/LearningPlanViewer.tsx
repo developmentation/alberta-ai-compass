@@ -32,11 +32,12 @@ interface ContentItem {
 interface LearningPlanViewerProps {
   contentItems: ContentItem[];
   planName: string;
+  onViewContent?: (content: ContentItem) => void;
 }
 
 type ViewMode = 'gallery' | 'sequential';
 
-export function LearningPlanViewer({ contentItems, planName }: LearningPlanViewerProps) {
+export function LearningPlanViewer({ contentItems, planName, onViewContent }: LearningPlanViewerProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('gallery');
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -114,6 +115,7 @@ export function LearningPlanViewer({ contentItems, planName }: LearningPlanViewe
               key={item.id}
               content={item}
               className={index === 0 ? "md:col-span-2 md:row-span-2" : ""}
+              onView={onViewContent}
             />
           ))}
         </div>
@@ -144,6 +146,7 @@ export function LearningPlanViewer({ contentItems, planName }: LearningPlanViewe
               <ContentCard
                 content={currentItem}
                 className="h-[400px]"
+                onView={onViewContent}
               />
             </div>
 

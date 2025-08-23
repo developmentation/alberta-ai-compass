@@ -1,12 +1,19 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Progress } from "@/components/ui/progress";
-import { supabase } from "@/integrations/supabase/client";
-import { LearningPlanViewer } from "@/components/LearningPlanViewer";
+import { supabase } from '@/integrations/supabase/client';
+import { LearningPlanViewer } from '@/components/LearningPlanViewer';
+import { ModuleViewer } from '@/components/ModuleViewer';
+import { ToolViewer } from '@/components/ToolViewer';
+import { PromptViewer } from '@/components/PromptViewer';
+import { NewsViewer } from '@/components/NewsViewer';
 import { 
   Calendar, 
   Clock, 
@@ -69,6 +76,10 @@ const Plan = () => {
   const [error, setError] = useState<string | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [selectedContent, setSelectedContent] = useState<any>(null);
+  const [viewerType, setViewerType] = useState<string | null>(null);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const contentSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchPlanAndContent = async () => {
@@ -162,7 +173,13 @@ const Plan = () => {
                 stars: contentDetails.stars || contentDetails.star_rating || 0,
                 purpose: contentDetails.purpose || '',
                 sample_output: contentDetails.sample_output || '',
-                level: contentDetails.level || ''
+                level: contentDetails.level || '',
+                sector_tags: contentDetails.sector_tags || [],
+                metadata: contentDetails.metadata || {},
+                created_at: contentDetails.created_at || '',
+                // Add full content details for viewers
+                fullContent: contentDetails,
+                originalItem: item
               };
             }
             return null;
@@ -190,6 +207,65 @@ const Plan = () => {
 
   const handleBack = () => {
     navigate(-1);
+  };
+
+  const handleViewContent = async (content: any) => {
+    try {
+      let viewerData = null;
+      let type = content.type;
+      
+      switch (content.type) {
+        case 'module':
+          // Fetch full module data including json_data for ModuleViewer
+          const { data: moduleData } = await supabase
+            .from('modules')
+            .select('*')
+            .eq('id', content.id)
+            .maybeSingle();
+          
+          if (moduleData) {
+            viewerData = {
+              moduleData: {
+                ...moduleData,
+                sections: (moduleData.json_data as any)?.sections || []
+              },
+              isAdminMode: false,
+              isEditable: false
+            };
+          }
+          break;
+        case 'news':
+          viewerData = {
+            ...content.fullContent,
+            title: content.name,
+            metadata: content.metadata
+          };
+          break;
+        case 'tool':
+          viewerData = {
+            ...content.fullContent,
+            name: content.name
+          };
+          break;
+        case 'prompt':
+          viewerData = {
+            ...content.fullContent,
+            name: content.name
+          };
+          break;
+        default:
+          console.warn('Unknown content type:', content.type);
+          return;
+      }
+      
+      if (viewerData) {
+        setSelectedContent(viewerData);
+        setViewerType(type);
+        setIsViewerOpen(true);
+      }
+    } catch (error) {
+      console.error('Error loading content for viewer:', error);
+    }
   };
 
   if (loading) {
@@ -414,10 +490,11 @@ const Plan = () => {
         {contentItems.length > 0 ? (
           <section id="learning-content" className="py-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <LearningPlanViewer 
-                contentItems={contentItems} 
-                planName={plan.name}
-              />
+        <LearningPlanViewer 
+          contentItems={contentItems} 
+          planName={plan.name}
+          onViewContent={handleViewContent}
+        />
             </div>
           </section>
         ) : (
@@ -473,6 +550,36 @@ const Plan = () => {
           </section>
         )}
       </div>
+
+      {/* Content Viewer Modals */}
+      <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
+        <DialogContent className="max-w-7xl h-[90vh] p-0 overflow-y-auto">
+          {selectedContent && viewerType === 'module' && (
+            <ModuleViewer 
+              {...selectedContent}
+              onClose={() => setIsViewerOpen(false)}
+            />
+          )}
+          {selectedContent && viewerType === 'tool' && (
+            <ToolViewer 
+              tool={selectedContent}
+              onClose={() => setIsViewerOpen(false)}
+            />
+          )}
+          {selectedContent && viewerType === 'prompt' && (
+            <PromptViewer 
+              prompt={selectedContent}
+              onClose={() => setIsViewerOpen(false)}
+            />
+          )}
+          {selectedContent && viewerType === 'news' && (
+            <NewsViewer 
+              news={selectedContent}
+              onClose={() => setIsViewerOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Footer />
     </div>

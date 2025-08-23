@@ -14,7 +14,8 @@ import {
   VolumeX,
   ArrowUpRight,
   BookOpen,
-  Star
+  Star,
+  Eye
 } from 'lucide-react';
 
 interface ContentItem {
@@ -37,6 +38,7 @@ interface ContentItem {
 interface ContentCardProps {
   content: ContentItem;
   className?: string;
+  onView?: (content: ContentItem) => void;
 }
 
 const getTypeIcon = (type: string) => {
@@ -73,7 +75,7 @@ const getTypeBadgeColor = (type: string) => {
   }
 };
 
-export function ContentCard({ content, className = "" }: ContentCardProps) {
+export function ContentCard({ content, className = "", onView }: ContentCardProps) {
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [videoMuted, setVideoMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -214,6 +216,22 @@ export function ContentCard({ content, className = "" }: ContentCardProps) {
               </span>
             )}
           </div>
+          
+          {onView && (
+            <div className="mt-4">
+              <Button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onView(content);
+                }} 
+                size="sm" 
+                className="w-full"
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                View Content
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </article>
