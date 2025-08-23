@@ -740,6 +740,39 @@ export type Database = {
           },
         ]
       }
+      star_ratings: {
+        Row: {
+          average_rating: number
+          content_id: string
+          content_type: string
+          created_at: string
+          id: string
+          total_stars: number
+          total_votes: number
+          updated_at: string
+        }
+        Insert: {
+          average_rating?: number
+          content_id: string
+          content_type: string
+          created_at?: string
+          id?: string
+          total_stars?: number
+          total_votes?: number
+          updated_at?: string
+        }
+        Update: {
+          average_rating?: number
+          content_id?: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          total_stars?: number
+          total_votes?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       system_configs: {
         Row: {
           created_at: string | null
@@ -846,6 +879,93 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_bookmarks: {
+        Row: {
+          content_id: string
+          content_type: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          content_id: string
+          content_type: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          content_id?: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_completions: {
+        Row: {
+          completed_at: string
+          content_id: string
+          content_type: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          score: number | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          content_id: string
+          content_type: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          score?: number | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          content_id?: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          score?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_ratings: {
+        Row: {
+          content_id: string
+          content_type: string
+          created_at: string
+          id: string
+          rating: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content_id: string
+          content_type: string
+          created_at?: string
+          id?: string
+          rating: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content_id?: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          rating?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
