@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Eye, Trash2, Loader2, BookOpen } from 'lucide-react';
 import { ModuleCreator } from '@/components/admin/ModuleCreator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AdminLayout } from '@/components/admin/AdminLayout';
 
 interface Module {
   id: string;
@@ -148,89 +149,91 @@ export default function AdminLearningModules() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Learning Modules</h1>
-          <p className="text-muted-foreground">Create and manage AI-generated learning modules</p>
+    <AdminLayout>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">Learning Modules</h1>
+            <p className="text-muted-foreground">Create and manage AI-generated learning modules</p>
+          </div>
+          
+          <Button onClick={() => setIsCreatorOpen(true)} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Create Module
+          </Button>
         </div>
-        
-        <Button onClick={() => setIsCreatorOpen(true)} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Create Module
-        </Button>
-      </div>
 
-      {modules.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No modules yet</h3>
-            <p className="text-muted-foreground text-center mb-6 max-w-md">
-              Create your first AI-generated learning module to get started with structured educational content.
-            </p>
-            <Button onClick={() => setIsCreatorOpen(true)} className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Create Your First Module
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {modules.map((module) => (
-            <Card key={module.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="space-y-3">
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg line-clamp-2">
-                    {module.name || 'Untitled Module'}
-                  </CardTitle>
-                  {getStatusBadge(module.status)}
-                </div>
-                
-                <CardDescription className="line-clamp-3">
-                  {module.description || 'No description provided'}
-                </CardDescription>
-                
-                <div className="flex gap-2">
-                  {getLevelBadge(module.level)}
-                  <Badge variant="outline">{module.language}</Badge>
-                </div>
-              </CardHeader>
-
-              <CardContent>
-                <div className="flex justify-between items-center">
-                  <div className="text-sm text-muted-foreground">
-                    {new Date(module.created_at).toLocaleDateString()}
+        {modules.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No modules yet</h3>
+              <p className="text-muted-foreground text-center mb-6 max-w-md">
+                Create your first AI-generated learning module to get started with structured educational content.
+              </p>
+              <Button onClick={() => setIsCreatorOpen(true)} className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Create Your First Module
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {modules.map((module) => (
+              <Card key={module.id} className="hover:shadow-md transition-shadow">
+                <CardHeader className="space-y-3">
+                  <div className="flex justify-between items-start">
+                    <CardTitle className="text-lg line-clamp-2">
+                      {module.name || 'Untitled Module'}
+                    </CardTitle>
+                    {getStatusBadge(module.status)}
                   </div>
                   
+                  <CardDescription className="line-clamp-3">
+                    {module.description || 'No description provided'}
+                  </CardDescription>
+                  
                   <div className="flex gap-2">
-                    <Button variant="ghost" size="sm">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm">
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(module.id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {getLevelBadge(module.level)}
+                    <Badge variant="outline">{module.language}</Badge>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+                </CardHeader>
 
-      <ModuleCreator
-        isOpen={isCreatorOpen}
-        onClose={() => setIsCreatorOpen(false)}
-        onModuleCreated={fetchModules}
-      />
-    </div>
+                <CardContent>
+                  <div className="flex justify-between items-center">
+                    <div className="text-sm text-muted-foreground">
+                      {new Date(module.created_at).toLocaleDateString()}
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button variant="ghost" size="sm">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(module.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        <ModuleCreator
+          isOpen={isCreatorOpen}
+          onClose={() => setIsCreatorOpen(false)}
+          onModuleCreated={fetchModules}
+        />
+      </div>
+    </AdminLayout>
   );
 }

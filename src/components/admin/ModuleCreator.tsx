@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Wand2 } from 'lucide-react';
+import { EnhancedMediaUpload } from './EnhancedMediaUpload';
 
 interface ModuleCreatorProps {
   isOpen: boolean;
@@ -21,6 +22,8 @@ export function ModuleCreator({ isOpen, onClose, onModuleCreated }: ModuleCreato
   const [difficulty, setDifficulty] = useState('1');
   const [language, setLanguage] = useState('en');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
   const { toast } = useToast();
 
   const handleGenerate = async () => {
@@ -63,6 +66,8 @@ export function ModuleCreator({ isOpen, onClose, onModuleCreated }: ModuleCreato
           language: language,
           level: difficulty as '1' | '2' | '3' | 'RED',
           status: 'draft',
+          image_url: imageUrl || null,
+          video_url: videoUrl || null,
           created_by: (await supabase.auth.getUser()).data.user?.id
         });
 
@@ -80,6 +85,8 @@ export function ModuleCreator({ isOpen, onClose, onModuleCreated }: ModuleCreato
       setTitle('');
       setDifficulty('1');
       setLanguage('en');
+      setImageUrl('');
+      setVideoUrl('');
       
       onModuleCreated();
       onClose();
@@ -164,6 +171,15 @@ export function ModuleCreator({ isOpen, onClose, onModuleCreated }: ModuleCreato
                   rows={4}
                 />
               </div>
+
+              <EnhancedMediaUpload
+                onImageUpload={setImageUrl}
+                onVideoUpload={setVideoUrl}
+                imageUrl={imageUrl}
+                videoUrl={videoUrl}
+                bucketName="module-assets"
+                allowAiGeneration={true}
+              />
             </CardContent>
           </Card>
 
