@@ -8,6 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
+import { useBookmarks } from '@/hooks/useBookmarks';
+import { useRatings } from '@/hooks/useRatings';
+import { useCompletions } from '@/hooks/useCompletions';
 import { LearningPlanViewer } from '@/components/LearningPlanViewer';
 import { ModuleViewer } from '@/components/ModuleViewer';
 import { ToolViewer } from '@/components/ToolViewer';
@@ -73,12 +76,15 @@ const Plan = () => {
   const [contentItems, setContentItems] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isBookmarked, setIsBookmarked] = useState(false);
-  const [userRating, setUserRating] = useState<number>(0);
   const [selectedContent, setSelectedContent] = useState<any>(null);
   const [viewerType, setViewerType] = useState<string | null>(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const contentSectionRef = useRef<HTMLDivElement>(null);
+
+  // Use new hooks for bookmarks, ratings, and completions
+  const { isBookmarked, toggleBookmark } = useBookmarks(plan?.id, 'learning_plan');
+  const { userRating, aggregatedRating, submitRating } = useRatings(plan?.id, 'learning_plan');
+  const { isCompleted, markAsCompleted } = useCompletions(plan?.id, 'learning_plan');
 
   useEffect(() => {
     const fetchPlanAndContent = async () => {
@@ -192,11 +198,7 @@ const Plan = () => {
           setContentItems(validContent);
         }
 
-        // Check if user has bookmarked this plan
-        const { data: userData } = await supabase.auth.getUser();
-        if (userData.user) {
-          // TODO: Check user bookmarks and ratings from database
-        }
+        // User bookmarks and ratings are now handled by hooks
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load learning plan');
       } finally {
@@ -346,7 +348,7 @@ const Plan = () => {
                   <div className="flex items-center gap-6 text-sm text-muted-foreground mb-8">
                     <div className="flex items-center gap-2">
                       <Star className="w-4 h-4 text-amber-500" />
-                      {plan.star_rating}/5 rating
+                      {aggregatedRating?.average_rating?.toFixed(1) || '0.0'}/5 ({aggregatedRating?.total_votes || 0} votes)
                     </div>
                     <div className="flex items-center gap-2">
                       <Target className="w-4 h-4 text-primary" />
@@ -369,25 +371,31 @@ const Plan = () => {
                           {[1, 2, 3, 4, 5].map((star) => (
                             <button
                               key={star}
-                              onClick={() => setUserRating(star)}
+                              onClick={() => submitRating(star)}
                               className="hover:scale-110 transition-transform"
                             >
                               <Star 
                                 className={`w-5 h-5 transition-colors ${
-                                  star <= userRating 
+                                  star <= (userRating || 0)
                                     ? 'text-amber-500 fill-amber-500' 
                                     : 'text-muted-foreground hover:text-amber-400'
                                 }`} 
                               />
                             </button>
                           ))}
-                          {userRating > 0 && (
+                          {userRating && userRating > 0 && (
                             <span className="ml-2 text-sm text-muted-foreground">
-                              ({userRating}/5)
+                              Your rating: {userRating}/5
                             </span>
                           )}
                         </div>
                       </div>
+                      {isCompleted && (
+                        <Badge variant="default" className="bg-green-600 text-white">
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          Completed
+                        </Badge>
+                      )}
                     </div>
                   </div>
 
@@ -407,11 +415,21 @@ const Plan = () => {
                     <Button 
                       variant="ghost" 
                       className="border border-border hover:border-primary/50"
-                      onClick={() => setIsBookmarked(!isBookmarked)}
+                      onClick={() => toggleBookmark(plan.id, 'learning_plan')}
                     >
                       <Bookmark className={`w-4 h-4 mr-2 ${isBookmarked ? 'fill-current text-amber-500' : ''}`} />
                       {isBookmarked ? 'Bookmarked' : 'Bookmark'}
                     </Button>
+                    {!isCompleted && (
+                      <Button 
+                        variant="outline"
+                        className="border border-border hover:border-primary/50"
+                        onClick={() => markAsCompleted(plan.id, 'learning_plan')}
+                      >
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Mark Complete
+                      </Button>
+                    )}
                   </div>
                 </div>
 
@@ -436,7 +454,7 @@ const Plan = () => {
                         <div className="flex items-center gap-2">
                           <button 
                             className="bg-white/15 hover:bg-white/25 text-white rounded-full p-2 backdrop-blur transition"
-                            onClick={() => setIsBookmarked(!isBookmarked)}
+                            onClick={() => toggleBookmark(plan.id, 'learning_plan')}
                           >
                             <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`} />
                           </button>

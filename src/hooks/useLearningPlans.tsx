@@ -9,11 +9,11 @@ interface LearningPlan {
   level: string;
   duration?: unknown;
   learning_outcomes?: string[];
-  star_rating: number;
   created_at: string;
   image_url?: string;
   video_url?: string;
   steps?: any;
+  // Remove star_rating since it's now handled by the star_ratings table
 }
 
 export function useLearningPlans() {
