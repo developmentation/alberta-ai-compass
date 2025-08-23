@@ -7,8 +7,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Eye, Trash2, Loader2, BookOpen } from 'lucide-react';
 import { ModuleCreator } from '@/components/admin/ModuleCreator';
+import { ModuleViewer } from '@/components/ModuleViewer';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 interface Module {
   id: string;
@@ -31,6 +33,9 @@ export default function AdminLearningModules() {
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreatorOpen, setIsCreatorOpen] = useState(false);
+  const [viewingModule, setViewingModule] = useState<Module | null>(null);
+  const [editingModule, setEditingModule] = useState<Module | null>(null);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -83,6 +88,75 @@ export default function AdminLearningModules() {
         variant: "destructive",
       });
     }
+  };
+
+  const convertModuleToViewerData = (module: Module) => {
+    // Convert database module format to ModuleViewer format
+    const moduleData = {
+      id: module.id,
+      title: module.name || 'Untitled Module',
+      description: module.description || '',
+      difficulty: module.level,
+      duration: 30, // Default duration
+      learningOutcomes: [],
+      tags: [],
+      sections: module.json_data?.sections || []
+    };
+    return moduleData;
+  };
+
+  const handleViewModule = (module: Module) => {
+    setViewingModule(module);
+    setEditingModule(null);
+    setIsViewerOpen(true);
+  };
+
+  const handleEditModule = (module: Module) => {
+    setEditingModule(module);
+    setViewingModule(null);
+    setIsViewerOpen(true);
+  };
+
+  const handleSaveModule = async (updatedData: any) => {
+    if (!editingModule) return;
+
+    try {
+      const { error } = await supabase
+        .from('modules')
+        .update({ 
+          name: updatedData.title,
+          description: updatedData.description,
+          json_data: {
+            ...updatedData,
+            sections: updatedData.sections
+          },
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', editingModule.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Module updated successfully",
+      });
+
+      setIsViewerOpen(false);
+      setEditingModule(null);
+      fetchModules();
+    } catch (error: any) {
+      toast({
+        title: "Error", 
+        description: error.message || "Failed to update module",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCloseViewer = () => {
+    setIsViewerOpen(false);
+    setViewingModule(null);
+    setEditingModule(null);
   };
 
   const getStatusBadge = (status: string) => {
@@ -206,10 +280,20 @@ export default function AdminLearningModules() {
                     </div>
                     
                     <div className="flex gap-2">
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleViewModule(module)}
+                        title="View Module"
+                      >
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleEditModule(module)}
+                        title="Edit Module"
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
@@ -217,6 +301,7 @@ export default function AdminLearningModules() {
                         size="sm"
                         onClick={() => handleDelete(module.id)}
                         className="text-destructive hover:text-destructive"
+                        title="Delete Module"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -233,6 +318,22 @@ export default function AdminLearningModules() {
           onClose={() => setIsCreatorOpen(false)}
           onModuleCreated={fetchModules}
         />
+
+        {/* Module Viewer Dialog */}
+        <Dialog open={isViewerOpen} onOpenChange={handleCloseViewer}>
+          <DialogContent className="max-w-7xl h-[90vh] p-0">
+            {(viewingModule || editingModule) && (
+              <ModuleViewer
+                moduleData={convertModuleToViewerData(viewingModule || editingModule!)}
+                isAdminMode={true}
+                isEditable={!!editingModule}
+                onSave={editingModule ? handleSaveModule : undefined}
+                onClose={handleCloseViewer}
+                moduleId={(viewingModule || editingModule)?.id}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );
