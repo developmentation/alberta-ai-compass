@@ -49,6 +49,57 @@ export type Database = {
           },
         ]
       }
+      api_keys: {
+        Row: {
+          added_by: string
+          api_key: string
+          created_at: string | null
+          deleted_at: string | null
+          id: string
+          is_active: boolean | null
+          provider: string
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          added_by: string
+          api_key: string
+          created_at?: string | null
+          deleted_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          provider: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          added_by?: string
+          api_key?: string
+          created_at?: string | null
+          deleted_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          provider?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_keys_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "api_keys_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -87,6 +138,99 @@ export type Database = {
           user_agent?: string | null
         }
         Relationships: []
+      }
+      cohorts: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          deleted_at: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          name: string
+          start_date: string
+          status: Database["public"]["Enums"]["cohort_status"]
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          deleted_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name: string
+          start_date: string
+          status?: Database["public"]["Enums"]["cohort_status"]
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          deleted_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["cohort_status"]
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohorts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cohorts_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      enrollments: {
+        Row: {
+          enrolled_at: string | null
+          id: string
+          plan_id: string | null
+          user_id: string
+        }
+        Insert: {
+          enrolled_at?: string | null
+          id?: string
+          plan_id?: string | null
+          user_id: string
+        }
+        Update: {
+          enrolled_at?: string | null
+          id?: string
+          plan_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enrollments_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "learning_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrollments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       learning_plans: {
         Row: {
@@ -448,6 +592,44 @@ export type Database = {
           },
           {
             foreignKeyName: "resources_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      system_configs: {
+        Row: {
+          created_at: string | null
+          deleted_at: string | null
+          id: string
+          key: string
+          updated_at: string | null
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          created_at?: string | null
+          deleted_at?: string | null
+          id?: string
+          key: string
+          updated_at?: string | null
+          updated_by?: string | null
+          value: Json
+        }
+        Update: {
+          created_at?: string | null
+          deleted_at?: string | null
+          id?: string
+          key?: string
+          updated_at?: string | null
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_configs_updated_by_fkey"
             columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "profiles"

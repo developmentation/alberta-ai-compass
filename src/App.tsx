@@ -17,6 +17,8 @@ import Privacy from "./pages/Privacy";
 import Login from "./pages/Login";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
+import { AdminNews } from "./pages/admin/AdminNews";
+import { AdminUsers } from "./pages/admin/AdminUsers";
 import Plan from "./pages/Plan";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -41,7 +43,9 @@ const App = () => (
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/login" element={<Login />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/admin" element={<ProtectedRoute requireAdmin><Admin /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute requireFacilitator><Admin /></ProtectedRoute>} />
+            <Route path="/admin/news" element={<ProtectedRoute requireFacilitator><AdminNews /></ProtectedRoute>} />
+            <Route path="/admin/users" element={<ProtectedRoute requireAdmin><AdminUsers /></ProtectedRoute>} />
             <Route path="/plan/:planId" element={<Plan />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
