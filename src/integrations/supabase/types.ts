@@ -987,6 +987,18 @@ export type Database = {
           total_users: number
         }[]
       }
+      get_user_profile_safe: {
+        Args: { target_user_id: string }
+        Returns: {
+          created_at: string
+          department: string
+          full_name: string
+          id: string
+          is_active: boolean
+          organization: string
+          role: Database["public"]["Enums"]["user_role"]
+        }[]
+      }
       promote_to_admin: {
         Args: { target_email: string }
         Returns: boolean
