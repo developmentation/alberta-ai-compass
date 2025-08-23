@@ -88,9 +88,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, fullName?: string) => {
     try {
+      console.log('Starting signup process for email:', email);
       const redirectUrl = `${window.location.origin}/`;
       
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -101,21 +102,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       });
 
+      console.log('Signup response:', { data, error });
+
       if (error) {
+        console.error('Signup error:', error);
         toast({
           title: "Sign up failed",
           description: error.message,
           variant: "destructive",
         });
       } else {
+        console.log('Signup successful, user created:', data.user?.id);
         toast({
-          title: "Check your email",
-          description: "We've sent you a confirmation link to complete your registration.",
+          title: "Account created successfully",
+          description: "Your account has been created and you can now sign in.",
         });
       }
 
       return { error };
     } catch (error: any) {
+      console.error('Signup catch error:', error);
       return { error };
     }
   };
