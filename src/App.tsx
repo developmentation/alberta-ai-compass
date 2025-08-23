@@ -11,6 +11,7 @@ import Tools from "./pages/Tools";
 import AIMentor from "./pages/AIMentor";
 import Privacy from "./pages/Privacy";
 import Login from "./pages/Login";
+import Plan from "./pages/Plan";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/ai-mentor" element={<AIMentor />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/plan/:planId" element={<Plan />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

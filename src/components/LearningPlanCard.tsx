@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Bookmark, Eye } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface LearningPlanCardProps {
+  id: number;
   title: string;
   description: string;
   duration: string;
@@ -12,6 +14,7 @@ interface LearningPlanCardProps {
 }
 
 export const LearningPlanCard = ({
+  id,
   title,
   description,
   duration,
@@ -64,12 +67,12 @@ export const LearningPlanCard = ({
 
         {/* Actions */}
         <div className="flex items-center gap-3">
-          <Button 
-            className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow"
-          >
-            <Eye className="w-4 h-4 mr-2" />
-            View Plan
-          </Button>
+          <Link to={`/plan/${id}`} className="flex-1">
+            <Button className="w-full bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow">
+              <Eye className="w-4 h-4 mr-2" />
+              View Plan
+            </Button>
+          </Link>
           <Button 
             variant="ghost" 
             size="icon"
