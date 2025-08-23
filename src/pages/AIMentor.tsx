@@ -1,5 +1,7 @@
-import { AIMentor as AIMentorComponent } from "@/components/AIMentor";
 import { useState } from "react";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { AIMentor as AIMentorComponent } from "@/components/AIMentor";
 
 const AIMentor = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -11,6 +13,7 @@ const AIMentor = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <Header onLoginClick={() => {}} />
       {/* Background gradient effects */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-32 -left-32 w-96 h-96 bg-primary/20 blur-3xl rounded-full animate-glow-pulse" />
@@ -114,6 +117,7 @@ const AIMentor = () => {
           </div>
         </section>
       </div>
+      <Footer />
     </div>
   );
 };
