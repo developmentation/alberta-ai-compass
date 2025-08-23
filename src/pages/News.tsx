@@ -2,15 +2,18 @@ import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { NewsCard } from "@/components/NewsCard";
+import { NewsViewer } from "@/components/NewsViewer";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, Loader2 } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Search, Loader2 } from "lucide-react";
 import { useNews } from "@/hooks/useNews";
 
 const News = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
+  const [selectedNews, setSelectedNews] = useState<any>(null);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
   const { news, loading, error } = useNews();
 
   const categories = ["all", "1", "2", "3", "red"];
@@ -20,14 +23,17 @@ const News = () => {
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          item.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
-  }).map(item => ({
-    id: item.id,
-    title: item.title,
-    description: item.description,
-    date: new Date(item.created_at).toLocaleDateString(),
-    category: `Level ${item.level}`,
-    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1400&auto=format&fit=crop"
-  }));
+  });
+
+  const handleNewsClick = (newsItem: any) => {
+    setSelectedNews(newsItem);
+    setIsViewerOpen(true);
+  };
+
+  const handleCloseViewer = () => {
+    setIsViewerOpen(false);
+    setSelectedNews(null);
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -65,10 +71,6 @@ const News = () => {
                     className="pl-10 bg-card/60 backdrop-blur-sm border-border"
                   />
                 </div>
-                <Button variant="ghost" className="border border-border hover:border-primary/50">
-                  <Filter className="w-4 h-4 mr-2" />
-                  Categories
-                </Button>
               </div>
 
               <div className="flex flex-wrap gap-3 justify-center">
@@ -109,7 +111,14 @@ const News = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {filteredNews.map((item, index) => (
                     <div key={item.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
-                      <NewsCard {...item} />
+                      <NewsCard
+                        title={item.title}
+                        description={item.description}
+                        date={new Date(item.created_at).toLocaleDateString()}
+                        category={`Level ${item.level}`}
+                        image={item.image_url || "/placeholder.svg"}
+                        onClick={() => handleNewsClick(item)}
+                      />
                     </div>
                   ))}
                 </div>
@@ -134,13 +143,26 @@ const News = () => {
 
             {/* Load More Button */}
             <div className="text-center mt-12">
-              <Button className="px-8 py-3 bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow">
+              <button className="px-8 py-3 bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow rounded-lg text-white font-medium">
                 Load More Articles
-              </Button>
+              </button>
             </div>
           </div>
         </section>
       </div>
+
+      {/* News Viewer Modal */}
+      <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          {selectedNews && (
+            <NewsViewer
+              news={selectedNews}
+              onClose={handleCloseViewer}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
       <Footer />
     </div>
   );

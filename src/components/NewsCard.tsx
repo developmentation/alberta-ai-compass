@@ -6,6 +6,7 @@ interface NewsCardProps {
   date: string;
   category: string;
   image: string;
+  onClick?: () => void;
 }
 
 export const NewsCard = ({
@@ -13,10 +14,19 @@ export const NewsCard = ({
   description,
   date,
   category,
-  image
+  image,
+  onClick
 }: NewsCardProps) => {
+  // Truncate description to 100 characters
+  const truncatedDescription = description.length > 100 
+    ? description.substring(0, 100) + '...' 
+    : description;
+
   return (
-    <article className="group rounded-2xl border border-border overflow-hidden bg-card/40 backdrop-blur-sm hover:bg-card-hover transition-all duration-500 hover:shadow-elegant hover:scale-[1.02] hover:-translate-y-1">
+    <article 
+      className="group rounded-2xl border border-border overflow-hidden bg-card/40 backdrop-blur-sm hover:bg-card-hover transition-all duration-500 hover:shadow-elegant hover:scale-[1.02] hover:-translate-y-1 cursor-pointer"
+      onClick={onClick}
+    >
       {/* Image Section */}
       <div className="relative h-48 overflow-hidden">
         <img
@@ -39,7 +49,7 @@ export const NewsCard = ({
           {title}
         </h3>
         <p className="text-muted-foreground mb-4 leading-relaxed">
-          {description}
+          {truncatedDescription}
         </p>
         <div className="text-xs text-muted-foreground">
           {date}

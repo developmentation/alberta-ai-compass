@@ -7,6 +7,10 @@ interface NewsItem {
   description: string;
   created_at: string;
   level: string;
+  image_url?: string;
+  video_url?: string;
+  status: string;
+  is_active: boolean;
   metadata?: any;
 }
 
