@@ -70,6 +70,8 @@ const Plan = () => {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [progress, setProgress] = useState(0);
 
+  console.log('Plan component rendering, loading state:', loading);
+
   useEffect(() => {
     const fetchPlanAndContent = async () => {
       if (!planId) return;
@@ -192,7 +194,10 @@ const Plan = () => {
     navigate(-1);
   };
 
+  console.log('About to check loading condition, loading is:', loading);
+
   if (loading) {
+    console.log('Rendering loading state');
     return (
       <div className="min-h-screen bg-background text-foreground">
         <Header onLoginClick={() => {}} />
