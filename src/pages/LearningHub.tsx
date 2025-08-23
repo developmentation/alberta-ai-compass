@@ -44,7 +44,13 @@ const LearningHub = () => {
     }
   ];
 
-  const filters = ["all", "1", "2", "3", "red"];
+  const filters = [
+    { key: "all", label: "All" },
+    { key: "1", label: "Beginner" },
+    { key: "2", label: "Intermediate" }, 
+    { key: "3", label: "Advanced" },
+    { key: "red", label: "RED" }
+  ];
 
   const filteredPlans = learningPlans.filter(plan => {
     const matchesFilter = activeFilter === "all" || plan.level?.toLowerCase() === activeFilter;
@@ -55,14 +61,24 @@ const LearningHub = () => {
     id: plan.id,
     title: plan.name,
     description: plan.description,
-    duration: typeof plan.duration === 'string' ? plan.duration : '4 weeks',
-    level: plan.level === '1' ? 'Beginner' : plan.level === '2' ? 'Intermediate' : plan.level === '3' ? 'Advanced' : 'RED',
-    image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1400&auto=format&fit=crop",
+    duration: typeof plan.duration === 'string' ? plan.duration : 
+             plan.duration ? String(plan.duration) : '4 weeks',
+    level: plan.level === '1' ? 'Beginner' : 
+           plan.level === '2' ? 'Intermediate' : 
+           plan.level === '3' ? 'Advanced' : 
+           plan.level === 'red' ? 'RED' : 
+           plan.level,
+    image: plan.image_url || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1400&auto=format&fit=crop",
     tags: plan.learning_outcomes?.slice(0, 2) || ["AI Training", "Hands-on"]
   }));
 
   const filteredArticles = articles.filter(article => {
-    const matchesFilter = activeFilter === "all" || article.level.toLowerCase() === activeFilter;
+    const matchesFilter = activeFilter === "all" || article.level.toLowerCase() === (
+      activeFilter === "1" ? "beginner" :
+      activeFilter === "2" ? "intermediate" : 
+      activeFilter === "3" ? "advanced" :
+      activeFilter
+    );
     const matchesSearch = article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          article.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
@@ -114,12 +130,12 @@ const LearningHub = () => {
               <div className="flex flex-wrap gap-3 justify-center">
                 {filters.map((filter) => (
                   <Badge
-                    key={filter}
-                    variant={activeFilter === filter ? "default" : "secondary"}
+                    key={filter.key}
+                    variant={activeFilter === filter.key ? "default" : "secondary"}
                     className="cursor-pointer hover:scale-105 transition-transform"
-                    onClick={() => setActiveFilter(filter)}
+                    onClick={() => setActiveFilter(filter.key)}
                   >
-                    {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                    {filter.label}
                   </Badge>
                 ))}
               </div>

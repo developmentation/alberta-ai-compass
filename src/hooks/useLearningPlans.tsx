@@ -11,6 +11,8 @@ interface LearningPlan {
   learning_outcomes?: string[];
   star_rating: number;
   created_at: string;
+  image_url?: string;
+  video_url?: string;
   steps?: any;
 }
 
@@ -36,6 +38,7 @@ export function useLearningPlans() {
         .from('learning_plans')
         .select('*')
         .eq('status', 'published')
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
