@@ -48,15 +48,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get platform statistics
-    const { data: stats, error } = await supabase
-      .from('platform_statistics')
-      .select('*')
-      .single();
+    // Get platform statistics using secure function
+    const { data: statsData, error: statsError } = await supabase
+      .rpc('get_platform_statistics');
 
-    if (error) {
-      throw error;
+    if (statsError) {
+      throw statsError;
     }
+
+    // Transform the function result to match expected format
+    const stats = statsData && statsData.length > 0 ? statsData[0] : null;
 
     // Get recent activity
     const { data: recentNews } = await supabase

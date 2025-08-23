@@ -520,22 +520,23 @@ export type Database = {
       }
     }
     Views: {
-      platform_statistics: {
-        Row: {
-          total_news: number | null
-          total_plans: number | null
-          total_prompts: number | null
-          total_resources: number | null
-          total_tools: number | null
-          total_users: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_platform_statistics: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          total_news: number
+          total_plans: number
+          total_prompts: number
+          total_resources: number
+          total_tools: number
+          total_users: number
+        }[]
       }
       promote_to_admin: {
         Args: { target_email: string }

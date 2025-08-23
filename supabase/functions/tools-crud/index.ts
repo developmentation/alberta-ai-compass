@@ -15,6 +15,15 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const authHeader = req.headers.get('Authorization');
     
+    // Input validation for request size (prevent DoS attacks)
+    const contentLength = req.headers.get('Content-Length');
+    if (contentLength && parseInt(contentLength) > 1000000) { // 1MB limit
+      return new Response(JSON.stringify({ error: 'Request too large' }), {
+        status: 413,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
     const supabase = createClient(supabaseUrl, supabaseKey, {
       auth: {
         persistSession: false,
@@ -26,13 +35,37 @@ Deno.serve(async (req) => {
       },
     });
 
-    // Verify user authentication
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    // Verify user authentication and get profile
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (!user || userError) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
+
+    // Get user profile and verify role for non-GET operations
+    if (req.method !== 'GET') {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError || !profile) {
+        return new Response(JSON.stringify({ error: 'Profile not found' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Only facilitators and admins can modify tools
+      if (!['facilitator', 'admin'].includes(profile.role)) {
+        return new Response(JSON.stringify({ error: 'Insufficient permissions' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     const method = req.method;
@@ -71,11 +104,37 @@ Deno.serve(async (req) => {
       case 'POST':
         const toolData = await req.json();
         
+        // Input validation
+        if (!toolData.name || typeof toolData.name !== 'string' || toolData.name.trim().length === 0) {
+          return new Response(JSON.stringify({ error: 'Name is required and must be a non-empty string' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        if (!toolData.description || typeof toolData.description !== 'string' || toolData.description.trim().length === 0) {
+          return new Response(JSON.stringify({ error: 'Description is required and must be a non-empty string' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        if (!toolData.type || !['free_tool', 'paid_tool', 'paid_subscription', 'freemium'].includes(toolData.type)) {
+          return new Response(JSON.stringify({ error: 'Valid type is required (free_tool, paid_tool, paid_subscription, freemium)' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        // Sanitize inputs
+        const sanitizedName = toolData.name.trim().substring(0, 255);
+        const sanitizedDescription = toolData.description.trim().substring(0, 2000);
+        
         const { data: insertData, error: insertError } = await supabase
           .from('tools')
           .insert({
-            name: toolData.name,
-            description: toolData.description,
+            name: sanitizedName,
+            description: sanitizedDescription,
             type: toolData.type,
             cost_indicator: toolData.cost_indicator,
             url: toolData.url,

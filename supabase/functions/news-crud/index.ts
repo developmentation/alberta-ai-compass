@@ -14,6 +14,15 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const authHeader = req.headers.get('Authorization');
+
+    // Input validation for request size (prevent DoS attacks)
+    const contentLength = req.headers.get('Content-Length');
+    if (contentLength && parseInt(contentLength) > 1000000) { // 1MB limit
+      return new Response(JSON.stringify({ error: 'Request too large' }), {
+        status: 413,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     
     const supabase = createClient(supabaseUrl, supabaseKey, {
       auth: {
@@ -26,13 +35,40 @@ Deno.serve(async (req) => {
       },
     });
 
-    // Verify user authentication
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    // Verify user authentication and get profile
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (!user || userError) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
+
+    // Get user profile and verify role for non-GET operations
+    let userProfile = null;
+    if (req.method !== 'GET') {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError || !profile) {
+        return new Response(JSON.stringify({ error: 'Profile not found' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      userProfile = profile;
+
+      // Only facilitators and admins can modify news
+      if (!['facilitator', 'admin'].includes(profile.role)) {
+        return new Response(JSON.stringify({ error: 'Insufficient permissions' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     const method = req.method;
@@ -71,11 +107,37 @@ Deno.serve(async (req) => {
       case 'POST':
         const newsData = await req.json();
         
+        // Input validation
+        if (!newsData.title || typeof newsData.title !== 'string' || newsData.title.trim().length === 0) {
+          return new Response(JSON.stringify({ error: 'Title is required and must be a non-empty string' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        if (!newsData.description || typeof newsData.description !== 'string' || newsData.description.trim().length === 0) {
+          return new Response(JSON.stringify({ error: 'Description is required and must be a non-empty string' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        if (!newsData.level || !['beginner', 'intermediate', 'advanced'].includes(newsData.level)) {
+          return new Response(JSON.stringify({ error: 'Valid level is required (beginner, intermediate, advanced)' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        // Sanitize inputs
+        const sanitizedTitle = newsData.title.trim().substring(0, 255);
+        const sanitizedDescription = newsData.description.trim().substring(0, 2000);
+        
         const { data: insertData, error: insertError } = await supabase
           .from('news')
           .insert({
-            title: newsData.title,
-            description: newsData.description,
+            title: sanitizedTitle,
+            description: sanitizedDescription,
             level: newsData.level,
             status: newsData.status || 'draft',
             metadata: newsData.metadata,
