@@ -19,6 +19,12 @@ import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import { AdminNews } from "./pages/admin/AdminNews";
 import { AdminUsers } from "./pages/admin/AdminUsers";
+import { AdminTools } from "./pages/admin/AdminTools";
+import { AdminPrompts } from "./pages/admin/AdminPrompts";
+import { AdminLearningPlans } from "./pages/admin/AdminLearningPlans";
+import { AdminCohorts } from "./pages/admin/AdminCohorts";
+import { AdminSetup } from "./pages/admin/AdminSetup";
+import { AdminProfile } from "./pages/admin/AdminProfile";
 import Plan from "./pages/Plan";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -46,6 +52,12 @@ const App = () => (
             <Route path="/admin" element={<ProtectedRoute requireFacilitator><Admin /></ProtectedRoute>} />
             <Route path="/admin/news" element={<ProtectedRoute requireFacilitator><AdminNews /></ProtectedRoute>} />
             <Route path="/admin/users" element={<ProtectedRoute requireAdmin><AdminUsers /></ProtectedRoute>} />
+            <Route path="/admin/tools" element={<ProtectedRoute requireFacilitator><AdminTools /></ProtectedRoute>} />
+            <Route path="/admin/prompts" element={<ProtectedRoute requireFacilitator><AdminPrompts /></ProtectedRoute>} />
+            <Route path="/admin/learning/plans" element={<ProtectedRoute requireFacilitator><AdminLearningPlans /></ProtectedRoute>} />
+            <Route path="/admin/learning/cohorts" element={<ProtectedRoute requireFacilitator><AdminCohorts /></ProtectedRoute>} />
+            <Route path="/admin/setup" element={<ProtectedRoute requireAdmin><AdminSetup /></ProtectedRoute>} />
+            <Route path="/admin/profile" element={<ProtectedRoute requireFacilitator><AdminProfile /></ProtectedRoute>} />
             <Route path="/plan/:planId" element={<Plan />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
