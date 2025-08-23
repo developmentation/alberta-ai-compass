@@ -23,13 +23,9 @@ export function useLearningPlans() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user) {
-      fetchLearningPlans();
-    } else {
-      setLearningPlans([]);
-      setLoading(false);
-    }
-  }, [user]);
+    // Always fetch learning plans - they're now public
+    fetchLearningPlans();
+  }, []); // Remove user dependency
 
   const fetchLearningPlans = async () => {
     try {
