@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.gemini-image]
 verify_jwt = false
+
+[functions.execute-prompt]
+verify_jwt = false

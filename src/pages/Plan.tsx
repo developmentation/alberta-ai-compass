@@ -566,12 +566,6 @@ const Plan = () => {
               onClose={() => setIsViewerOpen(false)}
             />
           )}
-          {selectedContent && viewerType === 'prompt' && (
-            <PromptViewer 
-              prompt={selectedContent}
-              onClose={() => setIsViewerOpen(false)}
-            />
-          )}
           {selectedContent && viewerType === 'news' && (
             <NewsViewer 
               news={selectedContent}
@@ -580,6 +574,19 @@ const Plan = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Prompt Viewer Modal - handled separately since it's its own modal */}
+      <PromptViewer 
+        prompt={selectedContent || { id: '', name: '', description: '', purpose: '', status: '' }}
+        open={viewerType === 'prompt' && isViewerOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsViewerOpen(false);
+            setSelectedContent(null);
+            setViewerType(null);
+          }
+        }}
+      />
 
       <Footer />
     </div>
