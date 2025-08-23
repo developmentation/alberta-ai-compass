@@ -88,18 +88,92 @@ export function AdminCohorts() {
             }
             if (content.content_id) {
               acc[dayKey].content_items.push({
-                id: content.content_id,
-                type: content.content_type,
-                name: `${content.content_type} item`,
+                content_id: content.content_id,
+                content_type: content.content_type,
                 order_index: content.order_index || 0
               });
             }
             return acc;
           }, {});
           
+          // Fetch actual content details for each day's items
+          const daysWithContent = await Promise.all(
+            Object.values(dayGroups || {}).map(async (day: any) => {
+              const contentItemsWithDetails = await Promise.all(
+                day.content_items.map(async (item: any) => {
+                  let contentDetails = null;
+                  
+                  try {
+                    switch (item.content_type) {
+                      case 'module':
+                        const { data: moduleData } = await supabase
+                          .from('modules')
+                          .select('id, name, description, image_url, video_url, status')
+                          .eq('id', item.content_id)
+                          .maybeSingle();
+                        contentDetails = moduleData;
+                        break;
+                      case 'news':
+                        const { data: newsData } = await supabase
+                          .from('news')
+                          .select('id, title as name, description, image_url, video_url, status')
+                          .eq('id', item.content_id)
+                          .maybeSingle();
+                        contentDetails = newsData;
+                        break;
+                      case 'tool':
+                        const { data: toolData } = await supabase
+                          .from('tools')
+                          .select('id, name, description, image_url, video_url, status')
+                          .eq('id', item.content_id)
+                          .maybeSingle();
+                        contentDetails = toolData;
+                        break;
+                      case 'prompt':
+                        const { data: promptData } = await supabase
+                          .from('prompt_library')
+                          .select('id, name, description, image_url, status')
+                          .eq('id', item.content_id)
+                          .maybeSingle();
+                        contentDetails = promptData;
+                        break;
+                      case 'learning_plan':
+                        const { data: planData } = await supabase
+                          .from('learning_plans')
+                          .select('id, name, description, image_url, video_url, status')
+                          .eq('id', item.content_id)
+                          .maybeSingle();
+                        contentDetails = planData;
+                        break;
+                    }
+                  } catch (error) {
+                    console.error(`Error fetching ${item.content_type} content:`, error);
+                  }
+                  
+                  return {
+                    id: item.content_id,
+                    original_id: item.content_id,
+                    type: item.content_type,
+                    name: contentDetails?.name || `${item.content_type} item`,
+                    description: contentDetails?.description || '',
+                    image_url: contentDetails?.image_url || '',
+                    video_url: contentDetails?.video_url || '',
+                    status: contentDetails?.status || 'draft',
+                    order_index: item.order_index
+                  };
+                })
+              );
+              
+              return {
+                ...day,
+                content_items: contentItemsWithDetails.sort((a, b) => a.order_index - b.order_index)
+              };
+            })
+          );
+          
           return {
             ...cohort,
-            days: Object.values(dayGroups || {})
+            days: daysWithContent.sort((a, b) => a.day_number - b.day_number)
           };
         })
       );
