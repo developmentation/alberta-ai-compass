@@ -4,9 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, Mail, Lock, Eye, EyeOff, Github } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [loginForm, setLoginForm] = useState({
     email: "",
@@ -23,12 +24,16 @@ const Login = () => {
     e.preventDefault();
     // Handle login logic here
     console.log("Login attempt:", loginForm);
+    // Redirect to admin page
+    navigate('/admin');
   };
 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle signup logic here
     console.log("Signup attempt:", signupForm);
+    // Redirect to admin page
+    navigate('/admin');
   };
 
   return (
