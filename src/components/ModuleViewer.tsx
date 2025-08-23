@@ -534,49 +534,14 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
     }
   }, [showResults, user, moduleId]);
 
-  // Load available translations
+  // Load available translations - simplified for now
   const loadAvailableTranslations = async () => {
-    if (!moduleId) return;
-
-    try {
-      console.log('Loading translations for module:', moduleId);
-      const { data: translationsData, error } = await supabase
-        .from('translations')
-        .select('language, translated_json')
-        .eq('module_id', moduleId);
-
-      if (error) {
-        console.error('Error loading translations:', error);
-        return;
-      }
-
-      console.log('Loaded translations:', translationsData);
-
-      const translationMap: Record<string, ModuleData> = { en: moduleData };
-      const languages = ['en'];
-
-      if (translationsData && translationsData.length > 0) {
-        translationsData.forEach((translation) => {
-          translationMap[translation.language] = translation.translated_json as unknown as ModuleData;
-          languages.push(translation.language);
-        });
-      }
-
-      console.log('Translation map:', translationMap);
-      console.log('Available languages:', languages);
-
-      setTranslations(translationMap);
-      setAvailableLanguages(languages);
-
-      // If there's a translation for the initial language, switch to it
-      if (initialLanguage !== 'en' && translationMap[initialLanguage]) {
-        console.log('Setting initial language to:', initialLanguage);
-        setCurrentLanguage(initialLanguage);
-        setEditingData(translationMap[initialLanguage]);
-      }
-    } catch (error) {
-      console.error('Error loading translations:', error);
-    }
+    // Since there's no translations table in the current schema, 
+    // we'll just set up English as the default language
+    setAvailableLanguages(['en']);
+    setTranslations({ en: moduleData });
+    setCurrentLanguage('en');
+    setEditingData(moduleData);
   };
 
   const handleLanguageChange = async (newLanguage: string) => {
@@ -1384,18 +1349,16 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
 
       {/* AI Explanation Modal */}
       <AIExplanationModal
-        open={isAskAIOpen}
+        isOpen={isAskAIOpen}
         onClose={() => setIsAskAIOpen(false)}
         moduleTitle={editingData.title}
-        sectionTitle={currentSection?.title || ''}
-        sectionContent={currentSection?.content.map(c => {
+        currentSection={currentSection?.title || ''}
+        context={currentSection?.content.map(c => {
           if (c.type === 'text') return c.value;
           if (c.type === 'quiz') return `Quiz: ${c.question}`;
           if (c.type === 'list') return `List: ${(c.value as string[]).join(', ')}`;
           return `${c.type} content`;
         }).join('\n') || ''}
-        language={currentLanguage}
-        languageName={SUPPORTED_LANGUAGES.find(lang => lang.code === currentLanguage)?.name || 'English'}
       />
     </div>
   );
