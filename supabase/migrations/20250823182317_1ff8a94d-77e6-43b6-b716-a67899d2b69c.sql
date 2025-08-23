@@ -1,0 +1,143 @@
+-- Phase 1: Database Security Fixes (excluding platform_statistics view for now)
+
+-- 1. Fix security definer function with proper search path
+CREATE OR REPLACE FUNCTION public.get_current_user_role()
+RETURNS TEXT 
+LANGUAGE SQL 
+SECURITY DEFINER 
+STABLE
+SET search_path = 'public'
+AS $$
+  SELECT role::text FROM public.profiles WHERE id = auth.uid();
+$$;
+
+-- 2. Update handle_new_user function with proper search path
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = 'public'
+AS $$
+DECLARE
+    user_role user_role;
+BEGIN
+    -- Determine role based on email domain
+    SELECT CASE 
+        WHEN EXISTS (
+            SELECT 1 FROM allowed_domains ad 
+            WHERE ad.deleted_at IS NULL 
+            AND NEW.email LIKE '%@' || ad.domain
+        ) THEN 'government'::user_role
+        ELSE 'public'::user_role
+    END INTO user_role;
+
+    -- Insert profile
+    INSERT INTO public.profiles (id, email, full_name, role)
+    VALUES (
+        NEW.id,
+        NEW.email,
+        COALESCE(NEW.raw_user_meta_data ->> 'full_name', NEW.raw_user_meta_data ->> 'name'),
+        user_role
+    );
+    
+    RETURN NEW;
+END;
+$$;
+
+-- 3. Fix promote_to_admin function with proper search path and additional security
+CREATE OR REPLACE FUNCTION public.promote_to_admin(target_email text)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = 'public'
+AS $$
+DECLARE
+    current_user_role user_role;
+    target_user_id uuid;
+    old_role user_role;
+BEGIN
+    -- Get current user's role with explicit check
+    SELECT role INTO current_user_role 
+    FROM profiles 
+    WHERE id = auth.uid() AND deleted_at IS NULL;
+    
+    -- Only allow admins to promote users
+    IF current_user_role != 'admin' THEN
+        RETURN false;
+    END IF;
+    
+    -- Get target user ID and current role, verify they exist
+    SELECT id, role INTO target_user_id, old_role 
+    FROM profiles 
+    WHERE email = target_email AND deleted_at IS NULL;
+    
+    IF target_user_id IS NULL THEN
+        RETURN false;
+    END IF;
+    
+    -- Update user role
+    UPDATE profiles 
+    SET role = 'admin', updated_at = now()
+    WHERE id = target_user_id;
+    
+    RETURN FOUND;
+END;
+$$;
+
+-- 4. Create audit logs table for security monitoring
+CREATE TABLE IF NOT EXISTS public.audit_logs (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    action text NOT NULL,
+    table_name text NOT NULL,
+    record_id uuid,
+    old_values jsonb,
+    new_values jsonb,
+    performed_by uuid REFERENCES auth.users(id),
+    performed_at timestamp with time zone DEFAULT now(),
+    ip_address inet,
+    user_agent text
+);
+
+-- Enable RLS on audit logs
+ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
+
+-- Only admins can view audit logs
+CREATE POLICY "audit_logs_admin_only" 
+ON public.audit_logs 
+FOR SELECT 
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles 
+    WHERE id = auth.uid() AND role = 'admin'
+  )
+);
+
+-- 5. Strengthen profiles RLS policies to prevent role self-modification
+DROP POLICY IF EXISTS "profiles_update_admin" ON public.profiles;
+
+-- Separate policy for self-updates (excluding role changes)
+CREATE POLICY "profiles_update_self" 
+ON public.profiles 
+FOR UPDATE 
+USING (id = auth.uid()) 
+WITH CHECK (
+  id = auth.uid() 
+  AND role = (SELECT role FROM public.profiles WHERE id = auth.uid()) -- Role cannot be changed by user
+);
+
+-- Separate policy for admin updates (can change any field including roles)
+CREATE POLICY "profiles_update_by_admin" 
+ON public.profiles 
+FOR UPDATE 
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles 
+    WHERE id = auth.uid() AND role = 'admin'
+  )
+) 
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles 
+    WHERE id = auth.uid() AND role = 'admin'
+  )
+);
