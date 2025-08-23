@@ -47,7 +47,15 @@ export function ModuleCreator({ isOpen, onClose, onModuleCreated }: ModuleCreato
                    Difficulty: ${difficulty}
                    Language: ${language}
                    
-                   Make sure to include comprehensive content with multiple sections, quizzes, and learning outcomes.` 
+                   Make sure to include comprehensive content with multiple sections, quizzes, and learning outcomes.`,
+          preserveMetadata: {
+            title: title || 'Generated from prompt',
+            description: `AI-generated learning module about: ${prompt}`,
+            difficulty: difficulty,
+            language: language,
+            imageUrl: imageUrl,
+            videoUrl: videoUrl
+          }
         }
       });
 
@@ -61,7 +69,8 @@ export function ModuleCreator({ isOpen, onClose, onModuleCreated }: ModuleCreato
       const { error: saveError } = await supabase
         .from('modules')
         .insert({
-          description: moduleData?.description || 'AI generated learning module',
+          name: moduleData?.title || title || 'Generated Module',
+          description: moduleData?.description || `AI generated learning module about: ${prompt}`,
           json_data: moduleData,
           language: language,
           level: difficulty as '1' | '2' | '3' | 'RED',

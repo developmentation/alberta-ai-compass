@@ -39,6 +39,7 @@ import ReactMarkdown from 'react-markdown';
 
 import { LanguageSelector, SUPPORTED_LANGUAGES } from '@/components/LanguageSelector';
 import { AIExplanationModal } from '@/components/AIExplanationModal';
+import { UnifiedMediaUpload } from '@/components/admin/UnifiedMediaUpload';
 
 interface ModuleData {
   id: string;
@@ -97,8 +98,6 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
   const [isAskAIOpen, setIsAskAIOpen] = useState(false);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [uploadContentIndex, setUploadContentIndex] = useState<number | null>(null);
-  const [generatePrompt, setGeneratePrompt] = useState('');
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState(initialLanguage);
   const [availableLanguages, setAvailableLanguages] = useState<string[]>(['en']);
@@ -525,37 +524,20 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
     }
   };
 
-  const handleGenerateImage = async (prompt: string, contentIndex: number) => {
-    setIsGeneratingImage(true);
-    try {
-      const response = await supabase.functions.invoke('generate-module', {
-        body: { 
-          generateImage: true,
-          prompt: prompt 
-        }
-      });
-
-      if (response.error) throw new Error(response.error.message);
-
-      const { imageUrl } = response.data;
-      handleEditContent(contentIndex, 'url', imageUrl);
-      setIsUploadDialogOpen(false);
-      setUploadContentIndex(null);
-      setGeneratePrompt('');
-
-      toast({
-        title: "Success",
-        description: "Image generated successfully",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to generate image",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGeneratingImage(false);
+  const handleMediaUpload = (url: string, type: 'image' | 'video', contentIndex: number) => {
+    handleEditContent(contentIndex, 'url', url);
+    if (type === 'image') {
+      handleEditContent(contentIndex, 'alt', 'Uploaded image');
+    } else {
+      handleEditContent(contentIndex, 'caption', 'Uploaded video');
     }
+    setIsUploadDialogOpen(false);
+    setUploadContentIndex(null);
+
+    toast({
+      title: "Success",
+      description: `${type === 'image' ? 'Image' : 'Video'} uploaded successfully`,
+    });
   };
 
   const calculateScore = () => {
@@ -778,21 +760,8 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                     }}
                   >
                     <Upload className="h-4 w-4 mr-2" />
-                    Upload
+                    Upload or Generate
                   </Button>
-                  {content.type === 'image' && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setUploadContentIndex(index);
-                        setIsUploadDialogOpen(true);
-                      }}
-                    >
-                      <Wand2 className="h-4 w-4 mr-2" />
-                      Generate
-                    </Button>
-                  )}
                 </div>
               </div>
             ) : (
@@ -1339,51 +1308,18 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
       <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Media</DialogTitle>
+            <DialogTitle>Upload or Generate Media</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Upload File</label>
-              <Input
-                type="file"
-                accept="image/*,video/*,audio/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file && uploadContentIndex !== null) {
-                    handleFileUpload(file, uploadContentIndex);
-                  }
-                }}
+            {uploadContentIndex !== null && (
+              <UnifiedMediaUpload
+                onMediaUpload={(url, type) => handleMediaUpload(url, type, uploadContentIndex)}
+                currentImageUrl={editingData.sections?.[currentSectionIndex]?.content[uploadContentIndex]?.type === 'image' ? editingData.sections[currentSectionIndex].content[uploadContentIndex].url : undefined}
+                currentVideoUrl={editingData.sections?.[currentSectionIndex]?.content[uploadContentIndex]?.type === 'video' ? editingData.sections[currentSectionIndex].content[uploadContentIndex].url : undefined}
+                bucketName="module-assets"
+                allowAiGeneration={true}
               />
-            </div>
-            <div className="text-center text-muted-foreground">or</div>
-            <div>
-              <label className="text-sm font-medium mb-2 block">Generate Image</label>
-              <div className="space-y-2">
-                <Textarea
-                  value={generatePrompt}
-                  onChange={(e) => setGeneratePrompt(e.target.value)}
-                  placeholder="Describe the image you want to generate..."
-                  rows={3}
-                />
-                <Button
-                  onClick={() => uploadContentIndex !== null && handleGenerateImage(generatePrompt, uploadContentIndex)}
-                  disabled={!generatePrompt || isGeneratingImage}
-                  className="w-full"
-                >
-                  {isGeneratingImage ? (
-                    <>
-                      <Wand2 className="mr-2 h-4 w-4 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Wand2 className="mr-2 h-4 w-4" />
-                      Generate Image
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
