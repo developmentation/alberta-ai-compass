@@ -24,6 +24,7 @@ import { Plus, Edit, Trash2, TestTube, Star, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { EnhancedMediaUpload } from "@/components/admin/EnhancedMediaUpload";
 
 interface Prompt {
   id: string;
@@ -34,6 +35,7 @@ interface Prompt {
   stars: number;
   sector_tags: any;
   status: "draft" | "review" | "published" | "archived";
+  image_url?: string;
   created_at: string;
   created_by: string;
 }
@@ -55,6 +57,7 @@ export function AdminPrompts() {
     sample_output: "",
     status: "draft" as "draft" | "review" | "published" | "archived",
     sector_tags: "",
+    image_url: "",
   });
 
   useEffect(() => {
@@ -145,6 +148,7 @@ export function AdminPrompts() {
       sample_output: prompt.sample_output || "",
       status: prompt.status,
       sector_tags: prompt.sector_tags?.tags ? prompt.sector_tags.tags.join(", ") : "",
+      image_url: prompt.image_url || "",
     });
     setIsDialogOpen(true);
   };
@@ -197,6 +201,7 @@ export function AdminPrompts() {
       sample_output: "",
       status: "draft",
       sector_tags: "",
+      image_url: "",
     });
   };
 
@@ -306,6 +311,13 @@ export function AdminPrompts() {
                   />
                 </div>
 
+                <EnhancedMediaUpload
+                  onImageUpload={(url) => setFormData({ ...formData, image_url: url })}
+                  imageUrl={formData.image_url}
+                  bucketName="media-assets"
+                  allowAiGeneration={true}
+                />
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Sample Output (Optional)</label>
                   <Textarea
@@ -341,53 +353,64 @@ export function AdminPrompts() {
         <div className="space-y-4">
           {prompts.map((prompt) => (
             <Card key={prompt.id}>
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-2">
-                    <CardTitle className="text-lg">{prompt.name}</CardTitle>
-                    <div className="flex gap-2">
-                      <Badge className={`text-white ${getStatusBadge(prompt.status)}`}>
-                        {prompt.status}
-                      </Badge>
-                      {prompt.sector_tags?.tags?.map((tag: string, index: number) => (
-                        <Badge key={index} variant="outline">
-                          {tag}
-                        </Badge>
-                      ))}
+              <div className="flex">
+                {prompt.image_url && (
+                  <div className="w-24 h-20 flex-shrink-0 overflow-hidden rounded-l-lg">
+                    <img 
+                      src={prompt.image_url} 
+                      alt={prompt.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-2">
+                        <CardTitle className="text-lg">{prompt.name}</CardTitle>
+                        <div className="flex gap-2">
+                          <Badge className={`text-white ${getStatusBadge(prompt.status)}`}>
+                            {prompt.status}
+                          </Badge>
+                          {prompt.sector_tags?.tags?.map((tag: string, index: number) => (
+                            <Badge key={index} variant="outline">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleCopyPrompt(prompt)}
+                        >
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleTestPrompt(prompt)}
+                        >
+                          <TestTube className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(prompt)}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(prompt.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleCopyPrompt(prompt)}
-                    >
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleTestPrompt(prompt)}
-                    >
-                      <TestTube className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEdit(prompt)}
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDelete(prompt.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
+                  </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   <div>
@@ -423,7 +446,9 @@ export function AdminPrompts() {
                     </div>
                   </div>
                 </div>
-              </CardContent>
+                  </CardContent>
+                </div>
+              </div>
             </Card>
           ))}
           

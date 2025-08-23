@@ -24,6 +24,7 @@ import { Plus, Edit, Trash2, ExternalLink, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { EnhancedMediaUpload } from "@/components/admin/EnhancedMediaUpload";
 
 interface Tool {
   id: string;
@@ -34,6 +35,8 @@ interface Tool {
   url: string | null;
   stars: number;
   status: "draft" | "review" | "published" | "archived";
+  image_url?: string;
+  video_url?: string;
   created_at: string;
   created_by: string;
 }
@@ -53,6 +56,8 @@ export function AdminTools() {
     cost_indicator: "",
     url: "",
     status: "draft" as "draft" | "review" | "published" | "archived",
+    image_url: "",
+    video_url: "",
   });
 
   useEffect(() => {
@@ -135,6 +140,8 @@ export function AdminTools() {
       cost_indicator: tool.cost_indicator || "",
       url: tool.url || "",
       status: tool.status,
+      image_url: tool.image_url || "",
+      video_url: tool.video_url || "",
     });
     setIsDialogOpen(true);
   };
@@ -174,6 +181,8 @@ export function AdminTools() {
       cost_indicator: "",
       url: "",
       status: "draft",
+      image_url: "",
+      video_url: "",
     });
   };
 
@@ -236,7 +245,7 @@ export function AdminTools() {
                 Add Tool
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
                   {editingTool ? "Edit Tool" : "Create Tool"}
@@ -266,6 +275,15 @@ export function AdminTools() {
                     required
                   />
                 </div>
+
+                <EnhancedMediaUpload
+                  onImageUpload={(url) => setFormData({ ...formData, image_url: url })}
+                  onVideoUpload={(url) => setFormData({ ...formData, video_url: url })}
+                  imageUrl={formData.image_url}
+                  videoUrl={formData.video_url}
+                  bucketName="media-assets"
+                  allowAiGeneration={true}
+                />
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -343,54 +361,65 @@ export function AdminTools() {
             const typeBadge = getTypeBadge(tool.type);
             return (
               <Card key={tool.id}>
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-2">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        {tool.name}
-                        {tool.url && (
-                          <a
-                            href={tool.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:text-primary/80"
+                <div className="flex">
+                  {tool.image_url && (
+                    <div className="w-24 h-20 flex-shrink-0 overflow-hidden rounded-l-lg">
+                      <img 
+                        src={tool.image_url} 
+                        alt={tool.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <CardHeader className="pb-3">
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-2">
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            {tool.name}
+                            {tool.url && (
+                              <a
+                                href={tool.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:text-primary/80"
+                              >
+                                <ExternalLink className="w-4 h-4" />
+                              </a>
+                            )}
+                          </CardTitle>
+                          <div className="flex gap-2">
+                            <Badge className={typeBadge.color}>
+                              {typeBadge.label}
+                            </Badge>
+                            <Badge className={`text-white ${getStatusBadge(tool.status)}`}>
+                              {tool.status}
+                            </Badge>
+                            {tool.cost_indicator && (
+                              <Badge variant="outline">
+                                {tool.cost_indicator}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(tool)}
                           >
-                            <ExternalLink className="w-4 h-4" />
-                          </a>
-                        )}
-                      </CardTitle>
-                      <div className="flex gap-2">
-                        <Badge className={typeBadge.color}>
-                          {typeBadge.label}
-                        </Badge>
-                        <Badge className={`text-white ${getStatusBadge(tool.status)}`}>
-                          {tool.status}
-                        </Badge>
-                        {tool.cost_indicator && (
-                          <Badge variant="outline">
-                            {tool.cost_indicator}
-                          </Badge>
-                        )}
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(tool.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(tool)}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(tool.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
+                    </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground text-sm mb-2">
                     {tool.description.length > 200 
@@ -404,7 +433,9 @@ export function AdminTools() {
                       <span>{tool.stars}/5</span>
                     </div>
                   </div>
-                </CardContent>
+                    </CardContent>
+                  </div>
+                </div>
               </Card>
             );
           })}

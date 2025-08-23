@@ -24,6 +24,7 @@ import { Plus, Edit, Trash2, Calendar, Users, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { EnhancedMediaUpload } from "@/components/admin/EnhancedMediaUpload";
 
 interface Cohort {
   id: string;
@@ -32,6 +33,8 @@ interface Cohort {
   start_date: string;
   end_date: string | null;
   status: "active" | "inactive" | "completed";
+  image_url?: string;
+  video_url?: string;
   created_at: string;
   created_by: string;
 }
@@ -50,6 +53,8 @@ export function AdminCohorts() {
     start_date: "",
     end_date: "",
     status: "active" as "active" | "inactive" | "completed",
+    image_url: "",
+    video_url: "",
   });
 
   useEffect(() => {
@@ -133,6 +138,8 @@ export function AdminCohorts() {
       start_date: cohort.start_date.split("T")[0], // Format for date input
       end_date: cohort.end_date ? cohort.end_date.split("T")[0] : "",
       status: cohort.status,
+      image_url: cohort.image_url || "",
+      video_url: cohort.video_url || "",
     });
     setIsDialogOpen(true);
   };
@@ -171,6 +178,8 @@ export function AdminCohorts() {
       start_date: "",
       end_date: "",
       status: "active",
+      image_url: "",
+      video_url: "",
     });
   };
 
@@ -231,7 +240,7 @@ export function AdminCohorts() {
                 Add Cohort
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
                   {editingCohort ? "Edit Cohort" : "Create Cohort"}
@@ -260,6 +269,15 @@ export function AdminCohorts() {
                     rows={3}
                   />
                 </div>
+
+                <EnhancedMediaUpload
+                  onImageUpload={(url) => setFormData({ ...formData, image_url: url })}
+                  onVideoUpload={(url) => setFormData({ ...formData, video_url: url })}
+                  imageUrl={formData.image_url}
+                  videoUrl={formData.video_url}
+                  bucketName="cohort-assets"
+                  allowAiGeneration={true}
+                />
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -317,6 +335,15 @@ export function AdminCohorts() {
             const daysRemaining = getDaysRemaining(cohort.end_date);
             return (
               <Card key={cohort.id}>
+                {cohort.image_url && (
+                  <div className="w-full h-48 overflow-hidden rounded-t-lg">
+                    <img 
+                      src={cohort.image_url} 
+                      alt={cohort.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-start">
                     <div className="space-y-2">

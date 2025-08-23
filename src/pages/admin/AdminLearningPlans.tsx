@@ -24,6 +24,7 @@ import { Plus, Edit, Trash2, Users, Clock, Star, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { EnhancedMediaUpload } from "@/components/admin/EnhancedMediaUpload";
 
 interface LearningPlan {
   id: string;
@@ -37,6 +38,8 @@ interface LearningPlan {
   duration: string | null;
   learning_outcomes: string[] | null;
   is_ai_generated: boolean;
+  image_url?: string;
+  video_url?: string;
   created_at: string;
   created_by: string;
 }
@@ -58,6 +61,8 @@ export function AdminLearningPlans() {
     duration: "",
     learning_outcomes: "",
     steps: "",
+    image_url: "",
+    video_url: "",
   });
 
   useEffect(() => {
@@ -160,6 +165,8 @@ export function AdminLearningPlans() {
       duration: plan.duration || "",
       learning_outcomes: plan.learning_outcomes ? plan.learning_outcomes.join(", ") : "",
       steps: plan.steps?.steps ? plan.steps.steps.join("\n") : "",
+      image_url: plan.image_url || "",
+      video_url: plan.video_url || "",
     });
     setIsDialogOpen(true);
   };
@@ -201,6 +208,8 @@ export function AdminLearningPlans() {
       duration: "",
       learning_outcomes: "",
       steps: "",
+      image_url: "",
+      video_url: "",
     });
   };
 
@@ -301,6 +310,15 @@ export function AdminLearningPlans() {
                   />
                 </div>
 
+                <EnhancedMediaUpload
+                  onImageUpload={(url) => setFormData({ ...formData, image_url: url })}
+                  onVideoUpload={(url) => setFormData({ ...formData, video_url: url })}
+                  imageUrl={formData.image_url}
+                  videoUrl={formData.video_url}
+                  bucketName="media-assets"
+                  allowAiGeneration={true}
+                />
+
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Level</label>
@@ -387,50 +405,61 @@ Take final assessment"
         <div className="space-y-4">
           {plans.map((plan) => (
             <Card key={plan.id}>
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-2">
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      {plan.name}
-                      {plan.is_ai_generated && (
-                        <Badge variant="outline" className="text-xs">
-                          AI Generated
-                        </Badge>
-                      )}
-                    </CardTitle>
-                    <div className="flex gap-2">
-                      <Badge className={`text-white ${getLevelBadge(plan.level)}`}>
-                        Level {plan.level}
-                      </Badge>
-                      <Badge className={`text-white ${getStatusBadge(plan.status)}`}>
-                        {plan.status}
-                      </Badge>
-                      {plan.duration && (
-                        <Badge variant="outline">
-                          <Clock className="w-3 h-3 mr-1" />
-                          {plan.duration}
-                        </Badge>
-                      )}
+              <div className="flex">
+                {plan.image_url && (
+                  <div className="w-32 h-24 flex-shrink-0 overflow-hidden rounded-l-lg">
+                    <img 
+                      src={plan.image_url} 
+                      alt={plan.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-2">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          {plan.name}
+                          {plan.is_ai_generated && (
+                            <Badge variant="outline" className="text-xs">
+                              AI Generated
+                            </Badge>
+                          )}
+                        </CardTitle>
+                        <div className="flex gap-2">
+                          <Badge className={`text-white ${getLevelBadge(plan.level)}`}>
+                            Level {plan.level}
+                          </Badge>
+                          <Badge className={`text-white ${getStatusBadge(plan.status)}`}>
+                            {plan.status}
+                          </Badge>
+                          {plan.duration && (
+                            <Badge variant="outline">
+                              <Clock className="w-3 h-3 mr-1" />
+                              {plan.duration}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(plan)}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(plan.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEdit(plan)}
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDelete(plan.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
+                  </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   <p className="text-muted-foreground text-sm">
@@ -464,8 +493,10 @@ Take final assessment"
                       <span>{plan.star_rating}/5</span>
                     </div>
                   </div>
+                  </div>
+                  </CardContent>
                 </div>
-              </CardContent>
+              </div>
             </Card>
           ))}
           

@@ -20,10 +20,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Edit, Trash2, Eye } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { EnhancedMediaUpload } from "@/components/admin/EnhancedMediaUpload";
 
 interface NewsItem {
   id: string;
@@ -34,6 +35,9 @@ interface NewsItem {
   is_active: boolean;
   language: string;
   stars_rating: number;
+  image_url?: string;
+  video_url?: string;
+  metadata?: any;
   created_at: string;
   created_by: string;
 }
@@ -52,7 +56,16 @@ export function AdminNews() {
     level: "1" as "1" | "2" | "3" | "RED",
     status: "draft" as "draft" | "review" | "published" | "archived",
     language: "English",
-    metadata: {},
+    image_url: "",
+    video_url: "",
+    metadata: {
+      social_links: {
+        facebook: "",
+        twitter: "",
+        linkedin: "",
+        instagram: "",
+      }
+    },
   });
 
   useEffect(() => {
@@ -131,7 +144,16 @@ export function AdminNews() {
       level: item.level as "1" | "2" | "3" | "RED",
       status: item.status as "draft" | "review" | "published" | "archived",
       language: item.language,
-      metadata: {},
+      image_url: item.image_url || "",
+      video_url: item.video_url || "",
+      metadata: {
+        social_links: {
+          facebook: item.metadata?.social_links?.facebook || "",
+          twitter: item.metadata?.social_links?.twitter || "",
+          linkedin: item.metadata?.social_links?.linkedin || "",
+          instagram: item.metadata?.social_links?.instagram || "",
+        }
+      },
     });
     setIsDialogOpen(true);
   };
@@ -195,7 +217,16 @@ export function AdminNews() {
       level: "1",
       status: "draft",
       language: "English",
-      metadata: {},
+      image_url: "",
+      video_url: "",
+      metadata: {
+        social_links: {
+          facebook: "",
+          twitter: "",
+          linkedin: "",
+          instagram: "",
+        }
+      },
     });
   };
 
@@ -254,7 +285,7 @@ export function AdminNews() {
                 Add News Item
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
                   {editingItem ? "Edit News Item" : "Create News Item"}
@@ -284,6 +315,15 @@ export function AdminNews() {
                     required
                   />
                 </div>
+
+                <EnhancedMediaUpload
+                  onImageUpload={(url) => setFormData({ ...formData, image_url: url })}
+                  onVideoUpload={(url) => setFormData({ ...formData, video_url: url })}
+                  imageUrl={formData.image_url}
+                  videoUrl={formData.video_url}
+                  bucketName="media-assets"
+                  allowAiGeneration={true}
+                />
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -323,6 +363,80 @@ export function AdminNews() {
                   </div>
                 </div>
 
+                <div className="space-y-4">
+                  <label className="text-sm font-medium">Social Media Links</label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-xs text-muted-foreground">Facebook</label>
+                      <Input
+                        value={formData.metadata.social_links.facebook}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          metadata: {
+                            ...formData.metadata,
+                            social_links: {
+                              ...formData.metadata.social_links,
+                              facebook: e.target.value
+                            }
+                          }
+                        })}
+                        placeholder="Facebook URL"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs text-muted-foreground">Twitter</label>
+                      <Input
+                        value={formData.metadata.social_links.twitter}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          metadata: {
+                            ...formData.metadata,
+                            social_links: {
+                              ...formData.metadata.social_links,
+                              twitter: e.target.value
+                            }
+                          }
+                        })}
+                        placeholder="Twitter URL"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs text-muted-foreground">LinkedIn</label>
+                      <Input
+                        value={formData.metadata.social_links.linkedin}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          metadata: {
+                            ...formData.metadata,
+                            social_links: {
+                              ...formData.metadata.social_links,
+                              linkedin: e.target.value
+                            }
+                          }
+                        })}
+                        placeholder="LinkedIn URL"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs text-muted-foreground">Instagram</label>
+                      <Input
+                        value={formData.metadata.social_links.instagram}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          metadata: {
+                            ...formData.metadata,
+                            social_links: {
+                              ...formData.metadata.social_links,
+                              instagram: e.target.value
+                            }
+                          }
+                        })}
+                        placeholder="Instagram URL"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="flex justify-end gap-2">
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                     Cancel
@@ -341,7 +455,7 @@ export function AdminNews() {
             <Card key={item.id}>
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
-                  <div className="space-y-1">
+                  <div className="space-y-1 flex-1">
                     <CardTitle className="text-lg">{item.title}</CardTitle>
                     <div className="flex gap-2">
                       <Badge className={`text-white ${getLevelBadge(item.level)}`}>
@@ -355,7 +469,16 @@ export function AdminNews() {
                       )}
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  {item.image_url && (
+                    <div className="w-20 h-16 ml-4 rounded-md overflow-hidden flex-shrink-0">
+                      <img 
+                        src={item.image_url} 
+                        alt={item.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="flex gap-2 ml-4">
                     <Button
                       variant="outline"
                       size="sm"
@@ -386,6 +509,30 @@ export function AdminNews() {
                     ? `${item.description.substring(0, 200)}...`
                     : item.description}
                 </p>
+                {item.metadata?.social_links && (
+                  <div className="flex gap-2 mb-2">
+                    {item.metadata.social_links.facebook && (
+                      <a href={item.metadata.social_links.facebook} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="w-4 h-4 text-blue-600" />
+                      </a>
+                    )}
+                    {item.metadata.social_links.twitter && (
+                      <a href={item.metadata.social_links.twitter} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="w-4 h-4 text-blue-400" />
+                      </a>
+                    )}
+                    {item.metadata.social_links.linkedin && (
+                      <a href={item.metadata.social_links.linkedin} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="w-4 h-4 text-blue-700" />
+                      </a>
+                    )}
+                    {item.metadata.social_links.instagram && (
+                      <a href={item.metadata.social_links.instagram} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="w-4 h-4 text-pink-500" />
+                      </a>
+                    )}
+                  </div>
+                )}
                 <div className="text-xs text-muted-foreground">
                   Created: {new Date(item.created_at).toLocaleDateString()} • 
                   Language: {item.language} • 
