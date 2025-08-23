@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
-import { ContentCard } from "@/components/ContentCard";
+import { LearningPlanViewer } from "@/components/LearningPlanViewer";
 import { 
   Calendar, 
   Clock, 
@@ -70,8 +70,6 @@ const Plan = () => {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  console.log('Plan component rendering, loading state:', loading);
-
   useEffect(() => {
     const fetchPlanAndContent = async () => {
       if (!planId) return;
@@ -86,6 +84,7 @@ const Plan = () => {
           .select('*')
           .eq('id', planId)
           .eq('status', 'published')
+          .is('deleted_at', null)
           .maybeSingle();
 
         if (planError) throw planError;
@@ -194,10 +193,7 @@ const Plan = () => {
     navigate(-1);
   };
 
-  console.log('About to check loading condition, loading is:', loading);
-
   if (loading) {
-    console.log('Rendering loading state');
     return (
       <div className="min-h-screen bg-background text-foreground">
         <Header onLoginClick={() => {}} />
@@ -408,28 +404,32 @@ const Plan = () => {
         </section>
 
         {/* Learning Content */}
-        {contentItems.length > 0 && (
+        {contentItems.length > 0 ? (
           <section className="py-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-12">
-                <h2 className="text-3xl font-bold mb-4">Learning Content</h2>
-                <p className="text-muted-foreground max-w-2xl mx-auto">
-                  Carefully curated resources to guide you through your learning journey
-                </p>
-              </div>
-
-              {/* Main Content Grid */}
-              <section className="md:p-8 bg-card/40 border-border border rounded-3xl pt-4 pr-4 pb-4 pl-2 shadow-sm hover:shadow-md transition-shadow duration-300">
-                <div className="grid auto-rows-[300px] gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {contentItems.map((item, index) => (
-                    <ContentCard
-                      key={item.id}
-                      content={item}
-                      className={index === 0 ? "md:col-span-2 md:row-span-2" : ""}
-                    />
-                  ))}
+              <LearningPlanViewer 
+                contentItems={contentItems} 
+                planName={plan.name}
+              />
+            </div>
+          </section>
+        ) : (
+          <section className="py-16">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center">
+                <div className="max-w-md mx-auto">
+                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                    <BookOpen className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">No Content Available</h3>
+                  <p className="text-muted-foreground mb-6">
+                    This learning plan doesn't have any content items yet. Content will appear here once it's added by an administrator.
+                  </p>
+                  <Button variant="outline" onClick={() => navigate('/learning-hub')}>
+                    Browse Other Plans
+                  </Button>
                 </div>
-              </section>
+              </div>
             </div>
           </section>
         )}
