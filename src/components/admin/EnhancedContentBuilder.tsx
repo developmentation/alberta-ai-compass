@@ -252,146 +252,146 @@ export function EnhancedContentBuilder({ title, contentItems, onUpdateContent }:
 
       {/* Edit Content Item Dialog */}
       <Dialog open={!!editingItem} onOpenChange={() => setEditingItem(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">{/* Content will go here */}</DialogContent>
-      </Dialog>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Customize Content Item</DialogTitle>
           </DialogHeader>
           
           {editingItem && (
-            <Tabs defaultValue="details" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="details">Details & Text</TabsTrigger>
-                <TabsTrigger value="media">Media & Resources</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="details" className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Custom Title</Label>
-                    <Input
-                      value={editingItem.custom_title || ''}
-                      onChange={(e) => setEditingItem({ 
-                        ...editingItem, 
-                        custom_title: e.target.value 
-                      })}
-                      placeholder="Override the original title..."
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Estimated Duration</Label>
-                    <Input
-                      value={editingItem.estimated_duration || ''}
-                      onChange={(e) => setEditingItem({ 
-                        ...editingItem, 
-                        estimated_duration: e.target.value 
-                      })}
-                      placeholder="e.g., 30 mins, 2 hours..."
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Custom Description</Label>
-                  <Textarea
-                    value={editingItem.custom_description || ''}
-                    onChange={(e) => setEditingItem({ 
-                      ...editingItem, 
-                      custom_description: e.target.value 
-                    })}
-                    placeholder="Override or enhance the original description..."
-                    rows={4}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Internal Notes</Label>
-                  <Textarea
-                    value={editingItem.notes || ''}
-                    onChange={(e) => setEditingItem({ 
-                      ...editingItem, 
-                      notes: e.target.value 
-                    })}
-                    placeholder="Add notes for facilitators or additional context..."
-                    rows={3}
-                  />
-                </div>
-
-                <div className="p-4 bg-muted/50 rounded-lg">
-                  <h4 className="font-medium text-sm mb-2">Original Content</h4>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge className={`text-white ${getTypeColor(editingItem.type)}`}>
-                      {editingItem.type}
-                    </Badge>
-                    <span className="text-sm font-medium">{editingItem.name}</span>
-                  </div>
-                  {editingItem.description && (
-                    <p className="text-sm text-muted-foreground">
-                      {editingItem.description}
-                    </p>
-                  )}
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="media" className="space-y-4">
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-base font-medium">Custom Media</Label>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Upload custom images or videos to override the original content media
-                    </p>
-                    
-                    <UnifiedMediaUpload
-                      onMediaUpload={(url, type) => {
-                        if (type === 'image') {
-                          setEditingItem({ 
-                            ...editingItem, 
-                            custom_image_url: url,
-                            custom_video_url: url ? '' : editingItem.custom_video_url 
-                          });
-                        } else {
-                          setEditingItem({ 
-                            ...editingItem, 
-                            custom_video_url: url,
-                            custom_image_url: url ? '' : editingItem.custom_image_url 
-                          });
-                        }
-                      }}
-                      currentImageUrl={editingItem.custom_image_url}
-                      currentVideoUrl={editingItem.custom_video_url}
-                      bucketName="content-assets"
-                      allowAiGeneration={true}
-                    />
-                  </div>
-
-                  {(editingItem.image_url || editingItem.video_url) && (
-                    <div className="p-4 bg-muted/50 rounded-lg">
-                      <Label className="text-base font-medium">Original Media</Label>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        This is the media from the original content item
-                      </p>
-                      <MediaDisplay
-                        imageUrl={editingItem.image_url}
-                        videoUrl={editingItem.video_url}
-                        title={editingItem.name}
-                        className="w-32 h-24 rounded-md overflow-hidden"
+            <div className="space-y-4">
+              <Tabs defaultValue="details" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="details">Details & Text</TabsTrigger>
+                  <TabsTrigger value="media">Media & Resources</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="details" className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Custom Title</Label>
+                      <Input
+                        value={editingItem.custom_title || ''}
+                        onChange={(e) => setEditingItem({ 
+                          ...editingItem, 
+                          custom_title: e.target.value 
+                        })}
+                        placeholder="Override the original title..."
                       />
                     </div>
-                  )}
-                </div>
-              </TabsContent>
-            </Tabs>
-            
-            <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => setEditingItem(null)}>
-                Cancel
-              </Button>
-              <Button onClick={handleSaveItem}>
-                <Save className="h-4 w-4 mr-2" />
-                Save Changes
-              </Button>
+                    
+                    <div className="space-y-2">
+                      <Label>Estimated Duration</Label>
+                      <Input
+                        value={editingItem.estimated_duration || ''}
+                        onChange={(e) => setEditingItem({ 
+                          ...editingItem, 
+                          estimated_duration: e.target.value 
+                        })}
+                        placeholder="e.g., 30 mins, 2 hours..."
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Custom Description</Label>
+                    <Textarea
+                      value={editingItem.custom_description || ''}
+                      onChange={(e) => setEditingItem({ 
+                        ...editingItem, 
+                        custom_description: e.target.value 
+                      })}
+                      placeholder="Override or enhance the original description..."
+                      rows={4}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Internal Notes</Label>
+                    <Textarea
+                      value={editingItem.notes || ''}
+                      onChange={(e) => setEditingItem({ 
+                        ...editingItem, 
+                        notes: e.target.value 
+                      })}
+                      placeholder="Add notes for facilitators or additional context..."
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <h4 className="font-medium text-sm mb-2">Original Content</h4>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge className={`text-white ${getTypeColor(editingItem.type)}`}>
+                        {editingItem.type}
+                      </Badge>
+                      <span className="text-sm font-medium">{editingItem.name}</span>
+                    </div>
+                    {editingItem.description && (
+                      <p className="text-sm text-muted-foreground">
+                        {editingItem.description}
+                      </p>
+                    )}
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="media" className="space-y-4">
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-base font-medium">Custom Media</Label>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Upload custom images or videos to override the original content media
+                      </p>
+                      
+                      <UnifiedMediaUpload
+                        onMediaUpload={(url, type) => {
+                          if (type === 'image') {
+                            setEditingItem({ 
+                              ...editingItem, 
+                              custom_image_url: url,
+                              custom_video_url: url ? '' : editingItem.custom_video_url 
+                            });
+                          } else {
+                            setEditingItem({ 
+                              ...editingItem, 
+                              custom_video_url: url,
+                              custom_image_url: url ? '' : editingItem.custom_image_url 
+                            });
+                          }
+                        }}
+                        currentImageUrl={editingItem.custom_image_url}
+                        currentVideoUrl={editingItem.custom_video_url}
+                        bucketName="content-assets"
+                        allowAiGeneration={true}
+                      />
+                    </div>
+
+                    {(editingItem.image_url || editingItem.video_url) && (
+                      <div className="p-4 bg-muted/50 rounded-lg">
+                        <Label className="text-base font-medium">Original Media</Label>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          This is the media from the original content item
+                        </p>
+                        <MediaDisplay
+                          imageUrl={editingItem.image_url}
+                          videoUrl={editingItem.video_url}
+                          title={editingItem.name}
+                          className="w-32 h-24 rounded-md overflow-hidden"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
+              
+              <div className="flex justify-end gap-2 pt-4 border-t">
+                <Button variant="outline" onClick={() => setEditingItem(null)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSaveItem}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Changes
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>

@@ -234,6 +234,7 @@ export function AdminLearningPlans() {
             </Card>
           ))}
         </div>
+        </div>
       </AdminLayout>
     );
   }
