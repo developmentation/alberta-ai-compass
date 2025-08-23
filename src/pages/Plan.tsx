@@ -101,12 +101,12 @@ const Plan = () => {
             let contentDetails = null;
             
             try {
-              switch (item.content_type) {
+              switch (item.type) {
                 case 'module':
                   const { data: moduleData } = await supabase
                     .from('modules')
                     .select('id, name, description, image_url, video_url, status, level')
-                    .eq('id', item.content_id)
+                    .eq('id', item.original_id)
                     .maybeSingle();
                   contentDetails = moduleData;
                   break;
@@ -114,7 +114,7 @@ const Plan = () => {
                   const { data: newsData } = await supabase
                     .from('news')
                     .select('id, title as name, description, image_url, video_url, status, level')
-                    .eq('id', item.content_id)
+                    .eq('id', item.original_id)
                     .maybeSingle();
                   contentDetails = newsData;
                   break;
@@ -122,7 +122,7 @@ const Plan = () => {
                   const { data: toolData } = await supabase
                     .from('tools')
                     .select('id, name, description, image_url, video_url, status, url, cost_indicator, stars')
-                    .eq('id', item.content_id)
+                    .eq('id', item.original_id)
                     .maybeSingle();
                   contentDetails = toolData;
                   break;
@@ -130,7 +130,7 @@ const Plan = () => {
                   const { data: promptData } = await supabase
                     .from('prompt_library')
                     .select('id, name, description, image_url, status, purpose, sample_output, stars')
-                    .eq('id', item.content_id)
+                    .eq('id', item.original_id)
                     .maybeSingle();
                   contentDetails = promptData;
                   break;
@@ -138,24 +138,24 @@ const Plan = () => {
                   const { data: planLinkData } = await supabase
                     .from('learning_plans')
                     .select('id, name, description, image_url, video_url, status, level, star_rating')
-                    .eq('id', item.content_id)
+                    .eq('id', item.original_id)
                     .maybeSingle();
                   contentDetails = planLinkData;
                   break;
               }
             } catch (error) {
-              console.error(`Error fetching ${item.content_type} content:`, error);
+              console.error(`Error fetching ${item.type} content:`, error);
             }
             
             if (contentDetails) {
               return {
                 id: contentDetails.id,
-                type: item.content_type,
-                name: contentDetails.name || contentDetails.title,
-                description: contentDetails.description || '',
-                image_url: contentDetails.image_url || '',
-                video_url: contentDetails.video_url || '',
-                status: contentDetails.status || 'draft',
+                type: item.type,
+                name: item.custom_title || item.name || contentDetails.name || contentDetails.title,
+                description: item.custom_description || item.description || contentDetails.description || '',
+                image_url: item.image_url || contentDetails.image_url || '',
+                video_url: item.video_url || contentDetails.video_url || '',
+                status: item.status || contentDetails.status || 'draft',
                 order_index: item.order_index || 0,
                 url: contentDetails.url || '',
                 cost_indicator: contentDetails.cost_indicator || '',
