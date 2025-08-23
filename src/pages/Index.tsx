@@ -4,10 +4,11 @@ import { HeroSection } from "@/components/HeroSection";
 import { LearningPlanCard } from "@/components/LearningPlanCard";
 import { ArticleCard } from "@/components/ArticleCard";
 import { NewsCard } from "@/components/NewsCard";
-import { ToolCard } from "@/components/ToolCard";
-import { AIMentor } from "@/components/AIMentor";
 import { LoginModal } from "@/components/LoginModal";
 import { Footer } from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -97,29 +98,10 @@ const Index = () => {
     }
   ];
 
-  const tools = [
-    {
-      id: 1,
-      title: "Prompt Lab",
-      description: "Experiment with patterns, system prompts, and evals.",
-      category: "Playground",
-      icon: "wrench"
-    },
-    {
-      id: 2,
-      title: "Eval Datasets",
-      description: "Ready-to-use corpora for reasoning and safety evals.",
-      category: "Data",
-      icon: "database"
-    },
-    {
-      id: 3,
-      title: "RAG Kit",
-      description: "Embeddings, retrievers, and a minimal pipeline.",
-      category: "Starter",
-      icon: "boxes"
-    }
-  ];
+  // Reduced datasets for homepage preview
+  const featuredPlans = learningPlans.slice(0, 3);
+  const featuredNews = newsItems.slice(0, 3);
+  const featuredArticles = articles.slice(0, 3);
 
   return (
     <div className="min-h-screen bg-background text-foreground font-['Inter'] antialiased selection:bg-primary/30 selection:text-primary-foreground">
@@ -139,7 +121,7 @@ const Index = () => {
           />
 
           {/* Featured Learning Plans */}
-          <section id="hub" className="relative py-16">
+          <section className="relative py-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex items-end justify-between mb-8">
                 <div className="animate-fade-in-up">
@@ -148,9 +130,15 @@ const Index = () => {
                   </h2>
                   <p className="text-muted-foreground mt-2">Curated paths with timelines, milestones, and outcomes.</p>
                 </div>
+                <Link to="/learning-hub">
+                  <Button variant="ghost" className="border border-border hover:border-primary/50">
+                    View All Plans
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {learningPlans.map((plan, index) => (
+                {featuredPlans.map((plan, index) => (
                   <div key={plan.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
                     <LearningPlanCard {...plan} />
                   </div>
@@ -161,16 +149,22 @@ const Index = () => {
           </section>
 
           {/* News Section */}
-          <section id="news" className="relative py-16">
+          <section className="relative py-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex items-end justify-between mb-8">
                 <div className="animate-fade-in-up">
-                  <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">News</h2>
+                  <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Latest News</h2>
                   <p className="text-muted-foreground mt-2">Stay current with curated updates in AI.</p>
                 </div>
+                <Link to="/news">
+                  <Button variant="ghost" className="border border-border hover:border-primary/50">
+                    View All News
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {newsItems.map((item, index) => (
+                {featuredNews.map((item, index) => (
                   <div key={item.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
                     <NewsCard {...item} />
                   </div>
@@ -185,12 +179,18 @@ const Index = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex items-end justify-between mb-8">
                 <div className="animate-fade-in-up">
-                  <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Latest Learning Articles</h2>
+                  <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Latest Articles</h2>
                   <p className="text-muted-foreground mt-2">Short reads with references and practice prompts.</p>
                 </div>
+                <Link to="/learning-hub">
+                  <Button variant="ghost" className="border border-border hover:border-primary/50">
+                    View All Articles
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {articles.map((article, index) => (
+                {featuredArticles.map((article, index) => (
                   <div key={article.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
                     <ArticleCard {...article} />
                   </div>
@@ -200,64 +200,51 @@ const Index = () => {
             <div className="border-t border-border/50 mt-16" />
           </section>
 
-          {/* Tools Section */}
-          <section id="tools" className="relative py-16">
+          {/* CTA Sections */}
+          <section className="relative py-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex items-end justify-between mb-8">
-                <div className="animate-fade-in-up">
-                  <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Tools</h2>
-                  <p className="text-muted-foreground mt-2">Sandboxes, datasets, and notebooks to practice skills.</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {tools.map((tool, index) => (
-                  <div key={tool.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
-                    <ToolCard {...tool} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Tools CTA */}
+                <div className="rounded-2xl border border-border bg-card/40 backdrop-blur-sm p-8 hover:bg-card-hover transition-all duration-500 hover:scale-[1.02] animate-fade-in-up">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="p-3 rounded-lg bg-gradient-primary">
+                      <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-2xl font-bold tracking-tight">Hands-on Tools</h3>
                   </div>
-                ))}
-              </div>
-            </div>
-            <div className="border-t border-border/50 mt-16" />
-          </section>
-
-          {/* AI Mentor Section */}
-          <section id="mentor" className="relative py-16">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <AIMentor onLoginClick={() => setIsLoginOpen(true)} />
-            </div>
-            <div className="border-t border-border/50 mt-16" />
-          </section>
-
-          {/* Privacy Section */}
-          <section id="privacy" className="relative py-16">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="rounded-2xl border border-border bg-card/40 backdrop-blur-sm p-8 animate-fade-in-up">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="p-3 rounded-lg bg-gradient-primary">
-                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-                  </div>
-                  <h2 className="text-2xl font-bold tracking-tight">Privacy Policy</h2>
+                  <p className="text-muted-foreground mb-6">
+                    Practice with interactive sandboxes, datasets, and development environments designed for AI learning.
+                  </p>
+                  <Link to="/tools">
+                    <Button className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow">
+                      Explore Tools
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
                 </div>
-                <p className="text-muted-foreground mb-4">
-                  We value your privacy. Content you create is private by default and never sold. 
-                  Aggregated analytics help us improve learning outcomes. You can request deletion anytime.
-                </p>
-                <ul className="text-muted-foreground space-y-2 text-sm">
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary mt-1">•</span>
-                    We store account basics and your saved plans.
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary mt-1">•</span>
-                    Uploads are processed securely and can be deleted.
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary mt-1">•</span>
-                    We use cookies for essential functionality only.
-                  </li>
-                </ul>
+
+                {/* AI Mentor CTA */}
+                <div className="rounded-2xl border border-border bg-card/40 backdrop-blur-sm p-8 hover:bg-card-hover transition-all duration-500 hover:scale-[1.02] animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="p-3 rounded-lg bg-gradient-primary">
+                      <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-2xl font-bold tracking-tight">AI Mentor</h3>
+                  </div>
+                  <p className="text-muted-foreground mb-6">
+                    Get personalized guidance, create custom learning plans, and receive expert advice on your AI journey.
+                  </p>
+                  <Link to="/ai-mentor">
+                    <Button className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow">
+                      Meet Your Mentor
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
           </section>
