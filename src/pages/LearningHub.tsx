@@ -46,9 +46,9 @@ const LearningHub = () => {
 
   const filters = [
     { key: "all", label: "All" },
-    { key: "1", label: "Beginner" },
-    { key: "2", label: "Intermediate" }, 
-    { key: "3", label: "Advanced" },
+    { key: "1", label: "Level 1" },
+    { key: "2", label: "Level 2" }, 
+    { key: "3", label: "Level 3" },
     { key: "red", label: "RED" }
   ];
 

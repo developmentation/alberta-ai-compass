@@ -84,7 +84,6 @@ const Plan = () => {
           .select('*')
           .eq('id', planId)
           .eq('status', 'published')
-          .is('deleted_at', null)
           .maybeSingle();
 
         if (planError) throw planError;
@@ -284,7 +283,15 @@ const Plan = () => {
                   </div>
 
                   <div className="flex flex-wrap gap-3">
-                    <Button className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow">
+                    <Button 
+                      className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow"
+                      onClick={() => {
+                        const contentSection = document.getElementById('learning-content');
+                        if (contentSection) {
+                          contentSection.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      }}
+                    >
                       <PlayCircle className="w-4 h-4 mr-2" />
                       Start Learning
                     </Button>
@@ -405,7 +412,7 @@ const Plan = () => {
 
         {/* Learning Content */}
         {contentItems.length > 0 ? (
-          <section className="py-16">
+          <section id="learning-content" className="py-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <LearningPlanViewer 
                 contentItems={contentItems} 
@@ -414,7 +421,7 @@ const Plan = () => {
             </div>
           </section>
         ) : (
-          <section className="py-16">
+          <section id="learning-content" className="py-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center">
                 <div className="max-w-md mx-auto">

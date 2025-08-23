@@ -53,9 +53,6 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
               <Link to="/ai-mentor" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 AI Mentor
               </Link>
-              <Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Privacy
-              </Link>
             </nav>
 
             {/* Desktop Actions */}
@@ -74,14 +71,6 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
                       Admin
                     </Button>
                   )}
-                  <Button
-                    size="sm"
-                    className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow"
-                    onClick={() => navigate('/ai-mentor')}
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    Create plan
-                  </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="border border-border hover:border-primary/50">
@@ -107,14 +96,6 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
                   >
                     <LogIn className="w-4 h-4" />
                     Log in
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow"
-                    onClick={() => navigate('/ai-mentor')}
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    Create plan
                   </Button>
                 </>
               )}
@@ -170,13 +151,6 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
               >
                 AI Mentor
               </Link>
-              <Link 
-                to="/privacy" 
-                className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Privacy
-              </Link>
               
               <div className="pt-4 border-t border-border space-y-3">
                 {user ? (
@@ -195,17 +169,6 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
                         Admin
                       </Button>
                     )}
-                    <Button
-                      size="sm"
-                      className="w-full bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow"
-                      onClick={() => {
-                        navigate('/ai-mentor');
-                        setIsMobileMenuOpen(false);
-                      }}
-                    >
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Create plan
-                    </Button>
                     <div className="w-full p-2 border border-border rounded-md flex items-center gap-2">
                       <User className="w-4 h-4" />
                       <span className="text-sm">{profile?.full_name || user.email?.split('@')[0] || 'User'}</span>
@@ -236,17 +199,6 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
                     >
                       <LogIn className="w-4 h-4 mr-2" />
                       Log in
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="w-full bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow"
-                      onClick={() => {
-                        navigate('/ai-mentor');
-                        setIsMobileMenuOpen(false);
-                      }}
-                    >
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Create plan
                     </Button>
                   </>
                 )}
