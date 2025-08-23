@@ -18,7 +18,7 @@ interface ModuleCreatorProps {
 export function ModuleCreator({ isOpen, onClose, onModuleCreated }: ModuleCreatorProps) {
   const [prompt, setPrompt] = useState('');
   const [title, setTitle] = useState('');
-  const [difficulty, setDifficulty] = useState('beginner');
+  const [difficulty, setDifficulty] = useState('1');
   const [language, setLanguage] = useState('en');
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
@@ -61,7 +61,7 @@ export function ModuleCreator({ isOpen, onClose, onModuleCreated }: ModuleCreato
           description: moduleData?.description || 'AI generated learning module',
           json_data: moduleData,
           language: language,
-          level: difficulty as 'beginner' | 'intermediate' | 'advanced',
+          level: difficulty as '1' | '2' | '3' | 'RED',
           status: 'draft',
           created_by: (await supabase.auth.getUser()).data.user?.id
         });
@@ -78,7 +78,7 @@ export function ModuleCreator({ isOpen, onClose, onModuleCreated }: ModuleCreato
       // Reset form
       setPrompt('');
       setTitle('');
-      setDifficulty('beginner');
+      setDifficulty('1');
       setLanguage('en');
       
       onModuleCreated();
@@ -126,15 +126,16 @@ export function ModuleCreator({ isOpen, onClose, onModuleCreated }: ModuleCreato
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Difficulty</label>
+                  <label className="text-sm font-medium mb-2 block">Level</label>
                   <Select value={difficulty} onValueChange={setDifficulty}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="z-50">
-                      <SelectItem value="beginner">Beginner</SelectItem>
-                      <SelectItem value="intermediate">Intermediate</SelectItem>
-                      <SelectItem value="advanced">Advanced</SelectItem>
+                      <SelectItem value="1">Level 1</SelectItem>
+                      <SelectItem value="2">Level 2</SelectItem>
+                      <SelectItem value="3">Level 3</SelectItem>
+                      <SelectItem value="RED">RED Level</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

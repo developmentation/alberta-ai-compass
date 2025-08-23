@@ -15,7 +15,7 @@ interface Module {
   description: string;
   json_data: any;
   language: string;
-  level: 'beginner' | 'intermediate' | 'advanced';
+  level: '1' | '2' | '3' | 'RED';
   status: 'draft' | 'review' | 'published' | 'archived';
   image_url?: string;
   video_url?: string;
@@ -99,14 +99,22 @@ export default function AdminLearningModules() {
 
   const getLevelBadge = (level: string) => {
     const colors = {
-      beginner: 'bg-blue-100 text-blue-800',
-      intermediate: 'bg-orange-100 text-orange-800',
-      advanced: 'bg-red-100 text-red-800'
+      '1': 'bg-green-100 text-green-800',
+      '2': 'bg-blue-100 text-blue-800', 
+      '3': 'bg-orange-100 text-orange-800',
+      'RED': 'bg-red-100 text-red-800'
+    };
+    
+    const labels = {
+      '1': 'Level 1',
+      '2': 'Level 2',
+      '3': 'Level 3', 
+      'RED': 'RED Level'
     };
     
     return (
       <Badge className={colors[level as keyof typeof colors] || 'bg-gray-100 text-gray-800'}>
-        {level.charAt(0).toUpperCase() + level.slice(1)}
+        {labels[level as keyof typeof labels] || level}
       </Badge>
     );
   };

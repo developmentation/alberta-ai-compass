@@ -864,7 +864,7 @@ export type Database = {
       cohort_status: "active" | "inactive" | "completed"
       content_level: "1" | "2" | "3" | "RED"
       content_status: "draft" | "review" | "published" | "archived"
-      difficulty_level: "beginner" | "intermediate" | "advanced"
+      difficulty_level: "1" | "2" | "3" | "RED"
       module_content_type: "text" | "image" | "video" | "quiz"
       tool_type: "open_source" | "saas" | "commercial"
       user_role: "public" | "government" | "facilitator" | "admin"
@@ -998,7 +998,7 @@ export const Constants = {
       cohort_status: ["active", "inactive", "completed"],
       content_level: ["1", "2", "3", "RED"],
       content_status: ["draft", "review", "published", "archived"],
-      difficulty_level: ["beginner", "intermediate", "advanced"],
+      difficulty_level: ["1", "2", "3", "RED"],
       module_content_type: ["text", "image", "video", "quiz"],
       tool_type: ["open_source", "saas", "commercial"],
       user_role: ["public", "government", "facilitator", "admin"],
