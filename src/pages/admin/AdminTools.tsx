@@ -366,62 +366,62 @@ export function AdminTools() {
             const typeBadge = getTypeBadge(tool.type);
             return (
               <Card key={tool.id}>
-                <div className="flex">
-                  <MediaDisplay
-                    imageUrl={tool.image_url}
-                    videoUrl={tool.video_url}
-                    title={tool.name}
-                    className="w-24 h-20 flex-shrink-0 overflow-hidden rounded-l-lg"
-                  />
-                  <div className="flex-1">
-                    <CardHeader className="pb-3">
-                      <div className="flex justify-between items-start">
-                        <div className="space-y-2">
-                          <CardTitle className="text-lg flex items-center gap-2">
-                            {tool.name}
-                            {tool.url && (
-                              <a
-                                href={tool.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-primary hover:text-primary/80"
-                              >
-                                <ExternalLink className="w-4 h-4" />
-                              </a>
-                            )}
-                          </CardTitle>
-                          <div className="flex gap-2">
-                            <Badge className={typeBadge.color}>
-                              {typeBadge.label}
-                            </Badge>
-                            <Badge className={`text-white ${getStatusBadge(tool.status)}`}>
-                              {tool.status}
-                            </Badge>
-                            {tool.cost_indicator && (
-                              <Badge variant="outline">
-                                {tool.cost_indicator}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(tool)}
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1 flex-1">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        {tool.name}
+                        {tool.url && (
+                          <a
+                            href={tool.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:text-primary/80"
                           >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDelete(tool.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        )}
+                      </CardTitle>
+                      <div className="flex gap-2">
+                        <Badge className={typeBadge.color}>
+                          {typeBadge.label}
+                        </Badge>
+                        <Badge className={`text-white ${getStatusBadge(tool.status)}`}>
+                          {tool.status}
+                        </Badge>
+                        {tool.cost_indicator && (
+                          <Badge variant="outline">
+                            {tool.cost_indicator}
+                          </Badge>
+                        )}
                       </div>
-                    </CardHeader>
+                    </div>
+                    <div className="ml-4">
+                      <MediaDisplay
+                        imageUrl={tool.image_url}
+                        videoUrl={tool.video_url}
+                        title={tool.name}
+                        className="w-20 h-16 rounded-md overflow-hidden flex-shrink-0"
+                      />
+                    </div>
+                    <div className="flex gap-2 ml-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(tool)}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDelete(tool.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground text-sm mb-2">
                     {tool.description.length > 200 
@@ -435,9 +435,7 @@ export function AdminTools() {
                       <span>{tool.stars}/5</span>
                     </div>
                   </div>
-                    </CardContent>
-                  </div>
-                </div>
+                </CardContent>
               </Card>
             );
           })}

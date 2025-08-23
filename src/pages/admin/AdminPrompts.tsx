@@ -357,60 +357,60 @@ export function AdminPrompts() {
         <div className="space-y-4">
           {prompts.map((prompt) => (
             <Card key={prompt.id}>
-              <div className="flex">
-                <MediaDisplay
-                  imageUrl={prompt.image_url}
-                  title={prompt.name}
-                  className="w-24 h-20 flex-shrink-0 overflow-hidden rounded-l-lg"
-                />
-                <div className="flex-1">
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-2">
-                        <CardTitle className="text-lg">{prompt.name}</CardTitle>
-                        <div className="flex gap-2">
-                          <Badge className={`text-white ${getStatusBadge(prompt.status)}`}>
-                            {prompt.status}
-                          </Badge>
-                          {prompt.sector_tags?.tags?.map((tag: string, index: number) => (
-                            <Badge key={index} variant="outline">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleCopyPrompt(prompt)}
-                        >
-                          <Copy className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleTestPrompt(prompt)}
-                        >
-                          <TestTube className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(prompt)}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDelete(prompt.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1 flex-1">
+                    <CardTitle className="text-lg">{prompt.name}</CardTitle>
+                    <div className="flex gap-2">
+                      <Badge className={`text-white ${getStatusBadge(prompt.status)}`}>
+                        {prompt.status}
+                      </Badge>
+                      {prompt.sector_tags?.tags?.map((tag: string, index: number) => (
+                        <Badge key={index} variant="outline">
+                          {tag}
+                        </Badge>
+                      ))}
                     </div>
-                  </CardHeader>
+                  </div>
+                  <div className="ml-4">
+                    <MediaDisplay
+                      imageUrl={prompt.image_url}
+                      title={prompt.name}
+                      className="w-20 h-16 rounded-md overflow-hidden flex-shrink-0"
+                    />
+                  </div>
+                  <div className="flex gap-2 ml-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleCopyPrompt(prompt)}
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleTestPrompt(prompt)}
+                    >
+                      <TestTube className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(prompt)}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(prompt.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   <div>
@@ -446,9 +446,7 @@ export function AdminPrompts() {
                     </div>
                   </div>
                 </div>
-                  </CardContent>
-                </div>
-              </div>
+              </CardContent>
             </Card>
           ))}
           

@@ -410,58 +410,58 @@ Take final assessment"
         <div className="space-y-4">
           {plans.map((plan) => (
             <Card key={plan.id}>
-              <div className="flex">
-                <MediaDisplay
-                  imageUrl={plan.image_url}
-                  videoUrl={plan.video_url}
-                  title={plan.name}
-                  className="w-32 h-24 flex-shrink-0 overflow-hidden rounded-l-lg"
-                />
-                <div className="flex-1">
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-2">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          {plan.name}
-                          {plan.is_ai_generated && (
-                            <Badge variant="outline" className="text-xs">
-                              AI Generated
-                            </Badge>
-                          )}
-                        </CardTitle>
-                        <div className="flex gap-2">
-                          <Badge className={`text-white ${getLevelBadge(plan.level)}`}>
-                            Level {plan.level}
-                          </Badge>
-                          <Badge className={`text-white ${getStatusBadge(plan.status)}`}>
-                            {plan.status}
-                          </Badge>
-                          {plan.duration && (
-                            <Badge variant="outline">
-                              <Clock className="w-3 h-3 mr-1" />
-                              {plan.duration}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(plan)}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDelete(plan.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1 flex-1">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      {plan.name}
+                      {plan.is_ai_generated && (
+                        <Badge variant="outline" className="text-xs">
+                          AI Generated
+                        </Badge>
+                      )}
+                    </CardTitle>
+                    <div className="flex gap-2">
+                      <Badge className={`text-white ${getLevelBadge(plan.level)}`}>
+                        Level {plan.level}
+                      </Badge>
+                      <Badge className={`text-white ${getStatusBadge(plan.status)}`}>
+                        {plan.status}
+                      </Badge>
+                      {plan.duration && (
+                        <Badge variant="outline">
+                          <Clock className="w-3 h-3 mr-1" />
+                          {plan.duration}
+                        </Badge>
+                      )}
                     </div>
-                  </CardHeader>
+                  </div>
+                  <div className="ml-4">
+                    <MediaDisplay
+                      imageUrl={plan.image_url}
+                      videoUrl={plan.video_url}
+                      title={plan.name}
+                      className="w-20 h-16 rounded-md overflow-hidden flex-shrink-0"
+                    />
+                  </div>
+                  <div className="flex gap-2 ml-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(plan)}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(plan.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   <p className="text-muted-foreground text-sm">
@@ -495,10 +495,8 @@ Take final assessment"
                       <span>{plan.star_rating}/5</span>
                     </div>
                   </div>
-                  </div>
-                  </CardContent>
                 </div>
-              </div>
+              </CardContent>
             </Card>
           ))}
           

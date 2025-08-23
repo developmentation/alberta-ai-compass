@@ -335,29 +335,40 @@ export function AdminCohorts() {
           </Dialog>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="space-y-4">
           {cohorts.map((cohort) => {
             const daysRemaining = getDaysRemaining(cohort.end_date);
             return (
               <Card key={cohort.id}>
-                {cohort.image_url && (
-                  <div className="w-full h-48 overflow-hidden rounded-t-lg">
-                    <img 
-                      src={cohort.image_url} 
-                      alt={cohort.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-start">
-                    <div className="space-y-2">
+                    <div className="space-y-1 flex-1">
                       <CardTitle className="text-lg">{cohort.name}</CardTitle>
-                      <Badge className={`text-white ${getStatusBadge(cohort.status)}`}>
-                        {cohort.status}
-                      </Badge>
+                      <div className="flex gap-2">
+                        <Badge className={`text-white ${getStatusBadge(cohort.status)}`}>
+                          {cohort.status}
+                        </Badge>
+                        {cohort.end_date && daysRemaining !== null && (
+                          <Badge variant="outline">
+                            {daysRemaining > 0 
+                              ? `${daysRemaining} days left`
+                              : daysRemaining === 0
+                              ? "Ends today"
+                              : `Ended ${Math.abs(daysRemaining)} days ago`
+                            }
+                          </Badge>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="ml-4">
+                      <MediaDisplay
+                        imageUrl={cohort.image_url}
+                        videoUrl={cohort.video_url}
+                        title={cohort.name}
+                        className="w-20 h-16 rounded-md overflow-hidden flex-shrink-0"
+                      />
+                    </div>
+                    <div className="flex gap-2 ml-4">
                       <Button
                         variant="outline"
                         size="sm"
@@ -393,16 +404,6 @@ export function AdminCohorts() {
                         <div className="flex items-center gap-2 text-sm">
                           <Clock className="w-4 h-4 text-muted-foreground" />
                           <span>Ends: {formatDate(cohort.end_date)}</span>
-                          {daysRemaining !== null && (
-                            <Badge variant="outline" className="ml-2">
-                              {daysRemaining > 0 
-                                ? `${daysRemaining} days left`
-                                : daysRemaining === 0
-                                ? "Ends today"
-                                : `Ended ${Math.abs(daysRemaining)} days ago`
-                              }
-                            </Badge>
-                          )}
                         </div>
                       )}
                     </div>
