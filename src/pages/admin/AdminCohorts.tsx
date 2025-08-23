@@ -26,6 +26,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { UnifiedMediaUpload } from "@/components/admin/UnifiedMediaUpload";
 import { MediaDisplay } from "@/components/admin/MediaDisplay";
+import { CohortDayManager } from "@/components/admin/CohortDayManager";
 
 interface Cohort {
   id: string;
@@ -36,6 +37,7 @@ interface Cohort {
   status: "active" | "inactive" | "completed";
   image_url?: string;
   video_url?: string;
+  days?: any[];
   created_at: string;
   created_by: string;
 }
@@ -56,6 +58,7 @@ export function AdminCohorts() {
     status: "active" as "active" | "inactive" | "completed",
     image_url: "",
     video_url: "",
+    days: [] as any[],
   });
 
   useEffect(() => {
@@ -71,7 +74,47 @@ export function AdminCohorts() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setCohorts(data || []);
+      
+      // Fetch cohort content/days for each cohort
+      const cohortsWithDays = await Promise.all(
+        (data || []).map(async (cohort: any) => {
+          const { data: cohortDays } = await supabase
+            .from("cohort_content")
+            .select("*")
+            .eq("cohort_id", cohort.id)
+            .order("day_number", { ascending: true });
+            
+          // Group content by day
+          const dayGroups = cohortDays?.reduce((acc: any, content: any) => {
+            const dayKey = content.day_number;
+            if (!acc[dayKey]) {
+              acc[dayKey] = {
+                day_number: content.day_number,
+                day_name: content.day_name || `Day ${content.day_number}`,
+                day_description: content.day_description || "",
+                day_image_url: content.day_image_url,
+                content_items: []
+              };
+            }
+            if (content.content_id) {
+              acc[dayKey].content_items.push({
+                id: content.content_id,
+                type: content.content_type,
+                name: `${content.content_type} item`,
+                order_index: content.order_index || 0
+              });
+            }
+            return acc;
+          }, {});
+          
+          return {
+            ...cohort,
+            days: Object.values(dayGroups || {})
+          };
+        })
+      );
+      
+      setCohorts(cohortsWithDays);
     } catch (error) {
       console.error("Error fetching cohorts:", error);
       toast({
@@ -101,18 +144,53 @@ export function AdminCohorts() {
       };
 
       let result;
+      let cohortId;
+      
       if (editingCohort) {
         result = await supabase
           .from("cohorts")
           .update(cohortData)
           .eq("id", editingCohort.id);
+        cohortId = editingCohort.id;
       } else {
         result = await supabase
           .from("cohorts")
-          .insert(cohortData);
+          .insert(cohortData)
+          .select();
+        cohortId = result.data?.[0]?.id;
       }
 
       if (result.error) throw result.error;
+      
+      // Save cohort days/content
+      if (cohortId && formData.days.length > 0) {
+        // Delete existing cohort content
+        await supabase
+          .from("cohort_content")
+          .delete()
+          .eq("cohort_id", cohortId);
+          
+        // Insert new cohort content
+        const contentToInsert = formData.days.flatMap((day: any) => 
+          day.content_items.map((item: any) => ({
+            cohort_id: cohortId,
+            day_number: day.day_number,
+            day_name: day.day_name,
+            day_description: day.day_description,
+            day_image_url: day.day_image_url,
+            content_type: item.type,
+            content_id: item.id,
+            order_index: item.order_index,
+            created_by: user?.id
+          }))
+        );
+        
+        if (contentToInsert.length > 0) {
+          await supabase
+            .from("cohort_content")
+            .insert(contentToInsert);
+        }
+      }
 
       toast({
         title: "Success",
@@ -143,6 +221,7 @@ export function AdminCohorts() {
       status: cohort.status,
       image_url: cohort.image_url || "",
       video_url: cohort.video_url || "",
+      days: cohort.days || [],
     });
     setIsDialogOpen(true);
   };
@@ -183,6 +262,7 @@ export function AdminCohorts() {
       status: "active",
       image_url: "",
       video_url: "",
+      days: [],
     });
   };
 
@@ -323,6 +403,11 @@ export function AdminCohorts() {
                     </SelectContent>
                   </Select>
                 </div>
+
+                <CohortDayManager
+                  days={formData.days}
+                  onUpdateDays={(days) => setFormData({ ...formData, days })}
+                />
 
                 <div className="flex justify-end gap-2">
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>

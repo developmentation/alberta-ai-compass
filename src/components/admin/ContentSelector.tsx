@@ -1,0 +1,241 @@
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Search, Plus, Eye, BookOpen, Newspaper, Wrench, MessageSquare } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+
+interface ContentItem {
+  id: string;
+  name: string;
+  description?: string;
+  type: 'module' | 'news' | 'tool' | 'prompt';
+  status: string;
+  image_url?: string;
+  video_url?: string;
+}
+
+interface ContentSelectorProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSelect: (content: ContentItem) => void;
+  selectedIds?: string[];
+}
+
+export function ContentSelector({ isOpen, onClose, onSelect, selectedIds = [] }: ContentSelectorProps) {
+  const [contentItems, setContentItems] = useState<ContentItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [contentType, setContentType] = useState<'all' | 'module' | 'news' | 'tool' | 'prompt'>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchContent();
+    }
+  }, [isOpen, contentType]);
+
+  const fetchContent = async () => {
+    setLoading(true);
+    try {
+      const items: ContentItem[] = [];
+
+      // Fetch modules
+      if (contentType === 'all' || contentType === 'module') {
+        const { data: modules } = await supabase
+          .from('modules')
+          .select('id, name, description, status, image_url, video_url')
+          .eq('status', 'published')
+          .is('deleted_at', null);
+        
+        if (modules) {
+          items.push(...modules.map((m: any) => ({ ...m, type: 'module' as const })));
+        }
+      }
+
+      // Fetch news
+      if (contentType === 'all' || contentType === 'news') {
+        const { data: news } = await supabase
+          .from('news')
+          .select('id, title as name, description, status, image_url, video_url')
+          .eq('status', 'published')
+          .is('deleted_at', null);
+        
+        if (news) {
+          items.push(...news.map((n: any) => ({ ...n, type: 'news' as const })));
+        }
+      }
+
+      // Fetch tools
+      if (contentType === 'all' || contentType === 'tool') {
+        const { data: tools } = await supabase
+          .from('tools')
+          .select('id, name, description, status, image_url, video_url')
+          .eq('status', 'published')
+          .is('deleted_at', null);
+        
+        if (tools) {
+          items.push(...tools.map((t: any) => ({ ...t, type: 'tool' as const })));
+        }
+      }
+
+      // Fetch prompts
+      if (contentType === 'all' || contentType === 'prompt') {
+        const { data: prompts } = await supabase
+          .from('prompt_library')
+          .select('id, name, description, status, image_url')
+          .eq('status', 'published')
+          .is('deleted_at', null);
+        
+        if (prompts) {
+          items.push(...prompts.map((p: any) => ({ ...p, type: 'prompt' as const })));
+        }
+      }
+
+      setContentItems(items);
+    } catch (error) {
+      console.error('Error fetching content:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch content",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'module': return <BookOpen className="h-4 w-4" />;
+      case 'news': return <Newspaper className="h-4 w-4" />;
+      case 'tool': return <Wrench className="h-4 w-4" />;
+      case 'prompt': return <MessageSquare className="h-4 w-4" />;
+      default: return <Eye className="h-4 w-4" />;
+    }
+  };
+
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'module': return 'bg-blue-500';
+      case 'news': return 'bg-green-500';
+      case 'tool': return 'bg-purple-500';
+      case 'prompt': return 'bg-orange-500';
+      default: return 'bg-gray-500';
+    }
+  };
+
+  const filteredItems = contentItems.filter(item =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle>Add Content to Collection</DialogTitle>
+        </DialogHeader>
+        
+        <div className="flex gap-4 items-center border-b pb-4">
+          <Select value={contentType} onValueChange={(value: any) => setContentType(value)}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Content type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Content</SelectItem>
+              <SelectItem value="module">Modules</SelectItem>
+              <SelectItem value="news">News</SelectItem>
+              <SelectItem value="tool">Tools</SelectItem>
+              <SelectItem value="prompt">Prompts</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="h-4 w-4 absolute left-3 top-3 text-muted-foreground" />
+              <Input
+                placeholder="Search content..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-auto">
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <div className="grid gap-4 p-2">
+              {filteredItems.map((item) => {
+                const isSelected = selectedIds.includes(item.id);
+                return (
+                  <Card 
+                    key={`${item.type}-${item.id}`} 
+                    className={`cursor-pointer transition-all hover:shadow-md ${
+                      isSelected ? 'ring-2 ring-primary bg-primary/5' : ''
+                    }`}
+                    onClick={() => onSelect(item)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0">
+                          {item.image_url ? (
+                            <img
+                              src={item.image_url}
+                              alt={item.name}
+                              className="w-12 h-12 rounded object-cover"
+                            />
+                          ) : (
+                            <div className={`w-12 h-12 rounded flex items-center justify-center text-white ${getTypeColor(item.type)}`}>
+                              {getTypeIcon(item.type)}
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="flex-1">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h3 className="font-medium">{item.name}</h3>
+                              {item.description && (
+                                <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                                  {item.description}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge className={`text-white ${getTypeColor(item.type)}`}>
+                                {item.type}
+                              </Badge>
+                              {isSelected && (
+                                <Badge variant="outline">Selected</Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+              
+              {filteredItems.length === 0 && !loading && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No content found matching your criteria.
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

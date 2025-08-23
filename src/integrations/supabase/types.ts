@@ -152,6 +152,9 @@ export type Database = {
           content_type: string
           created_at: string | null
           created_by: string
+          day_description: string | null
+          day_image_url: string | null
+          day_name: string | null
           day_number: number
           id: string
           order_index: number | null
@@ -162,6 +165,9 @@ export type Database = {
           content_type: string
           created_at?: string | null
           created_by: string
+          day_description?: string | null
+          day_image_url?: string | null
+          day_name?: string | null
           day_number: number
           id?: string
           order_index?: number | null
@@ -172,6 +178,9 @@ export type Database = {
           content_type?: string
           created_at?: string | null
           created_by?: string
+          day_description?: string | null
+          day_image_url?: string | null
+          day_name?: string | null
           day_number?: number
           id?: string
           order_index?: number | null
@@ -297,6 +306,7 @@ export type Database = {
       }
       learning_plans: {
         Row: {
+          content_items: Json | null
           created_at: string | null
           created_by: string | null
           deleted_at: string | null
@@ -317,6 +327,7 @@ export type Database = {
           video_url: string | null
         }
         Insert: {
+          content_items?: Json | null
           created_at?: string | null
           created_by?: string | null
           deleted_at?: string | null
@@ -337,6 +348,7 @@ export type Database = {
           video_url?: string | null
         }
         Update: {
+          content_items?: Json | null
           created_at?: string | null
           created_by?: string | null
           deleted_at?: string | null

@@ -25,6 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { UnifiedMediaUpload } from "@/components/admin/UnifiedMediaUpload";
+import { LearningPlanContentManager } from "@/components/admin/LearningPlanContentManager";
 import { MediaDisplay } from "@/components/admin/MediaDisplay";
 
 interface LearningPlan {
@@ -41,6 +42,7 @@ interface LearningPlan {
   is_ai_generated: boolean;
   image_url?: string;
   video_url?: string;
+  content_items?: any[];
   created_at: string;
   created_by: string;
 }
@@ -64,6 +66,7 @@ export function AdminLearningPlans() {
     steps: "",
     image_url: "",
     video_url: "",
+    content_items: [] as any[],
   });
 
   useEffect(() => {
@@ -79,9 +82,10 @@ export function AdminLearningPlans() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setPlans(data?.map(plan => ({
+      setPlans(data?.map((plan: any) => ({
         ...plan,
-        duration: plan.duration ? String(plan.duration) : null
+        duration: plan.duration ? String(plan.duration) : null,
+        content_items: Array.isArray(plan.content_items) ? plan.content_items : []
       })) || []);
     } catch (error) {
       console.error("Error fetching learning plans:", error);
@@ -120,6 +124,7 @@ export function AdminLearningPlans() {
         steps: { steps: stepsArray },
         image_url: formData.image_url || null,
         video_url: formData.video_url || null,
+        content_items: formData.content_items || [],
         created_by: user?.id,
         updated_by: user?.id,
       };
@@ -170,6 +175,7 @@ export function AdminLearningPlans() {
       steps: plan.steps?.steps ? plan.steps.steps.join("\n") : "",
       image_url: plan.image_url || "",
       video_url: plan.video_url || "",
+      content_items: plan.content_items || [],
     });
     setIsDialogOpen(true);
   };
@@ -213,6 +219,7 @@ export function AdminLearningPlans() {
       steps: "",
       image_url: "",
       video_url: "",
+      content_items: [],
     });
   };
 
@@ -383,6 +390,11 @@ export function AdminLearningPlans() {
                   />
                 </div>
 
+                <LearningPlanContentManager
+                  contentItems={formData.content_items}
+                  onUpdateContent={(items) => setFormData({ ...formData, content_items: items })}
+                />
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Learning Steps (one per line)</label>
                   <Textarea
@@ -472,6 +484,24 @@ Take final assessment"
                       : plan.description}
                   </p>
                   
+                  {plan.content_items && plan.content_items.length > 0 && (
+                    <div>
+                      <div className="text-sm font-medium text-muted-foreground mb-1">Content Items:</div>
+                      <div className="flex flex-wrap gap-1">
+                        {plan.content_items.slice(0, 3).map((item: any, index: number) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {item.type}: {item.name}
+                          </Badge>
+                        ))}
+                        {plan.content_items.length > 3 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{plan.content_items.length - 3} more
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {plan.learning_outcomes && plan.learning_outcomes.length > 0 && (
                     <div>
                       <div className="text-sm font-medium text-muted-foreground mb-1">Learning Outcomes:</div>
