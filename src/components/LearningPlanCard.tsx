@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Bookmark, Eye } from "lucide-react";
+import { Clock, Bookmark, Eye, Star, BookmarkCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface LearningPlanCardProps {
@@ -11,6 +11,9 @@ interface LearningPlanCardProps {
   level: string;
   image: string;
   tags: string[];
+  averageRating?: number;
+  totalVotes?: number;
+  isBookmarked?: boolean;
 }
 
 export const LearningPlanCard = ({
@@ -20,7 +23,10 @@ export const LearningPlanCard = ({
   duration,
   level,
   image,
-  tags
+  tags,
+  averageRating = 0,
+  totalVotes = 0,
+  isBookmarked = false
 }: LearningPlanCardProps) => {
   return (
     <article className="group relative overflow-hidden rounded-2xl border border-border bg-card/40 backdrop-blur-sm hover:bg-card-hover transition-all duration-500 hover:shadow-elegant hover:scale-[1.02] hover:-translate-y-1">
@@ -41,6 +47,13 @@ export const LearningPlanCard = ({
             {level}
           </Badge>
         </div>
+        
+        {/* Bookmark indicator */}
+        {isBookmarked && (
+          <div className="absolute top-4 right-4">
+            <BookmarkCheck className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+          </div>
+        )}
       </div>
 
       {/* Content Section */}
@@ -52,8 +65,8 @@ export const LearningPlanCard = ({
           {description}
         </p>
 
-        {/* Tags */}
-        <div className="flex flex-wrap gap-2 mb-6">
+        {/* Tags and Rating */}
+        <div className="flex flex-wrap gap-2 mb-4">
           {tags.map((tag, index) => (
             <Badge
               key={index}
@@ -63,6 +76,20 @@ export const LearningPlanCard = ({
               {tag}
             </Badge>
           ))}
+        </div>
+
+        {/* Rating */}
+        <div className="flex items-center gap-1 mb-6">
+          {averageRating > 0 ? (
+            <>
+              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+              <span className="text-sm text-muted-foreground">
+                {averageRating.toFixed(1)} ({totalVotes} votes)
+              </span>
+            </>
+          ) : (
+            <span className="text-sm text-muted-foreground">No ratings yet</span>
+          )}
         </div>
 
         {/* Actions */}
@@ -76,9 +103,15 @@ export const LearningPlanCard = ({
           <Button 
             variant="ghost" 
             size="icon"
-            className="border border-border hover:border-primary/50 hover:bg-primary/10"
+            className={`border border-border hover:border-primary/50 hover:bg-primary/10 ${
+              isBookmarked ? 'text-yellow-400' : ''
+            }`}
           >
-            <Bookmark className="w-4 h-4" />
+            {isBookmarked ? (
+              <BookmarkCheck className="w-4 h-4 fill-yellow-400" />
+            ) : (
+              <Bookmark className="w-4 h-4" />
+            )}
           </Button>
         </div>
       </div>

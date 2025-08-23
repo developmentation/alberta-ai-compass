@@ -6,15 +6,21 @@ import { ArticleCard } from "@/components/ArticleCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, Loader2, Lock } from "lucide-react";
+import { Search, Filter, Loader2, Lock, Star, Bookmark } from "lucide-react";
 import { useLearningPlans } from "@/hooks/useLearningPlans";
 import { useAuth } from "@/hooks/useAuth";
+import { useContentRatings } from "@/hooks/useContentRatings";
 
 const LearningHub = () => {
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [minStarRating, setMinStarRating] = useState(0);
+  const [showBookmarkedOnly, setShowBookmarkedOnly] = useState(false);
   const { user } = useAuth();
   const { learningPlans, loading, error } = useLearningPlans();
+  
+  const planItems = learningPlans.map(item => ({ id: item.id, type: 'learning_plan' }));
+  const { ratingsData } = useContentRatings(planItems);
 
   // Mock articles for now - these could come from the resources table or a separate articles table
   const articles = [
@@ -52,25 +58,38 @@ const LearningHub = () => {
     { key: "red", label: "RED" }
   ];
 
+  const starFilters = [0, 1, 2, 3, 4, 5];
+
   const filteredPlans = learningPlans.filter(plan => {
     const matchesFilter = activeFilter === "all" || plan.level?.toLowerCase() === activeFilter;
     const matchesSearch = plan.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          plan.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
-  }).map(plan => ({
-    id: plan.id,
-    title: plan.name,
-    description: plan.description,
-    duration: typeof plan.duration === 'string' ? plan.duration : 
-             plan.duration ? String(plan.duration) : '4 weeks',
-    level: plan.level === '1' ? 'Beginner' : 
-           plan.level === '2' ? 'Intermediate' : 
-           plan.level === '3' ? 'Advanced' : 
-           plan.level === 'red' ? 'RED' : 
-           plan.level,
-    image: plan.image_url || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1400&auto=format&fit=crop",
-    tags: plan.learning_outcomes?.slice(0, 2) || ["AI Training", "Hands-on"]
-  }));
+    
+    const ratingData = ratingsData[plan.id];
+    const matchesRating = minStarRating === 0 || (ratingData?.averageRating || 0) >= minStarRating;
+    const matchesBookmark = !showBookmarkedOnly || (ratingData?.isBookmarked || false);
+    
+    return matchesFilter && matchesSearch && matchesRating && matchesBookmark;
+  }).map(plan => {
+    const ratingData = ratingsData[plan.id];
+    return {
+      id: plan.id,
+      title: plan.name,
+      description: plan.description,
+      duration: typeof plan.duration === 'string' ? plan.duration : 
+               plan.duration ? String(plan.duration) : '4 weeks',
+      level: plan.level === '1' ? 'Beginner' : 
+             plan.level === '2' ? 'Intermediate' : 
+             plan.level === '3' ? 'Advanced' : 
+             plan.level === 'red' ? 'RED' : 
+             plan.level,
+      image: plan.image_url || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1400&auto=format&fit=crop",
+      tags: plan.learning_outcomes?.slice(0, 2) || ["AI Training", "Hands-on"],
+      averageRating: ratingData?.averageRating || 0,
+      totalVotes: ratingData?.totalVotes || 0,
+      isBookmarked: ratingData?.isBookmarked || false
+    };
+  });
 
   const filteredArticles = articles.filter(article => {
     const matchesFilter = activeFilter === "all" || article.level.toLowerCase() === (
@@ -121,23 +140,53 @@ const LearningHub = () => {
                     className="pl-10 bg-card/60 backdrop-blur-sm border-border"
                   />
                 </div>
-                <Button variant="ghost" className="border border-border hover:border-primary/50">
-                  <Filter className="w-4 h-4 mr-2" />
-                  Filters
+                <Button 
+                  variant={showBookmarkedOnly ? "default" : "ghost"}
+                  className="border border-border hover:border-primary/50"
+                  onClick={() => setShowBookmarkedOnly(!showBookmarkedOnly)}
+                >
+                  <Bookmark className="w-4 h-4 mr-2" />
+                  Bookmarked
                 </Button>
               </div>
 
-              <div className="flex flex-wrap gap-3 justify-center">
-                {filters.map((filter) => (
-                  <Badge
-                    key={filter.key}
-                    variant={activeFilter === filter.key ? "default" : "secondary"}
-                    className="cursor-pointer hover:scale-105 transition-transform"
-                    onClick={() => setActiveFilter(filter.key)}
-                  >
-                    {filter.label}
-                  </Badge>
-                ))}
+              <div className="space-y-4">
+                {/* Level filters */}
+                <div className="flex flex-wrap gap-3 justify-center">
+                  {filters.map((filter) => (
+                    <Badge
+                      key={filter.key}
+                      variant={activeFilter === filter.key ? "default" : "secondary"}
+                      className="cursor-pointer hover:scale-105 transition-transform"
+                      onClick={() => setActiveFilter(filter.key)}
+                    >
+                      {filter.label}
+                    </Badge>
+                  ))}
+                </div>
+                
+                {/* Star rating filter */}
+                <div className="flex flex-wrap gap-3 justify-center items-center">
+                  <span className="text-sm text-muted-foreground">Minimum rating:</span>
+                  {starFilters.map((rating) => (
+                    <Badge
+                      key={rating}
+                      variant={minStarRating === rating ? "default" : "outline"}
+                      className="cursor-pointer hover:scale-105 transition-transform flex items-center gap-1"
+                      onClick={() => setMinStarRating(rating)}
+                    >
+                      {rating === 0 ? (
+                        "Any"
+                      ) : (
+                        <>
+                          {rating}
+                          <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                          +
+                        </>
+                      )}
+                    </Badge>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

@@ -5,14 +5,17 @@ import { NewsCard } from "@/components/NewsCard";
 import { NewsViewer } from "@/components/NewsViewer";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, Star, Bookmark, Filter } from "lucide-react";
 import { useNews } from "@/hooks/useNews";
 import { useContentRatings } from "@/hooks/useContentRatings";
 
 const News = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
+  const [minStarRating, setMinStarRating] = useState(0);
+  const [showBookmarkedOnly, setShowBookmarkedOnly] = useState(false);
   const [selectedNews, setSelectedNews] = useState<any>(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const { news, loading, error } = useNews();
@@ -21,12 +24,18 @@ const News = () => {
   const { ratingsData } = useContentRatings(newsItems);
 
   const categories = ["all", "1", "2", "3", "red"];
+  const starFilters = [0, 1, 2, 3, 4, 5];
 
   const filteredNews = news.filter(item => {
     const matchesCategory = activeCategory === "all" || item.level?.toLowerCase() === activeCategory;
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          item.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    
+    const ratingData = ratingsData[item.id];
+    const matchesRating = minStarRating === 0 || (ratingData?.averageRating || 0) >= minStarRating;
+    const matchesBookmark = !showBookmarkedOnly || (ratingData?.isBookmarked || false);
+    
+    return matchesCategory && matchesSearch && matchesRating && matchesBookmark;
   });
 
   const handleNewsClick = (newsItem: any) => {
@@ -75,19 +84,53 @@ const News = () => {
                     className="pl-10 bg-card/60 backdrop-blur-sm border-border"
                   />
                 </div>
+                <Button 
+                  variant={showBookmarkedOnly ? "default" : "ghost"}
+                  className="border border-border hover:border-primary/50"
+                  onClick={() => setShowBookmarkedOnly(!showBookmarkedOnly)}
+                >
+                  <Bookmark className="w-4 h-4 mr-2" />
+                  Bookmarked
+                </Button>
               </div>
 
-              <div className="flex flex-wrap gap-3 justify-center">
-                {categories.map((category) => (
-                  <Badge
-                    key={category}
-                    variant={activeCategory === category ? "default" : "secondary"}
-                    className="cursor-pointer hover:scale-105 transition-transform"
-                    onClick={() => setActiveCategory(category)}
-                  >
-                    {category.charAt(0).toUpperCase() + category.slice(1)}
-                  </Badge>
-                ))}
+              <div className="space-y-4">
+                {/* Category filters */}
+                <div className="flex flex-wrap gap-3 justify-center">
+                  {categories.map((category) => (
+                    <Badge
+                      key={category}
+                      variant={activeCategory === category ? "default" : "secondary"}
+                      className="cursor-pointer hover:scale-105 transition-transform"
+                      onClick={() => setActiveCategory(category)}
+                    >
+                      {category.charAt(0).toUpperCase() + category.slice(1)}
+                    </Badge>
+                  ))}
+                </div>
+                
+                {/* Star rating filter */}
+                <div className="flex flex-wrap gap-3 justify-center items-center">
+                  <span className="text-sm text-muted-foreground">Minimum rating:</span>
+                  {starFilters.map((rating) => (
+                    <Badge
+                      key={rating}
+                      variant={minStarRating === rating ? "default" : "outline"}
+                      className="cursor-pointer hover:scale-105 transition-transform flex items-center gap-1"
+                      onClick={() => setMinStarRating(rating)}
+                    >
+                      {rating === 0 ? (
+                        "Any"
+                      ) : (
+                        <>
+                          {rating}
+                          <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                          +
+                        </>
+                      )}
+                    </Badge>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
