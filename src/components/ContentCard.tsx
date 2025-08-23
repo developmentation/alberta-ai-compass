@@ -100,16 +100,17 @@ export function ContentCard({ content, className = "", onView }: ContentCardProp
   };
 
   const handleCardClick = () => {
-    if (content.url) {
+    if (onView) {
+      onView(content);
+    } else if (content.url) {
       window.open(content.url, '_blank');
     }
   };
 
   return (
     <article 
-      className={`relative overflow-hidden group bg-white border border-neutral-100 rounded-2xl hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${className}`}
-      onClick={content.url ? handleCardClick : undefined}
-      style={{ cursor: content.url ? 'pointer' : 'default' }}
+      className={`relative overflow-hidden group bg-white border border-neutral-100 rounded-2xl hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer ${className}`}
+      onClick={handleCardClick}
     >
       {/* Media Content */}
       {content.video_url ? (
@@ -216,22 +217,6 @@ export function ContentCard({ content, className = "", onView }: ContentCardProp
               </span>
             )}
           </div>
-          
-          {onView && (
-            <div className="mt-4">
-              <Button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onView(content);
-                }} 
-                size="sm" 
-                className="w-full"
-              >
-                <Eye className="w-4 h-4 mr-2" />
-                View Content
-              </Button>
-            </div>
-          )}
         </div>
       </div>
     </article>
