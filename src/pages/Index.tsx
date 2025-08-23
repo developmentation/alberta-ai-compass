@@ -16,7 +16,7 @@ const Index = () => {
 
   const learningPlans = [
     {
-      id: 1,
+      id: "1",
       title: "Prompt Engineering Foundations",
       description: "Principles, patterns, and evaluation for reliable prompting.",
       duration: "4 weeks",
@@ -25,7 +25,7 @@ const Index = () => {
       tags: ["Structured patterns", "Hands-on labs"]
     },
     {
-      id: 2,
+      id: "2",
       title: "Build Retrieval-Augmented Generation",
       description: "Index, embed, and ground responses with verifiable sources.",
       duration: "3 weeks",
@@ -34,7 +34,7 @@ const Index = () => {
       tags: ["Vector DBs", "Guardrails"]
     },
     {
-      id: 3,
+      id: "3",
       title: "Responsible AI & Data Ethics",
       description: "Fairness, privacy, and risk mitigation in real deployments.",
       duration: "2 weeks",

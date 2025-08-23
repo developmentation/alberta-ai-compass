@@ -6,69 +6,17 @@ import { ArticleCard } from "@/components/ArticleCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, Loader2, Lock } from "lucide-react";
+import { useLearningPlans } from "@/hooks/useLearningPlans";
+import { useAuth } from "@/hooks/useAuth";
 
 const LearningHub = () => {
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const { user } = useAuth();
+  const { learningPlans, loading, error } = useLearningPlans();
 
-  const learningPlans = [
-    {
-      id: 1,
-      title: "Prompt Engineering Foundations",
-      description: "Principles, patterns, and evaluation for reliable prompting. Master the art of crafting effective prompts for various AI models and use cases.",
-      duration: "4 weeks",
-      level: "Beginner",
-      image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1400&auto=format&fit=crop",
-      tags: ["Structured patterns", "Hands-on labs"]
-    },
-    {
-      id: 2,
-      title: "Build Retrieval-Augmented Generation",
-      description: "Index, embed, and ground responses with verifiable sources. Learn to build RAG systems that provide accurate, contextual responses.",
-      duration: "3 weeks",
-      level: "Intermediate",
-      image: "https://images.unsplash.com/photo-1621619856624-42fd193a0661?w=1080&q=80",
-      tags: ["Vector DBs", "Guardrails"]
-    },
-    {
-      id: 3,
-      title: "Responsible AI & Data Ethics",
-      description: "Fairness, privacy, and risk mitigation in real deployments. Understand the ethical implications and best practices for AI development.",
-      duration: "2 weeks",
-      level: "Advanced",
-      image: "https://images.unsplash.com/photo-1642615835477-d303d7dc9ee9?w=1080&q=80",
-      tags: ["Governance", "Policy"]
-    },
-    {
-      id: 4,
-      title: "Machine Learning Fundamentals",
-      description: "Core concepts, algorithms, and practical applications. Build a solid foundation in machine learning principles and techniques.",
-      duration: "6 weeks",
-      level: "Beginner",
-      image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1400&auto=format&fit=crop",
-      tags: ["Algorithms", "Data Science"]
-    },
-    {
-      id: 5,
-      title: "Advanced NLP Techniques",
-      description: "Deep dive into natural language processing with transformers, BERT, and GPT architectures. Master state-of-the-art NLP methods.",
-      duration: "5 weeks",
-      level: "Advanced",
-      image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=1400&auto=format&fit=crop",
-      tags: ["Transformers", "BERT", "GPT"]
-    },
-    {
-      id: 6,
-      title: "AI for Business Applications",
-      description: "Practical AI implementation strategies for enterprises. Learn how to integrate AI solutions into business workflows effectively.",
-      duration: "4 weeks",
-      level: "Intermediate",
-      image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1400&auto=format&fit=crop",
-      tags: ["Strategy", "Implementation"]
-    }
-  ];
-
+  // Mock articles for now - these could come from the resources table or a separate articles table
   const articles = [
     {
       id: 1,
@@ -93,41 +41,25 @@ const LearningHub = () => {
       readTime: "10 min read",
       level: "Beginner",
       image: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=1400&auto=format&fit=crop"
-    },
-    {
-      id: 4,
-      title: "Fine-tuning Large Language Models",
-      description: "Best practices for customizing pre-trained models for specific tasks. Learn efficient fine-tuning techniques and strategies.",
-      readTime: "15 min read",
-      level: "Advanced",
-      image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1400&auto=format&fit=crop"
-    },
-    {
-      id: 5,
-      title: "Building Conversational AI Systems",
-      description: "Design patterns and implementation strategies for chatbots and virtual assistants that provide exceptional user experiences.",
-      readTime: "12 min read",
-      level: "Intermediate",
-      image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=1400&auto=format&fit=crop"
-    },
-    {
-      id: 6,
-      title: "AI Model Deployment at Scale",
-      description: "Infrastructure, monitoring, and optimization strategies for production AI systems. Learn to deploy models efficiently and reliably.",
-      readTime: "18 min read",
-      level: "Advanced",
-      image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1400&auto=format&fit=crop"
     }
   ];
 
-  const filters = ["all", "beginner", "intermediate", "advanced"];
+  const filters = ["all", "1", "2", "3", "red"];
 
   const filteredPlans = learningPlans.filter(plan => {
-    const matchesFilter = activeFilter === "all" || plan.level.toLowerCase() === activeFilter;
-    const matchesSearch = plan.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesFilter = activeFilter === "all" || plan.level?.toLowerCase() === activeFilter;
+    const matchesSearch = plan.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          plan.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
-  });
+  }).map(plan => ({
+    id: plan.id,
+    title: plan.name,
+    description: plan.description,
+    duration: typeof plan.duration === 'string' ? plan.duration : '4 weeks',
+    level: plan.level === '1' ? 'Beginner' : plan.level === '2' ? 'Intermediate' : plan.level === '3' ? 'Advanced' : 'RED',
+    image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1400&auto=format&fit=crop",
+    tags: plan.learning_outcomes?.slice(0, 2) || ["AI Training", "Hands-on"]
+  }));
 
   const filteredArticles = articles.filter(article => {
     const matchesFilter = activeFilter === "all" || article.level.toLowerCase() === activeFilter;
@@ -201,15 +133,78 @@ const LearningHub = () => {
             <div className="mb-12 animate-fade-in-up">
               <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">Learning Plans</h2>
               <p className="text-muted-foreground">Structured pathways with timelines, milestones, and outcomes.</p>
+              {!user && (
+                <div className="mt-4 p-4 bg-muted/50 rounded-lg border border-border flex items-center gap-3">
+                  <Lock className="w-5 h-5 text-muted-foreground" />
+                  <span className="text-muted-foreground">
+                    Please <a href="/auth" className="text-primary underline">sign in</a> to access learning plans.
+                  </span>
+                </div>
+              )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredPlans.map((plan, index) => (
-                <div key={plan.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
-                  <LearningPlanCard {...plan} />
+            {user && loading && (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <span className="ml-2 text-muted-foreground">Loading learning plans...</span>
+              </div>
+            )}
+            
+            {user && error && (
+              <div className="text-center py-16">
+                <p className="text-destructive text-lg">
+                  Error loading learning plans: {error}
+                </p>
+              </div>
+            )}
+
+            {user && !loading && !error && (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {filteredPlans.map((plan, index) => (
+                    <div key={plan.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
+                      <LearningPlanCard {...plan} />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+
+                {filteredPlans.length === 0 && learningPlans.length > 0 && (
+                  <div className="text-center py-16">
+                    <p className="text-muted-foreground text-lg">
+                      No learning plans found matching your criteria. Try adjusting your search or filters.
+                    </p>
+                  </div>
+                )}
+                
+                {learningPlans.length === 0 && !loading && (
+                  <div className="text-center py-16">
+                    <p className="text-muted-foreground text-lg">
+                      No learning plans available at this time.
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+
+            {!user && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 opacity-50 pointer-events-none">
+                <div className="bg-card/60 backdrop-blur-sm border border-border rounded-lg p-6">
+                  <div className="h-32 bg-muted rounded mb-4"></div>
+                  <div className="h-4 bg-muted rounded mb-2"></div>
+                  <div className="h-3 bg-muted rounded w-3/4"></div>
+                </div>
+                <div className="bg-card/60 backdrop-blur-sm border border-border rounded-lg p-6">
+                  <div className="h-32 bg-muted rounded mb-4"></div>
+                  <div className="h-4 bg-muted rounded mb-2"></div>
+                  <div className="h-3 bg-muted rounded w-3/4"></div>
+                </div>
+                <div className="bg-card/60 backdrop-blur-sm border border-border rounded-lg p-6">
+                  <div className="h-32 bg-muted rounded mb-4"></div>
+                  <div className="h-4 bg-muted rounded mb-2"></div>
+                  <div className="h-3 bg-muted rounded w-3/4"></div>
+                </div>
+              </div>
+            )}
           </div>
         </section>
 

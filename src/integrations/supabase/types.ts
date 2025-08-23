@@ -198,24 +198,34 @@ export type Database = {
       }
       enrollments: {
         Row: {
+          cohort_id: string | null
           enrolled_at: string | null
           id: string
           plan_id: string | null
           user_id: string
         }
         Insert: {
+          cohort_id?: string | null
           enrolled_at?: string | null
           id?: string
           plan_id?: string | null
           user_id: string
         }
         Update: {
+          cohort_id?: string | null
           enrolled_at?: string | null
           id?: string
           plan_id?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "enrollments_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "cohorts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "enrollments_plan_id_fkey"
             columns: ["plan_id"]

@@ -4,108 +4,32 @@ import { ToolCard } from "@/components/ToolCard";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useTools } from "@/hooks/useTools";
 
 const Tools = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
+  const { tools, loading, error } = useTools();
 
-  const tools = [
-    {
-      id: 1,
-      title: "Prompt Lab",
-      description: "Experiment with patterns, system prompts, and evaluations. Test different prompt strategies with real-time feedback and optimization suggestions.",
-      category: "Playground",
-      icon: "wrench"
-    },
-    {
-      id: 2,
-      title: "Eval Datasets",
-      description: "Ready-to-use corpora for reasoning and safety evaluations. Comprehensive datasets for testing model performance across various domains.",
-      category: "Data",
-      icon: "database"
-    },
-    {
-      id: 3,
-      title: "RAG Kit",
-      description: "Embeddings, retrievers, and a minimal pipeline. Complete toolkit for building retrieval-augmented generation systems from scratch.",
-      category: "Starter",
-      icon: "boxes"
-    },
-    {
-      id: 4,
-      title: "Model Comparison Studio",
-      description: "Side-by-side testing of different AI models with standardized benchmarks and custom evaluation metrics.",
-      category: "Analysis",
-      icon: "wrench"
-    },
-    {
-      id: 5,
-      title: "Fine-tuning Workspace",
-      description: "Complete environment for customizing pre-trained models with your own data. Includes training monitoring and validation tools.",
-      category: "Training",
-      icon: "wrench"
-    },
-    {
-      id: 6,
-      title: "AI Safety Toolkit",
-      description: "Tools for detecting bias, measuring fairness, and ensuring responsible AI deployment in production environments.",
-      category: "Safety",
-      icon: "database"
-    },
-    {
-      id: 7,
-      title: "Vector Database Explorer",
-      description: "Interactive interface for managing embeddings, similarity search, and vector operations with popular vector databases.",
-      category: "Data",
-      icon: "database"
-    },
-    {
-      id: 8,
-      title: "Deployment Pipeline",
-      description: "End-to-end MLOps toolkit for deploying, monitoring, and scaling AI models in production environments.",
-      category: "Production",
-      icon: "boxes"
-    },
-    {
-      id: 9,
-      title: "Conversation Designer",
-      description: "Visual editor for building complex conversational AI flows with branching logic and context management.",
-      category: "Playground",
-      icon: "wrench"
-    },
-    {
-      id: 10,
-      title: "Synthetic Data Generator",
-      description: "Create realistic training data for your AI models while maintaining privacy and complying with data regulations.",
-      category: "Data",
-      icon: "database"
-    },
-    {
-      id: 11,
-      title: "API Integration Hub",
-      description: "Pre-built connectors and templates for integrating AI capabilities into existing applications and workflows.",
-      category: "Integration",
-      icon: "boxes"
-    },
-    {
-      id: 12,
-      title: "Performance Monitor",
-      description: "Real-time monitoring dashboard for tracking model performance, latency, and resource utilization in production.",
-      category: "Production",
-      icon: "wrench"
-    }
-  ];
-
-  const categories = ["all", "playground", "data", "starter", "analysis", "training", "safety", "production", "integration"];
+  const categories = ["all", "open_source", "saas", "commercial"];
 
   const filteredTools = tools.filter(tool => {
-    const matchesCategory = activeCategory === "all" || tool.category.toLowerCase() === activeCategory;
-    const matchesSearch = tool.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesCategory = activeCategory === "all" || tool.type?.toLowerCase() === activeCategory;
+    const matchesSearch = tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          tool.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
-  });
+  }).map(tool => ({
+    id: tool.id,
+    title: tool.name,
+    description: tool.description,
+    category: tool.type,
+    icon: "wrench",
+    url: tool.url,
+    costIndicator: tool.cost_indicator,
+    stars: tool.stars
+  }));
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -169,20 +93,47 @@ const Tools = () => {
         {/* Tools Grid */}
         <section className="py-16 border-t border-border/50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {filteredTools.map((tool, index) => (
-                <div key={tool.id} style={{ animationDelay: `${index * 0.05}s` }} className="animate-fade-in-up">
-                  <ToolCard {...tool} />
-                </div>
-              ))}
-            </div>
-
-            {filteredTools.length === 0 && (
+            {loading && (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <span className="ml-2 text-muted-foreground">Loading tools...</span>
+              </div>
+            )}
+            
+            {error && (
               <div className="text-center py-16">
-                <p className="text-muted-foreground text-lg">
-                  No tools found matching your criteria. Try adjusting your search or filters.
+                <p className="text-destructive text-lg">
+                  Error loading tools: {error}
                 </p>
               </div>
+            )}
+
+            {!loading && !error && (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                  {filteredTools.map((tool, index) => (
+                    <div key={tool.id} style={{ animationDelay: `${index * 0.05}s` }} className="animate-fade-in-up">
+                      <ToolCard {...tool} />
+                    </div>
+                  ))}
+                </div>
+
+                {filteredTools.length === 0 && tools.length > 0 && (
+                  <div className="text-center py-16">
+                    <p className="text-muted-foreground text-lg">
+                      No tools found matching your criteria. Try adjusting your search or filters.
+                    </p>
+                  </div>
+                )}
+                
+                {tools.length === 0 && !loading && (
+                  <div className="text-center py-16">
+                    <p className="text-muted-foreground text-lg">
+                      No tools available at this time.
+                    </p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </section>

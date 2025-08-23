@@ -5,70 +5,29 @@ import { NewsCard } from "@/components/NewsCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, Loader2 } from "lucide-react";
+import { useNews } from "@/hooks/useNews";
 
 const News = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
-  const newsItems = [
-    {
-      id: 1,
-      title: "Open models surge in quality across benchmarks",
-      description: "Community-driven models narrow performance gaps with proprietary alternatives. Llama, Mistral, and other open-source models show remarkable improvements in reasoning, code generation, and multilingual capabilities.",
-      date: "2 days ago",
-      category: "Update",
-      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1400&auto=format&fit=crop"
-    },
-    {
-      id: 2,
-      title: "Emerging AI safety standards gain traction",
-      description: "From incident reporting to evaluation frameworks—what changes now. New regulatory frameworks and industry standards are being developed to ensure responsible AI deployment.",
-      date: "5 days ago",
-      category: "Policy",
-      image: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=1400&auto=format&fit=crop"
-    },
-    {
-      id: 3,
-      title: "New eval suites simplify model comparisons",
-      description: "Lightweight harnesses and standardized reporting tools make it easier for developers to assess model performance across different domains and use cases.",
-      date: "1 week ago",
-      category: "Tooling",
-      image: "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=1400&auto=format&fit=crop"
-    },
-    {
-      id: 4,
-      title: "Breakthrough in AI interpretability research",
-      description: "New techniques allow researchers to better understand how large language models make decisions, improving transparency and trust in AI systems.",
-      date: "1 week ago",
-      category: "Research",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1400&auto=format&fit=crop"
-    },
-    {
-      id: 5,
-      title: "Edge AI deployment reaches new milestones",
-      description: "Smaller, more efficient models enable AI capabilities on mobile devices and edge computing platforms, opening new possibilities for real-time applications.",
-      date: "2 weeks ago",
-      category: "Technology",
-      image: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?q=80&w=1400&auto=format&fit=crop"
-    },
-    {
-      id: 6,
-      title: "Enterprise AI adoption accelerates",
-      description: "Companies across industries are integrating AI tools into their workflows, with particular growth in customer service, content creation, and data analysis.",
-      date: "2 weeks ago",
-      category: "Business",
-      image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?q=80&w=1400&auto=format&fit=crop"
-    }
-  ];
+  const { news, loading, error } = useNews();
 
-  const categories = ["all", "update", "policy", "tooling", "research", "technology", "business"];
+  const categories = ["all", "1", "2", "3", "red"];
 
-  const filteredNews = newsItems.filter(item => {
-    const matchesCategory = activeCategory === "all" || item.category.toLowerCase() === activeCategory;
+  const filteredNews = news.filter(item => {
+    const matchesCategory = activeCategory === "all" || item.level?.toLowerCase() === activeCategory;
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          item.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
-  });
+  }).map(item => ({
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    date: new Date(item.created_at).toLocaleDateString(),
+    category: `Level ${item.level}`,
+    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1400&auto=format&fit=crop"
+  }));
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -130,20 +89,47 @@ const News = () => {
 
         <section className="py-16 border-t border-border/50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredNews.map((item, index) => (
-                <div key={item.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
-                  <NewsCard {...item} />
-                </div>
-              ))}
-            </div>
-
-            {filteredNews.length === 0 && (
+            {loading && (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <span className="ml-2 text-muted-foreground">Loading news...</span>
+              </div>
+            )}
+            
+            {error && (
               <div className="text-center py-16">
-                <p className="text-muted-foreground text-lg">
-                  No news articles found matching your criteria. Try adjusting your search or filters.
+                <p className="text-destructive text-lg">
+                  Error loading news: {error}
                 </p>
               </div>
+            )}
+
+            {!loading && !error && (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {filteredNews.map((item, index) => (
+                    <div key={item.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
+                      <NewsCard {...item} />
+                    </div>
+                  ))}
+                </div>
+
+                {filteredNews.length === 0 && news.length > 0 && (
+                  <div className="text-center py-16">
+                    <p className="text-muted-foreground text-lg">
+                      No news articles found matching your criteria. Try adjusting your search or filters.
+                    </p>
+                  </div>
+                )}
+                
+                {news.length === 0 && !loading && (
+                  <div className="text-center py-16">
+                    <p className="text-muted-foreground text-lg">
+                      No news articles available at this time.
+                    </p>
+                  </div>
+                )}
+              </>
             )}
 
             {/* Load More Button */}

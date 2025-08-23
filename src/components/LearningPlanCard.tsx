@@ -4,7 +4,7 @@ import { Clock, Bookmark, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface LearningPlanCardProps {
-  id: number;
+  id: string;
   title: string;
   description: string;
   duration: string;
