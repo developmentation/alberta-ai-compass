@@ -112,7 +112,15 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
   const progress = editingData.sections ? (completedSections.size / editingData.sections.length) * 100 : 0;
 
   useEffect(() => {
-    setEditingData(moduleData);
+    // Ensure proper data structure with content arrays
+    const normalizedData = {
+      ...moduleData,
+      sections: moduleData.sections?.map(section => ({
+        ...section,
+        content: Array.isArray(section.content) ? section.content : []
+      })) || []
+    };
+    setEditingData(normalizedData);
   }, [moduleData]);
 
   // Track module start when component mounts and user is logged in
@@ -1259,7 +1267,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
-                {currentSection?.content.map((content, index) => renderContent(content, index))}
+                {Array.isArray(currentSection?.content) && currentSection.content.map((content, index) => renderContent(content, index))}
               </CardContent>
             </Card>
           )}
@@ -1353,12 +1361,12 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
         onClose={() => setIsAskAIOpen(false)}
         moduleTitle={editingData.title}
         currentSection={currentSection?.title || ''}
-        context={currentSection?.content.map(c => {
+        context={Array.isArray(currentSection?.content) ? currentSection.content.map(c => {
           if (c.type === 'text') return c.value;
           if (c.type === 'quiz') return `Quiz: ${c.question}`;
           if (c.type === 'list') return `List: ${(c.value as string[]).join(', ')}`;
           return `${c.type} content`;
-        }).join('\n') || ''}
+        }).join('\n') : ''}
       />
     </div>
   );
