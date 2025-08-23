@@ -103,6 +103,7 @@ export function AdminPrompts() {
         sample_output: formData.sample_output || null,
         status: formData.status,
         sector_tags: { tags: sectorTagsArray },
+        image_url: formData.image_url || null,
         created_by: user?.id,
         updated_by: user?.id,
       };

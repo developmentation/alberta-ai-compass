@@ -50,6 +50,8 @@ interface ModuleData {
   learningOutcomes: string[];
   tags: string[];
   sections: Section[];
+  imageUrl?: string;
+  videoUrl?: string;
 }
 
 interface Section {
@@ -1112,16 +1114,91 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                 </SheetContent>
               </Sheet>
               
-              <div>
-                <h1 className="text-xl font-bold">{editingData.title}</h1>
-                <div className="flex items-center gap-2 mt-1">
-                  <Badge variant="outline">{editingData.difficulty}</Badge>
-                  <Badge variant="outline">{editingData.duration} min</Badge>
-                </div>
+              <div className="flex-1">
+                {isAdminMode && isEditable ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-medium mb-1 block">Title</label>
+                        <Input
+                          value={editingData.title}
+                          onChange={(e) => setEditingData({ ...editingData, title: e.target.value })}
+                          className="text-lg font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-1 block">Difficulty</label>
+                        <Select
+                          value={editingData.difficulty}
+                          onValueChange={(value) => setEditingData({ ...editingData, difficulty: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="beginner">Beginner</SelectItem>
+                            <SelectItem value="intermediate">Intermediate</SelectItem>
+                            <SelectItem value="advanced">Advanced</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-medium mb-1 block">Description</label>
+                        <Textarea
+                          value={editingData.description}
+                          onChange={(e) => setEditingData({ ...editingData, description: e.target.value })}
+                          rows={3}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-1 block">Duration (minutes)</label>
+                        <Input
+                          type="number"
+                          value={editingData.duration}
+                          onChange={(e) => setEditingData({ ...editingData, duration: parseInt(e.target.value) || 0 })}
+                        />
+                      </div>
+                    </div>
+                    <UnifiedMediaUpload
+                      onMediaUpload={(url, type) => {
+                        if (type === 'image') {
+                          setEditingData({ ...editingData, imageUrl: url, videoUrl: url ? undefined : editingData.videoUrl });
+                        } else {
+                          setEditingData({ ...editingData, videoUrl: url, imageUrl: url ? undefined : editingData.imageUrl });
+                        }
+                      }}
+                      currentImageUrl={editingData.imageUrl}
+                      currentVideoUrl={editingData.videoUrl}
+                      bucketName="module-assets"
+                      allowAiGeneration={true}
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <h1 className="text-xl font-bold">{editingData.title}</h1>
+                    <p className="text-muted-foreground mt-1">{editingData.description}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge variant="outline">{editingData.difficulty}</Badge>
+                      <Badge variant="outline">{editingData.duration} min</Badge>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="flex items-center gap-4">
+              {isAdminMode && isEditable && (
+                <Button
+                  onClick={() => onSave?.(editingData)}
+                  variant="default"
+                  size="sm"
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Changes
+                </Button>
+              )}
               <div className="text-sm text-muted-foreground">
                 Section {currentSectionIndex + 1} of {editingData.sections.length}
               </div>

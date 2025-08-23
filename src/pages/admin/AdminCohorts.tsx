@@ -94,6 +94,8 @@ export function AdminCohorts() {
         start_date: formData.start_date,
         end_date: formData.end_date || null,
         status: formData.status,
+        image_url: formData.image_url || null,
+        video_url: formData.video_url || null,
         created_by: user?.id,
         updated_by: user?.id,
       };

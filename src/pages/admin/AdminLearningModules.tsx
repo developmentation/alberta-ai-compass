@@ -11,6 +11,7 @@ import { ModuleViewer } from '@/components/ModuleViewer';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { MediaDisplay } from '@/components/admin/MediaDisplay';
 
 interface Module {
   id: string;
@@ -91,18 +92,18 @@ export default function AdminLearningModules() {
   };
 
   const convertModuleToViewerData = (module: Module) => {
-    // Convert database module format to ModuleViewer format
-    const moduleData = {
+    return {
       id: module.id,
       title: module.name || 'Untitled Module',
       description: module.description || '',
-      difficulty: module.level,
+      difficulty: module.level === '1' ? 'beginner' : module.level === '2' ? 'intermediate' : 'advanced',
       duration: 30, // Default duration
       learningOutcomes: [],
       tags: [],
-      sections: module.json_data?.sections || []
+      sections: module.json_data?.sections || [],
+      imageUrl: module.image_url || undefined,
+      videoUrl: module.video_url || undefined
     };
-    return moduleData;
   };
 
   const handleViewModule = (module: Module) => {
@@ -130,6 +131,9 @@ export default function AdminLearningModules() {
             ...updatedData,
             sections: updatedData.sections
           },
+          image_url: updatedData.imageUrl || null,
+          video_url: updatedData.videoUrl || null,
+          level: updatedData.difficulty === 'beginner' ? '1' : updatedData.difficulty === 'intermediate' ? '2' : '3',
           updated_at: new Date().toISOString()
         })
         .eq('id', editingModule.id);
@@ -257,10 +261,20 @@ export default function AdminLearningModules() {
               <Card key={module.id} className="hover:shadow-md transition-shadow">
                 <CardHeader className="space-y-3">
                   <div className="flex justify-between items-start">
-                    <CardTitle className="text-lg line-clamp-2">
-                      {module.name || 'Untitled Module'}
-                    </CardTitle>
-                    {getStatusBadge(module.status)}
+                    <div className="flex-1">
+                      <CardTitle className="text-lg line-clamp-2">
+                        {module.name || 'Untitled Module'}
+                      </CardTitle>
+                      {getStatusBadge(module.status)}
+                    </div>
+                    <div className="ml-4 flex-shrink-0">
+                      <MediaDisplay
+                        imageUrl={module.image_url}
+                        videoUrl={module.video_url}
+                        title={module.name || 'Module'}
+                        className="w-20 h-16 rounded-md overflow-hidden"
+                      />
+                    </div>
                   </div>
                   
                   <CardDescription className="line-clamp-3">

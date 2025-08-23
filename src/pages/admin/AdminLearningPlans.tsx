@@ -118,6 +118,8 @@ export function AdminLearningPlans() {
         duration: formData.duration || null,
         learning_outcomes: outcomesArray.length > 0 ? outcomesArray : null,
         steps: { steps: stepsArray },
+        image_url: formData.image_url || null,
+        video_url: formData.video_url || null,
         created_by: user?.id,
         updated_by: user?.id,
       };
