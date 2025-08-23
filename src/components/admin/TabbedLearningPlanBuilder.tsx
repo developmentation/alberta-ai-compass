@@ -67,6 +67,7 @@ export function TabbedLearningPlanBuilder({
   };
 
   const handleClose = () => {
+    // Always reset form when closing, except during editing
     if (!isEditing) {
       setFormData({
         name: "",
