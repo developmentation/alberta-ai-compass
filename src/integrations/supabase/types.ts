@@ -55,8 +55,10 @@ export type Database = {
           api_key: string
           created_at: string | null
           deleted_at: string | null
+          description: string | null
           id: string
           is_active: boolean | null
+          model_names: string[] | null
           provider: string
           updated_at: string | null
           updated_by: string | null
@@ -66,8 +68,10 @@ export type Database = {
           api_key: string
           created_at?: string | null
           deleted_at?: string | null
+          description?: string | null
           id?: string
           is_active?: boolean | null
+          model_names?: string[] | null
           provider: string
           updated_at?: string | null
           updated_by?: string | null
@@ -77,8 +81,10 @@ export type Database = {
           api_key?: string
           created_at?: string | null
           deleted_at?: string | null
+          description?: string | null
           id?: string
           is_active?: boolean | null
+          model_names?: string[] | null
           provider?: string
           updated_at?: string | null
           updated_by?: string | null
@@ -139,6 +145,47 @@ export type Database = {
         }
         Relationships: []
       }
+      cohort_content: {
+        Row: {
+          cohort_id: string
+          content_id: string
+          content_type: string
+          created_at: string | null
+          created_by: string
+          day_number: number
+          id: string
+          order_index: number | null
+        }
+        Insert: {
+          cohort_id: string
+          content_id: string
+          content_type: string
+          created_at?: string | null
+          created_by: string
+          day_number: number
+          id?: string
+          order_index?: number | null
+        }
+        Update: {
+          cohort_id?: string
+          content_id?: string
+          content_type?: string
+          created_at?: string | null
+          created_by?: string
+          day_number?: number
+          id?: string
+          order_index?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohort_content_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "cohorts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cohorts: {
         Row: {
           created_at: string | null
@@ -147,11 +194,13 @@ export type Database = {
           description: string | null
           end_date: string | null
           id: string
+          image_url: string | null
           name: string
           start_date: string
           status: Database["public"]["Enums"]["cohort_status"]
           updated_at: string | null
           updated_by: string | null
+          video_url: string | null
         }
         Insert: {
           created_at?: string | null
@@ -160,11 +209,13 @@ export type Database = {
           description?: string | null
           end_date?: string | null
           id?: string
+          image_url?: string | null
           name: string
           start_date: string
           status?: Database["public"]["Enums"]["cohort_status"]
           updated_at?: string | null
           updated_by?: string | null
+          video_url?: string | null
         }
         Update: {
           created_at?: string | null
@@ -173,11 +224,13 @@ export type Database = {
           description?: string | null
           end_date?: string | null
           id?: string
+          image_url?: string | null
           name?: string
           start_date?: string
           status?: Database["public"]["Enums"]["cohort_status"]
           updated_at?: string | null
           updated_by?: string | null
+          video_url?: string | null
         }
         Relationships: [
           {
@@ -250,6 +303,7 @@ export type Database = {
           description: string
           duration: unknown | null
           id: string
+          image_url: string | null
           is_ai_generated: boolean | null
           language: string | null
           learning_outcomes: string[] | null
@@ -260,6 +314,7 @@ export type Database = {
           steps: Json | null
           updated_at: string | null
           updated_by: string | null
+          video_url: string | null
         }
         Insert: {
           created_at?: string | null
@@ -268,6 +323,7 @@ export type Database = {
           description: string
           duration?: unknown | null
           id?: string
+          image_url?: string | null
           is_ai_generated?: boolean | null
           language?: string | null
           learning_outcomes?: string[] | null
@@ -278,6 +334,7 @@ export type Database = {
           steps?: Json | null
           updated_at?: string | null
           updated_by?: string | null
+          video_url?: string | null
         }
         Update: {
           created_at?: string | null
@@ -286,6 +343,7 @@ export type Database = {
           description?: string
           duration?: unknown | null
           id?: string
+          image_url?: string | null
           is_ai_generated?: boolean | null
           language?: string | null
           learning_outcomes?: string[] | null
@@ -296,6 +354,7 @@ export type Database = {
           steps?: Json | null
           updated_at?: string | null
           updated_by?: string | null
+          video_url?: string | null
         }
         Relationships: [
           {
@@ -362,6 +421,57 @@ export type Database = {
           },
         ]
       }
+      modules: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          deleted_at: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          json_data: Json
+          language: string | null
+          level: Database["public"]["Enums"]["difficulty_level"] | null
+          name: string | null
+          status: Database["public"]["Enums"]["content_status"] | null
+          updated_at: string | null
+          updated_by: string | null
+          video_url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          json_data: Json
+          language?: string | null
+          level?: Database["public"]["Enums"]["difficulty_level"] | null
+          name?: string | null
+          status?: Database["public"]["Enums"]["content_status"] | null
+          updated_at?: string | null
+          updated_by?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          json_data?: Json
+          language?: string | null
+          level?: Database["public"]["Enums"]["difficulty_level"] | null
+          name?: string | null
+          status?: Database["public"]["Enums"]["content_status"] | null
+          updated_at?: string | null
+          updated_by?: string | null
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       news: {
         Row: {
           created_at: string | null
@@ -369,6 +479,7 @@ export type Database = {
           deleted_at: string | null
           description: string
           id: string
+          image_url: string | null
           is_active: boolean | null
           language: string | null
           level: Database["public"]["Enums"]["content_level"]
@@ -378,6 +489,7 @@ export type Database = {
           title: string
           updated_at: string | null
           updated_by: string | null
+          video_url: string | null
         }
         Insert: {
           created_at?: string | null
@@ -385,6 +497,7 @@ export type Database = {
           deleted_at?: string | null
           description: string
           id?: string
+          image_url?: string | null
           is_active?: boolean | null
           language?: string | null
           level: Database["public"]["Enums"]["content_level"]
@@ -394,6 +507,7 @@ export type Database = {
           title: string
           updated_at?: string | null
           updated_by?: string | null
+          video_url?: string | null
         }
         Update: {
           created_at?: string | null
@@ -401,6 +515,7 @@ export type Database = {
           deleted_at?: string | null
           description?: string
           id?: string
+          image_url?: string | null
           is_active?: boolean | null
           language?: string | null
           level?: Database["public"]["Enums"]["content_level"]
@@ -410,6 +525,7 @@ export type Database = {
           title?: string
           updated_at?: string | null
           updated_by?: string | null
+          video_url?: string | null
         }
         Relationships: [
           {
@@ -477,6 +593,7 @@ export type Database = {
           deleted_at: string | null
           description: string
           id: string
+          image_url: string | null
           name: string
           purpose: string
           sample_output: string | null
@@ -492,6 +609,7 @@ export type Database = {
           deleted_at?: string | null
           description: string
           id?: string
+          image_url?: string | null
           name: string
           purpose: string
           sample_output?: string | null
@@ -507,6 +625,7 @@ export type Database = {
           deleted_at?: string | null
           description?: string
           id?: string
+          image_url?: string | null
           name?: string
           purpose?: string
           sample_output?: string | null
@@ -655,6 +774,7 @@ export type Database = {
           deleted_at: string | null
           description: string
           id: string
+          image_url: string | null
           name: string
           stars: number | null
           status: Database["public"]["Enums"]["content_status"]
@@ -662,6 +782,7 @@ export type Database = {
           updated_at: string | null
           updated_by: string | null
           url: string | null
+          video_url: string | null
         }
         Insert: {
           cost_indicator?: string | null
@@ -670,6 +791,7 @@ export type Database = {
           deleted_at?: string | null
           description: string
           id?: string
+          image_url?: string | null
           name: string
           stars?: number | null
           status?: Database["public"]["Enums"]["content_status"]
@@ -677,6 +799,7 @@ export type Database = {
           updated_at?: string | null
           updated_by?: string | null
           url?: string | null
+          video_url?: string | null
         }
         Update: {
           cost_indicator?: string | null
@@ -685,6 +808,7 @@ export type Database = {
           deleted_at?: string | null
           description?: string
           id?: string
+          image_url?: string | null
           name?: string
           stars?: number | null
           status?: Database["public"]["Enums"]["content_status"]
@@ -692,6 +816,7 @@ export type Database = {
           updated_at?: string | null
           updated_by?: string | null
           url?: string | null
+          video_url?: string | null
         }
         Relationships: [
           {
@@ -739,6 +864,7 @@ export type Database = {
       cohort_status: "active" | "inactive" | "completed"
       content_level: "1" | "2" | "3" | "RED"
       content_status: "draft" | "review" | "published" | "archived"
+      difficulty_level: "beginner" | "intermediate" | "advanced"
       module_content_type: "text" | "image" | "video" | "quiz"
       tool_type: "open_source" | "saas" | "commercial"
       user_role: "public" | "government" | "facilitator" | "admin"
@@ -872,6 +998,7 @@ export const Constants = {
       cohort_status: ["active", "inactive", "completed"],
       content_level: ["1", "2", "3", "RED"],
       content_status: ["draft", "review", "published", "archived"],
+      difficulty_level: ["beginner", "intermediate", "advanced"],
       module_content_type: ["text", "image", "video", "quiz"],
       tool_type: ["open_source", "saas", "commercial"],
       user_role: ["public", "government", "facilitator", "admin"],
