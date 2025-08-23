@@ -3,13 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ContentCard } from '@/components/ContentCard';
 import { 
-  Grid, 
-  List, 
   ChevronLeft, 
   ChevronRight,
-  Play,
-  Pause,
-  RotateCcw
+  RotateCcw,
+  BookOpen
 } from 'lucide-react';
 
 interface ContentItem {
@@ -35,10 +32,7 @@ interface LearningPlanViewerProps {
   onViewContent?: (content: ContentItem) => void;
 }
 
-type ViewMode = 'gallery' | 'sequential';
-
 export function LearningPlanViewer({ contentItems, planName, onViewContent }: LearningPlanViewerProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>('gallery');
   const [currentIndex, setCurrentIndex] = useState(0);
 
   if (contentItems.length === 0) {
@@ -46,7 +40,7 @@ export function LearningPlanViewer({ contentItems, planName, onViewContent }: Le
       <div className="text-center py-16">
         <div className="max-w-md mx-auto">
           <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-            <List className="w-8 h-8 text-muted-foreground" />
+            <BookOpen className="w-8 h-8 text-muted-foreground" />
           </div>
           <h3 className="text-xl font-semibold mb-2">No Content Available</h3>
           <p className="text-muted-foreground mb-6">
@@ -77,7 +71,7 @@ export function LearningPlanViewer({ contentItems, planName, onViewContent }: Le
 
   return (
     <div className="space-y-6">
-      {/* View Mode Controls */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h2 className="text-2xl font-bold">Learning Content</h2>
@@ -85,43 +79,11 @@ export function LearningPlanViewer({ contentItems, planName, onViewContent }: Le
             {contentItems.length} items
           </Badge>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant={viewMode === 'gallery' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setViewMode('gallery')}
-            className="flex items-center gap-2"
-          >
-            <Grid className="w-4 h-4" />
-            Gallery
-          </Button>
-          <Button
-            variant={viewMode === 'sequential' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setViewMode('sequential')}
-            className="flex items-center gap-2"
-          >
-            <List className="w-4 h-4" />
-            Sequential
-          </Button>
-        </div>
       </div>
 
-      {viewMode === 'gallery' ? (
-        /* Gallery View */
-        <div className="grid auto-rows-[300px] gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {contentItems.map((item, index) => (
-            <ContentCard
-              key={item.id}
-              content={item}
-              className={index === 0 ? "md:col-span-2 md:row-span-2" : ""}
-              onView={onViewContent}
-            />
-          ))}
-        </div>
-      ) : (
-        /* Sequential View */
-        <div className="space-y-6">
+      {/* Progress & Navigation */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1 space-y-4">
           {/* Progress Bar */}
           <div className="bg-card rounded-xl p-4 border border-border">
             <div className="flex items-center justify-between mb-2">
@@ -140,87 +102,83 @@ export function LearningPlanViewer({ contentItems, planName, onViewContent }: Le
             </div>
           </div>
 
-          {/* Current Content Item */}
-          <div className="grid lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <ContentCard
-                content={currentItem}
-                className="h-[400px]"
-                onView={onViewContent}
-              />
+          {/* Navigation */}
+          <div className="bg-card rounded-xl p-6 border border-border">
+            <h3 className="font-semibold mb-2">Navigation</h3>
+            <div className="flex gap-2 mb-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePrevious}
+                className="flex-1"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleNext}
+                className="flex-1"
+              >
+                Next
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleReset}
+              className="w-full"
+            >
+              <RotateCcw className="w-4 h-4 mr-2" />
+              Start Over
+            </Button>
+          </div>
 
-            {/* Navigation & Info */}
-            <div className="space-y-4">
-              <div className="bg-card rounded-xl p-6 border border-border">
-                <h3 className="font-semibold mb-2">Navigation</h3>
-                <div className="flex gap-2 mb-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handlePrevious}
-                    className="flex-1"
-                  >
-                    <ChevronLeft className="w-4 h-4 mr-1" />
-                    Previous
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleNext}
-                    className="flex-1"
-                  >
-                    Next
-                    <ChevronRight className="w-4 h-4 ml-1" />
-                  </Button>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleReset}
-                  className="w-full"
+          {/* Content Overview */}
+          <div className="bg-card rounded-xl p-6 border border-border">
+            <h3 className="font-semibold mb-3">Content Overview</h3>
+            <div className="space-y-2">
+              {contentItems.map((item, index) => (
+                <button
+                  key={item.id}
+                  onClick={() => setCurrentIndex(index)}
+                  className={`w-full text-left p-3 rounded-lg transition-all ${
+                    index === currentIndex
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted hover:bg-muted/80'
+                  }`}
                 >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Start Over
-                </Button>
-              </div>
-
-              {/* Content Overview */}
-              <div className="bg-card rounded-xl p-6 border border-border">
-                <h3 className="font-semibold mb-3">Content Overview</h3>
-                <div className="space-y-2">
-                  {contentItems.map((item, index) => (
-                    <button
-                      key={item.id}
-                      onClick={() => setCurrentIndex(index)}
-                      className={`w-full text-left p-3 rounded-lg transition-all ${
-                        index === currentIndex
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted hover:bg-muted/80'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono">
-                          {(index + 1).toString().padStart(2, '0')}
-                        </span>
-                        <span className="text-sm font-medium truncate">
-                          {item.name}
-                        </span>
-                      </div>
-                      <Badge 
-                        variant={index === currentIndex ? "secondary" : "outline"} 
-                        className="text-xs mt-1"
-                      >
-                        {item.type}
-                      </Badge>
-                    </button>
-                  ))}
-                </div>
-              </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono">
+                      {(index + 1).toString().padStart(2, '0')}
+                    </span>
+                    <span className="text-sm font-medium truncate">
+                      {item.name}
+                    </span>
+                  </div>
+                  <Badge 
+                    variant={index === currentIndex ? "secondary" : "outline"} 
+                    className="text-xs mt-1"
+                  >
+                    {item.type}
+                  </Badge>
+                </button>
+              ))}
             </div>
           </div>
         </div>
-      )}
+
+        {/* Current Content Item */}
+        <div className="lg:col-span-2">
+          <ContentCard
+            content={currentItem}
+            className="h-[500px]"
+            onView={onViewContent}
+          />
+        </div>
+      </div>
     </div>
   );
 }

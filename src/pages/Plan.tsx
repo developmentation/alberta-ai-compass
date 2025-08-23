@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Progress } from "@/components/ui/progress";
 import { supabase } from '@/integrations/supabase/client';
 import { LearningPlanViewer } from '@/components/LearningPlanViewer';
 import { ModuleViewer } from '@/components/ModuleViewer';
@@ -75,7 +74,7 @@ const Plan = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [userRating, setUserRating] = useState<number>(0);
   const [selectedContent, setSelectedContent] = useState<any>(null);
   const [viewerType, setViewerType] = useState<string | null>(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
@@ -193,8 +192,11 @@ const Plan = () => {
           setContentItems(validContent);
         }
 
-        // Mock progress for now
-        setProgress(Math.floor(Math.random() * 60) + 10);
+        // Check if user has bookmarked this plan
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData.user) {
+          // TODO: Check user bookmarks and ratings from database
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load learning plan');
       } finally {
@@ -358,6 +360,37 @@ const Plan = () => {
                     )}
                   </div>
 
+                  {/* Rating Section */}
+                  <div className="mb-6">
+                    <div className="flex items-center gap-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Rate this plan:</p>
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              onClick={() => setUserRating(star)}
+                              className="hover:scale-110 transition-transform"
+                            >
+                              <Star 
+                                className={`w-5 h-5 transition-colors ${
+                                  star <= userRating 
+                                    ? 'text-amber-500 fill-amber-500' 
+                                    : 'text-muted-foreground hover:text-amber-400'
+                                }`} 
+                              />
+                            </button>
+                          ))}
+                          {userRating > 0 && (
+                            <span className="ml-2 text-sm text-muted-foreground">
+                              ({userRating}/5)
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="flex flex-wrap gap-3">
                     <Button 
                       className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow"
@@ -376,7 +409,7 @@ const Plan = () => {
                       className="border border-border hover:border-primary/50"
                       onClick={() => setIsBookmarked(!isBookmarked)}
                     >
-                      <Bookmark className={`w-4 h-4 mr-2 ${isBookmarked ? 'fill-current' : ''}`} />
+                      <Bookmark className={`w-4 h-4 mr-2 ${isBookmarked ? 'fill-current text-amber-500' : ''}`} />
                       {isBookmarked ? 'Bookmarked' : 'Bookmark'}
                     </Button>
                   </div>
@@ -416,8 +449,8 @@ const Plan = () => {
 
                     <div className="absolute bottom-4 left-4 right-4">
                       <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 text-white border border-white/20">
-                        <div className="flex items-center justify-between text-sm mb-2">
-                          <span>Progress: {contentItems.length > 0 ? `${Math.ceil((progress / 100) * contentItems.length)}/${contentItems.length} items` : 'Ready to start'}</span>
+                        <div className="flex items-center justify-between text-sm">
+                          <span>{contentItems.length > 0 ? `${contentItems.length} learning items` : 'Ready to start'}</span>
                            {plan.duration && (
                             <span className="flex items-center gap-1">
                               <Clock className="w-3 h-3" />
@@ -425,7 +458,6 @@ const Plan = () => {
                             </span>
                           )}
                         </div>
-                        <Progress value={progress} className="h-1" />
                       </div>
                     </div>
                   </div>
