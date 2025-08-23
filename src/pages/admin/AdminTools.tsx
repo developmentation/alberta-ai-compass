@@ -24,7 +24,8 @@ import { Plus, Edit, Trash2, ExternalLink, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { EnhancedMediaUpload } from "@/components/admin/EnhancedMediaUpload";
+import { UnifiedMediaUpload } from "@/components/admin/UnifiedMediaUpload";
+import { MediaDisplay } from "@/components/admin/MediaDisplay";
 
 interface Tool {
   id: string;
@@ -276,13 +277,17 @@ export function AdminTools() {
                   />
                 </div>
 
-                <EnhancedMediaUpload
-                  onImageUpload={(url) => setFormData({ ...formData, image_url: url })}
-                  onVideoUpload={(url) => setFormData({ ...formData, video_url: url })}
-                  imageUrl={formData.image_url}
-                  videoUrl={formData.video_url}
+                <UnifiedMediaUpload
+                  onMediaUpload={(url, type) => {
+                    if (type === 'image') {
+                      setFormData({ ...formData, image_url: url, video_url: url ? '' : formData.video_url });
+                    } else {
+                      setFormData({ ...formData, video_url: url, image_url: url ? '' : formData.image_url });
+                    }
+                  }}
+                  currentImageUrl={formData.image_url}
+                  currentVideoUrl={formData.video_url}
                   bucketName="media-assets"
-                  allowAiGeneration={true}
                 />
 
                 <div className="grid grid-cols-2 gap-4">
@@ -362,15 +367,12 @@ export function AdminTools() {
             return (
               <Card key={tool.id}>
                 <div className="flex">
-                  {tool.image_url && (
-                    <div className="w-24 h-20 flex-shrink-0 overflow-hidden rounded-l-lg">
-                      <img 
-                        src={tool.image_url} 
-                        alt={tool.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
+                  <MediaDisplay
+                    imageUrl={tool.image_url}
+                    videoUrl={tool.video_url}
+                    title={tool.name}
+                    className="w-24 h-20 flex-shrink-0 overflow-hidden rounded-l-lg"
+                  />
                   <div className="flex-1">
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-start">

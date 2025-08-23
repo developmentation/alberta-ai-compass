@@ -24,7 +24,8 @@ import { Plus, Edit, Trash2, Eye, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { EnhancedMediaUpload } from "@/components/admin/EnhancedMediaUpload";
+import { UnifiedMediaUpload } from "@/components/admin/UnifiedMediaUpload";
+import { MediaDisplay } from "@/components/admin/MediaDisplay";
 
 interface NewsItem {
   id: string;
@@ -316,13 +317,17 @@ export function AdminNews() {
                   />
                 </div>
 
-                <EnhancedMediaUpload
-                  onImageUpload={(url) => setFormData({ ...formData, image_url: url })}
-                  onVideoUpload={(url) => setFormData({ ...formData, video_url: url })}
-                  imageUrl={formData.image_url}
-                  videoUrl={formData.video_url}
+                <UnifiedMediaUpload
+                  onMediaUpload={(url, type) => {
+                    if (type === 'image') {
+                      setFormData({ ...formData, image_url: url, video_url: url ? '' : formData.video_url });
+                    } else {
+                      setFormData({ ...formData, video_url: url, image_url: url ? '' : formData.image_url });
+                    }
+                  }}
+                  currentImageUrl={formData.image_url}
+                  currentVideoUrl={formData.video_url}
                   bucketName="media-assets"
-                  allowAiGeneration={true}
                 />
 
                 <div className="grid grid-cols-2 gap-4">
@@ -469,15 +474,14 @@ export function AdminNews() {
                       )}
                     </div>
                   </div>
-                  {item.image_url && (
-                    <div className="w-20 h-16 ml-4 rounded-md overflow-hidden flex-shrink-0">
-                      <img 
-                        src={item.image_url} 
-                        alt={item.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
+                  <div className="ml-4">
+                    <MediaDisplay
+                      imageUrl={item.image_url}
+                      videoUrl={item.video_url}
+                      title={item.title}
+                      className="w-20 h-16 rounded-md overflow-hidden flex-shrink-0"
+                    />
+                  </div>
                   <div className="flex gap-2 ml-4">
                     <Button
                       variant="outline"

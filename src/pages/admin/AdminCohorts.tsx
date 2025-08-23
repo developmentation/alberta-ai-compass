@@ -24,7 +24,8 @@ import { Plus, Edit, Trash2, Calendar, Users, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { EnhancedMediaUpload } from "@/components/admin/EnhancedMediaUpload";
+import { UnifiedMediaUpload } from "@/components/admin/UnifiedMediaUpload";
+import { MediaDisplay } from "@/components/admin/MediaDisplay";
 
 interface Cohort {
   id: string;
@@ -270,13 +271,17 @@ export function AdminCohorts() {
                   />
                 </div>
 
-                <EnhancedMediaUpload
-                  onImageUpload={(url) => setFormData({ ...formData, image_url: url })}
-                  onVideoUpload={(url) => setFormData({ ...formData, video_url: url })}
-                  imageUrl={formData.image_url}
-                  videoUrl={formData.video_url}
+                <UnifiedMediaUpload
+                  onMediaUpload={(url, type) => {
+                    if (type === 'image') {
+                      setFormData({ ...formData, image_url: url, video_url: url ? '' : formData.video_url });
+                    } else {
+                      setFormData({ ...formData, video_url: url, image_url: url ? '' : formData.image_url });
+                    }
+                  }}
+                  currentImageUrl={formData.image_url}
+                  currentVideoUrl={formData.video_url}
                   bucketName="cohort-assets"
-                  allowAiGeneration={true}
                 />
 
                 <div className="grid grid-cols-2 gap-4">

@@ -24,7 +24,8 @@ import { Plus, Edit, Trash2, Users, Clock, Star, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { EnhancedMediaUpload } from "@/components/admin/EnhancedMediaUpload";
+import { UnifiedMediaUpload } from "@/components/admin/UnifiedMediaUpload";
+import { MediaDisplay } from "@/components/admin/MediaDisplay";
 
 interface LearningPlan {
   id: string;
@@ -310,13 +311,17 @@ export function AdminLearningPlans() {
                   />
                 </div>
 
-                <EnhancedMediaUpload
-                  onImageUpload={(url) => setFormData({ ...formData, image_url: url })}
-                  onVideoUpload={(url) => setFormData({ ...formData, video_url: url })}
-                  imageUrl={formData.image_url}
-                  videoUrl={formData.video_url}
+                <UnifiedMediaUpload
+                  onMediaUpload={(url, type) => {
+                    if (type === 'image') {
+                      setFormData({ ...formData, image_url: url, video_url: url ? '' : formData.video_url });
+                    } else {
+                      setFormData({ ...formData, video_url: url, image_url: url ? '' : formData.image_url });
+                    }
+                  }}
+                  currentImageUrl={formData.image_url}
+                  currentVideoUrl={formData.video_url}
                   bucketName="media-assets"
-                  allowAiGeneration={true}
                 />
 
                 <div className="grid grid-cols-3 gap-4">
@@ -406,15 +411,12 @@ Take final assessment"
           {plans.map((plan) => (
             <Card key={plan.id}>
               <div className="flex">
-                {plan.image_url && (
-                  <div className="w-32 h-24 flex-shrink-0 overflow-hidden rounded-l-lg">
-                    <img 
-                      src={plan.image_url} 
-                      alt={plan.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
+                <MediaDisplay
+                  imageUrl={plan.image_url}
+                  videoUrl={plan.video_url}
+                  title={plan.name}
+                  className="w-32 h-24 flex-shrink-0 overflow-hidden rounded-l-lg"
+                />
                 <div className="flex-1">
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
