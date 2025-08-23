@@ -1,7 +1,10 @@
-import { useState } from "react";
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { useAuth } from '@/hooks/useAuth';
+import { Link } from 'react-router-dom';
 import { User, X } from "lucide-react";
 
 interface LoginModalProps {
@@ -10,14 +13,22 @@ interface LoginModalProps {
 }
 
 export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { signIn } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log("Login attempt:", { email, password });
-    onClose();
+    setLoading(true);
+    
+    const { error } = await signIn(email, password);
+    
+    if (!error) {
+      onClose();
+    }
+    
+    setLoading(false);
   };
 
   return (
@@ -42,7 +53,7 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-6">
           <div>
-            <label className="text-xs text-muted-foreground mb-2 block">Email</label>
+            <Label className="text-xs text-muted-foreground mb-2 block">Email</Label>
             <Input
               type="email"
               value={email}
@@ -54,7 +65,7 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
           </div>
           
           <div>
-            <label className="text-xs text-muted-foreground mb-2 block">Password</label>
+            <Label className="text-xs text-muted-foreground mb-2 block">Password</Label>
             <Input
               type="password"
               value={password}
@@ -67,13 +78,17 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
           
           <Button 
             type="submit"
+            disabled={loading}
             className="w-full bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow"
           >
-            Log in
+            {loading ? 'Signing in...' : 'Log in'}
           </Button>
           
           <p className="text-xs text-muted-foreground text-center">
-            No account? We'll create one on first login.
+            Don't have an account?{' '}
+            <Link to="/auth" className="text-primary hover:underline" onClick={onClose}>
+              Sign up here
+            </Link>
           </p>
         </form>
       </DialogContent>

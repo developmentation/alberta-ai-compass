@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/hooks/use-theme";
+import { AuthProvider } from "@/hooks/useAuth";
 import ScrollToTop from "@/components/ScrollToTop";
 import Index from "./pages/Index";
 import News from "./pages/News";
@@ -14,9 +15,11 @@ import Tools from "./pages/Tools";
 import AIMentor from "./pages/AIMentor";
 import Privacy from "./pages/Privacy";
 import Login from "./pages/Login";
+import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import Plan from "./pages/Plan";
 import NotFound from "./pages/NotFound";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -27,8 +30,9 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <ScrollToTop />
-          <Routes>
+          <AuthProvider>
+            <ScrollToTop />
+            <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/news" element={<News />} />
             <Route path="/learning-hub" element={<LearningHub />} />
@@ -36,11 +40,13 @@ const App = () => (
             <Route path="/ai-mentor" element={<AIMentor />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/admin" element={<Admin />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/admin" element={<ProtectedRoute requireAdmin><Admin /></ProtectedRoute>} />
             <Route path="/plan/:planId" element={<Plan />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>

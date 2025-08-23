@@ -1,5 +1,9 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { 
   LayoutDashboard, 
   Newspaper, 
@@ -19,11 +23,48 @@ import {
   TrendingDown,
   Minus,
   ArrowRight,
-  UserPlus
+  UserPlus,
+  LogOut
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Admin = () => {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [stats, setStats] = useState<any>(null);
+  const [recentActivity, setRecentActivity] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const { profile, signOut } = useAuth();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchAdminData();
+  }, []);
+
+  const fetchAdminData = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-stats', {
+        headers: {
+          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+
+      setStats(data.stats);
+      setRecentActivity(data.recent_activity);
+    } catch (error: any) {
+      console.error('Error fetching admin data:', error);
+      toast({
+        title: "Error loading data",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const navItems = [
     { icon: LayoutDashboard, label: "Overview", active: true },
@@ -205,13 +246,19 @@ const Admin = () => {
 
         <div className="mt-auto px-6 py-5 border-t border-border">
           <div className="flex items-center">
-            <div className="h-9 w-9 rounded-full bg-muted"></div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-foreground">Alex Morgan</p>
-              <p className="text-xs font-medium text-muted-foreground">Super Admin</p>
+            <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center text-sm font-bold">
+              {profile?.full_name?.charAt(0) || 'U'}
             </div>
-            <button className="ml-auto inline-flex items-center justify-center rounded-md p-2 hover:bg-muted text-muted-foreground hover:text-foreground">
-              <Settings className="h-4 w-4" />
+            <div className="ml-3">
+              <p className="text-sm font-medium text-foreground">{profile?.full_name || 'User'}</p>
+              <p className="text-xs font-medium text-muted-foreground capitalize">{profile?.role}</p>
+            </div>
+            <button 
+              onClick={signOut}
+              className="ml-auto inline-flex items-center justify-center rounded-md p-2 hover:bg-muted text-muted-foreground hover:text-foreground"
+              title="Sign out"
+            >
+              <LogOut className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -293,38 +340,110 @@ const Admin = () => {
         {/* Content */}
         <main className="flex-1 overflow-y-auto px-4 md:px-6 py-6">
           {/* KPI Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-            {kpiCards.map((card, index) => (
-              <div key={index} className="bg-card rounded-lg border border-border p-5">
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-card rounded-lg border border-border p-5">
+                  <div className="animate-pulse">
+                    <div className="flex items-center">
+                      <div className="h-10 w-10 bg-muted rounded-md"></div>
+                      <div className="ml-4 flex-1">
+                        <div className="h-4 bg-muted rounded mb-2"></div>
+                        <div className="h-8 bg-muted rounded w-20"></div>
+                      </div>
+                    </div>
+                    <div className="mt-4 h-4 bg-muted rounded w-32"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+              <div className="bg-card rounded-lg border border-border p-5">
                 <div className="flex items-center">
-                  <div className={`p-2.5 rounded-md ${card.bgColor} ${card.iconColor}`}>
-                    <card.icon className="h-5 w-5" />
+                  <div className="p-2.5 rounded-md bg-primary/10 text-primary">
+                    <Newspaper className="h-5 w-5" />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-muted-foreground">{card.label}</p>
+                    <p className="text-sm font-medium text-muted-foreground">News Articles</p>
                     <p className="text-3xl tracking-tight font-semibold text-foreground">
-                      {card.value}
+                      {stats?.total_news || 0}
                     </p>
                   </div>
                 </div>
-                <div className="mt-4 flex items-center text-sm">
-                  <span className={`inline-flex items-center ${
-                    card.trend.direction === "up" 
-                      ? "text-emerald-600" 
-                      : card.trend.direction === "down" 
-                      ? "text-rose-600" 
-                      : "text-muted-foreground"
-                  }`}>
-                    {card.trend.direction === "up" && <TrendingUp className="h-4 w-4 mr-1" />}
-                    {card.trend.direction === "down" && <TrendingDown className="h-4 w-4 mr-1" />}
-                    {card.trend.direction === "neutral" && <Minus className="h-4 w-4 mr-1" />}
-                    {card.trend.value}
-                  </span>
-                  <span className="text-muted-foreground ml-2">{card.trend.period}</span>
+              </div>
+              
+              <div className="bg-card rounded-lg border border-border p-5">
+                <div className="flex items-center">
+                  <div className="p-2.5 rounded-md bg-blue-100 text-blue-600">
+                    <Layers className="h-5 w-5" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-muted-foreground">Learning Plans</p>
+                    <p className="text-3xl tracking-tight font-semibold text-foreground">
+                      {stats?.total_plans || 0}
+                    </p>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
+              
+              <div className="bg-card rounded-lg border border-border p-5">
+                <div className="flex items-center">
+                  <div className="p-2.5 rounded-md bg-emerald-100 text-emerald-600">
+                    <Users className="h-5 w-5" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-muted-foreground">Total Users</p>
+                    <p className="text-3xl tracking-tight font-semibold text-foreground">
+                      {stats?.total_users || 0}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-card rounded-lg border border-border p-5">
+                <div className="flex items-center">
+                  <div className="p-2.5 rounded-md bg-amber-100 text-amber-600">
+                    <BookOpen className="h-5 w-5" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-muted-foreground">Resources</p>
+                    <p className="text-3xl tracking-tight font-semibold text-foreground">
+                      {stats?.total_resources || 0}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-card rounded-lg border border-border p-5">
+                <div className="flex items-center">
+                  <div className="p-2.5 rounded-md bg-fuchsia-100 text-fuchsia-600">
+                    <Bot className="h-5 w-5" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-muted-foreground">System Prompts</p>
+                    <p className="text-3xl tracking-tight font-semibold text-foreground">
+                      {stats?.total_prompts || 0}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-card rounded-lg border border-border p-5">
+                <div className="flex items-center">
+                  <div className="p-2.5 rounded-md bg-cyan-100 text-cyan-600">
+                    <Wrench className="h-5 w-5" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-muted-foreground">Active Tools</p>
+                    <p className="text-3xl tracking-tight font-semibold text-foreground">
+                      {stats?.total_tools || 0}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Main Grid */}
           <div className="mt-8 grid grid-cols-1 xl:grid-cols-3 gap-6">
