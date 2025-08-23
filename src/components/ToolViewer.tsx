@@ -1,8 +1,9 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { ExternalLink, Star, X, DollarSign } from 'lucide-react';
+import { ExternalLink, Star, X, DollarSign, Bookmark, BookmarkCheck } from 'lucide-react';
+import { useBookmarks } from '@/hooks/useBookmarks';
+import { useRatings } from '@/hooks/useRatings';
 
 interface Tool {
   id: string;
@@ -24,43 +25,68 @@ interface ToolViewerProps {
 }
 
 export function ToolViewer({ tool, onClose, className = "" }: ToolViewerProps) {
+  const { isBookmarked, toggleBookmark } = useBookmarks(tool.id, 'tool');
+  const { userRating, aggregatedRating, submitRating } = useRatings(tool.id, 'tool');
+
   const handleOpenTool = () => {
     if (tool.url) {
       window.open(tool.url, '_blank', 'noopener,noreferrer');
     }
   };
 
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`w-4 h-4 ${
-          i < rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'
-        }`}
-      />
-    ));
-  };
-
   return (
     <div className={`max-w-4xl mx-auto p-6 space-y-6 ${className}`}>
       {/* Header */}
       <div className="flex items-start justify-between">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
+        <div className="space-y-2 flex-1">
+          <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-3xl font-bold">{tool.name}</h1>
             <Badge variant="outline">{tool.type}</Badge>
           </div>
-          {tool.stars && (
+          
+          {/* Rating and bookmark section */}
+          <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <div className="flex">{renderStars(tool.stars)}</div>
+              <div className="flex items-center">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => submitRating(star)}
+                    className="p-1 hover:scale-110 transition-transform"
+                  >
+                    <Star 
+                      className={`w-4 h-4 ${
+                        star <= (userRating || 0)
+                          ? 'fill-yellow-400 text-yellow-400' 
+                          : 'text-muted-foreground'
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
               <span className="text-sm text-muted-foreground">
-                {tool.stars}/5 stars
+                {aggregatedRating?.average_rating?.toFixed(1) || '0.0'} 
+                ({aggregatedRating?.total_votes || 0} votes)
               </span>
             </div>
-          )}
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => toggleBookmark(tool.id, 'tool')}
+              className="flex items-center gap-2"
+            >
+              {isBookmarked ? (
+                <BookmarkCheck className="w-4 h-4 fill-primary text-primary" />
+              ) : (
+                <Bookmark className="w-4 h-4" />
+              )}
+              {isBookmarked ? 'Bookmarked' : 'Bookmark'}
+            </Button>
+          </div>
         </div>
         {onClose && (
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button variant="ghost" size="sm" onClick={onClose} className="ml-4">
             <X className="w-4 h-4" />
           </Button>
         )}

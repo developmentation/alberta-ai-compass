@@ -1,16 +1,19 @@
+import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ToolCard } from "@/components/ToolCard";
+import { ToolViewer } from "@/components/ToolViewer";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, Filter, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Search, Loader2 } from "lucide-react";
 import { useTools } from "@/hooks/useTools";
 
 const Tools = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
+  const [selectedTool, setSelectedTool] = useState<any>(null);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
   const { tools, loading, error } = useTools();
 
   const categories = ["all", "open_source", "saas", "commercial"];
@@ -20,16 +23,23 @@ const Tools = () => {
     const matchesSearch = tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          tool.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
-  }).map(tool => ({
-    id: tool.id,
-    title: tool.name,
-    description: tool.description,
-    category: tool.type,
-    icon: "wrench",
-    url: tool.url,
-    costIndicator: tool.cost_indicator,
-    stars: tool.stars
-  }));
+  });
+
+  const handleToolClick = (tool: any) => {
+    setSelectedTool(tool);
+    setIsViewerOpen(true);
+  };
+
+  const handleOpenTool = (url: string) => {
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const handleCloseViewer = () => {
+    setIsViewerOpen(false);
+    setSelectedTool(null);
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -68,10 +78,6 @@ const Tools = () => {
                     className="pl-10 bg-card/60 backdrop-blur-sm border-border"
                   />
                 </div>
-                <Button variant="ghost" className="border border-border hover:border-primary/50">
-                  <Filter className="w-4 h-4 mr-2" />
-                  Categories
-                </Button>
               </div>
 
               <div className="flex flex-wrap gap-3 justify-center">
@@ -110,10 +116,22 @@ const Tools = () => {
 
             {!loading && !error && (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {filteredTools.map((tool, index) => (
                     <div key={tool.id} style={{ animationDelay: `${index * 0.05}s` }} className="animate-fade-in-up">
-                      <ToolCard {...tool} />
+                      <ToolCard
+                        title={tool.name}
+                        description={tool.description}
+                        category={tool.type}
+                        icon="wrench"
+                        image={tool.image_url}
+                        video={tool.video_url}
+                        url={tool.url}
+                        costIndicator={tool.cost_indicator}
+                        stars={tool.stars}
+                        onClick={() => handleToolClick(tool)}
+                        onOpenTool={() => tool.url && handleOpenTool(tool.url)}
+                      />
                     </div>
                   ))}
                 </div>
@@ -147,13 +165,26 @@ const Tools = () => {
                 We're constantly developing new tools and resources to enhance your AI learning experience. 
                 Stay tuned for updates!
               </p>
-              <Button className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow">
+              <button className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow px-6 py-3 rounded-lg text-white font-medium">
                 Request a Tool
-              </Button>
+              </button>
             </div>
           </div>
         </section>
       </div>
+
+      {/* Tool Viewer Modal */}
+      <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          {selectedTool && (
+            <ToolViewer
+              tool={selectedTool}
+              onClose={handleCloseViewer}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
       <Footer />
     </div>
   );

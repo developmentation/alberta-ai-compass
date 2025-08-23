@@ -9,6 +9,9 @@ interface Tool {
   url?: string;
   cost_indicator?: string;
   stars: number;
+  image_url?: string;
+  video_url?: string;
+  status: string;
   created_at: string;
 }
 

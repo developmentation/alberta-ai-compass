@@ -1,8 +1,10 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, X, ExternalLink } from 'lucide-react';
+import { Calendar, X, ExternalLink, Star, Bookmark, BookmarkCheck } from 'lucide-react';
 import { format } from 'date-fns';
+import { useBookmarks } from '@/hooks/useBookmarks';
+import { useRatings } from '@/hooks/useRatings';
 
 interface NewsItem {
   id: string;
@@ -24,6 +26,8 @@ interface NewsViewerProps {
 
 export function NewsViewer({ news, onClose, className = "" }: NewsViewerProps) {
   const socialLinks = news.metadata || {};
+  const { isBookmarked, toggleBookmark } = useBookmarks(news.id, 'news');
+  const { userRating, aggregatedRating, submitRating } = useRatings(news.id, 'news');
   
   const handleSocialLink = (url: string) => {
     if (url && url.trim()) {
@@ -60,9 +64,50 @@ export function NewsViewer({ news, onClose, className = "" }: NewsViewerProps) {
               {news.level}
             </Badge>
           </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
             <Calendar className="w-4 h-4" />
             <span>{format(new Date(news.created_at), 'MMMM d, yyyy')}</span>
+          </div>
+          
+          {/* Rating and bookmark section */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => submitRating(star)}
+                    className="p-1 hover:scale-110 transition-transform"
+                  >
+                    <Star 
+                      className={`w-4 h-4 ${
+                        star <= (userRating || 0)
+                          ? 'fill-yellow-400 text-yellow-400' 
+                          : 'text-muted-foreground'
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+              <span className="text-sm text-muted-foreground">
+                {aggregatedRating?.average_rating?.toFixed(1) || '0.0'} 
+                ({aggregatedRating?.total_votes || 0} votes)
+              </span>
+            </div>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => toggleBookmark(news.id, 'news')}
+              className="flex items-center gap-2"
+            >
+              {isBookmarked ? (
+                <BookmarkCheck className="w-4 h-4 fill-primary text-primary" />
+              ) : (
+                <Bookmark className="w-4 h-4" />
+              )}
+              {isBookmarked ? 'Bookmarked' : 'Bookmark'}
+            </Button>
           </div>
         </div>
         {onClose && (
