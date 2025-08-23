@@ -24,9 +24,8 @@ import { Plus, Edit, Trash2, Calendar, Users, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { UnifiedMediaUpload } from "@/components/admin/UnifiedMediaUpload";
+import { TabbedCohortBuilder } from "@/components/admin/TabbedCohortBuilder";
 import { MediaDisplay } from "@/components/admin/MediaDisplay";
-import { CohortDayManager } from "@/components/admin/CohortDayManager";
 
 interface Cohort {
   id: string;
@@ -50,16 +49,7 @@ export function AdminCohorts() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    start_date: "",
-    end_date: "",
-    status: "active" as "active" | "inactive" | "completed",
-    image_url: "",
-    video_url: "",
-    days: [] as any[],
-  });
+  const [isTabbedBuilderOpen, setIsTabbedBuilderOpen] = useState(false);
 
   useEffect(() => {
     fetchCohorts();
@@ -127,9 +117,7 @@ export function AdminCohorts() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleSaveCohort = async (formData: any) => {
     try {
       const cohortData = {
         name: formData.name,
@@ -172,17 +160,17 @@ export function AdminCohorts() {
           
         // Insert new cohort content
         const contentToInsert = formData.days.flatMap((day: any) => 
-          day.content_items.map((item: any) => ({
+          day.content_items?.map((item: any) => ({
             cohort_id: cohortId,
             day_number: day.day_number,
             day_name: day.day_name,
             day_description: day.day_description,
             day_image_url: day.day_image_url,
             content_type: item.type,
-            content_id: item.id,
+            content_id: item.original_id || item.id,
             order_index: item.order_index,
             created_by: user?.id
-          }))
+          })) || []
         );
         
         if (contentToInsert.length > 0) {
@@ -197,9 +185,8 @@ export function AdminCohorts() {
         description: `Cohort ${editingCohort ? "updated" : "created"} successfully`,
       });
 
-      setIsDialogOpen(false);
+      setIsTabbedBuilderOpen(false);
       setEditingCohort(null);
-      resetForm();
       fetchCohorts();
     } catch (error) {
       console.error("Error saving cohort:", error);
@@ -213,17 +200,7 @@ export function AdminCohorts() {
 
   const handleEdit = (cohort: Cohort) => {
     setEditingCohort(cohort);
-    setFormData({
-      name: cohort.name,
-      description: cohort.description || "",
-      start_date: cohort.start_date.split("T")[0], // Format for date input
-      end_date: cohort.end_date ? cohort.end_date.split("T")[0] : "",
-      status: cohort.status,
-      image_url: cohort.image_url || "",
-      video_url: cohort.video_url || "",
-      days: cohort.days || [],
-    });
-    setIsDialogOpen(true);
+    setIsTabbedBuilderOpen(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -253,17 +230,19 @@ export function AdminCohorts() {
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      description: "",
-      start_date: "",
-      end_date: "",
-      status: "active",
-      image_url: "",
-      video_url: "",
-      days: [],
-    });
+  const getInitialData = (cohort?: Cohort) => {
+    if (!cohort) return {};
+    
+    return {
+      name: cohort.name,
+      description: cohort.description || "",
+      start_date: cohort.start_date.split("T")[0],
+      end_date: cohort.end_date ? cohort.end_date.split("T")[0] : "",
+      status: cohort.status,
+      image_url: cohort.image_url || "",
+      video_url: cohort.video_url || "",
+      days: cohort.days || [],
+    };
   };
 
   const getStatusBadge = (status: string) => {
@@ -316,110 +295,10 @@ export function AdminCohorts() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Cohorts Management</h1>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={() => { resetForm(); setEditingCohort(null); }}>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Cohort
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>
-                  {editingCohort ? "Edit Cohort" : "Create Cohort"}
-                </DialogTitle>
-                <DialogDescription>
-                  {editingCohort ? "Update the cohort details" : "Add a new learning cohort"}
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Name</label>
-                  <Input
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Enter cohort name..."
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Description (Optional)</label>
-                  <Textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Enter cohort description..."
-                    rows={3}
-                  />
-                </div>
-
-                <UnifiedMediaUpload
-                  onMediaUpload={(url, type) => {
-                    if (type === 'image') {
-                      setFormData({ ...formData, image_url: url, video_url: url ? '' : formData.video_url });
-                    } else {
-                      setFormData({ ...formData, video_url: url, image_url: url ? '' : formData.image_url });
-                    }
-                  }}
-                  currentImageUrl={formData.image_url}
-                  currentVideoUrl={formData.video_url}
-                  bucketName="cohort-assets"
-                />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Start Date</label>
-                    <Input
-                      type="date"
-                      value={formData.start_date}
-                      onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">End Date (Optional)</label>
-                    <Input
-                      type="date"
-                      value={formData.end_date}
-                      onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Status</label>
-                  <Select
-                    value={formData.status}
-                    onValueChange={(value) => setFormData({ ...formData, status: value as any })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <CohortDayManager
-                  days={formData.days}
-                  onUpdateDays={(days) => setFormData({ ...formData, days })}
-                />
-
-                <div className="flex justify-end gap-2">
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button type="submit">
-                    {editingCohort ? "Update" : "Create"}
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <Button onClick={() => { setEditingCohort(null); setIsTabbedBuilderOpen(true); }}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Cohort
+          </Button>
         </div>
 
         <div className="space-y-4">
@@ -514,6 +393,14 @@ export function AdminCohorts() {
             </div>
           )}
         </div>
+        
+        <TabbedCohortBuilder
+          isOpen={isTabbedBuilderOpen}
+          onClose={() => setIsTabbedBuilderOpen(false)}
+          onSave={handleSaveCohort}
+          initialData={getInitialData(editingCohort)}
+          isEditing={!!editingCohort}
+        />
       </div>
     </AdminLayout>
   );

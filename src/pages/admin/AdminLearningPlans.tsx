@@ -24,8 +24,7 @@ import { Plus, Edit, Trash2, Users, Clock, Star, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { UnifiedMediaUpload } from "@/components/admin/UnifiedMediaUpload";
-import { LearningPlanContentManager } from "@/components/admin/LearningPlanContentManager";
+import { TabbedLearningPlanBuilder } from "@/components/admin/TabbedLearningPlanBuilder";
 import { MediaDisplay } from "@/components/admin/MediaDisplay";
 
 interface LearningPlan {
@@ -55,19 +54,7 @@ export function AdminLearningPlans() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    level: "1" as "1" | "2" | "3" | "RED",
-    status: "draft" as "draft" | "review" | "published" | "archived",
-    language: "English",
-    duration: "",
-    learning_outcomes: "",
-    steps: "",
-    image_url: "",
-    video_url: "",
-    content_items: [] as any[],
-  });
+  const [isTabbedBuilderOpen, setIsTabbedBuilderOpen] = useState(false);
 
   useEffect(() => {
     fetchPlans();
@@ -99,19 +86,17 @@ export function AdminLearningPlans() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleSavePlan = async (formData: any) => {
     try {
       const outcomesArray = formData.learning_outcomes
         .split(",")
-        .map(outcome => outcome.trim())
-        .filter(outcome => outcome.length > 0);
+        .map((outcome: string) => outcome.trim())
+        .filter((outcome: string) => outcome.length > 0);
 
       const stepsArray = formData.steps
         .split("\n")
-        .map(step => step.trim())
-        .filter(step => step.length > 0);
+        .map((step: string) => step.trim())
+        .filter((step: string) => step.length > 0);
 
       const planData = {
         name: formData.name,
@@ -148,9 +133,8 @@ export function AdminLearningPlans() {
         description: `Learning plan ${editingPlan ? "updated" : "created"} successfully`,
       });
 
-      setIsDialogOpen(false);
+      setIsTabbedBuilderOpen(false);
       setEditingPlan(null);
-      resetForm();
       fetchPlans();
     } catch (error) {
       console.error("Error saving learning plan:", error);
@@ -164,20 +148,7 @@ export function AdminLearningPlans() {
 
   const handleEdit = (plan: LearningPlan) => {
     setEditingPlan(plan);
-    setFormData({
-      name: plan.name,
-      description: plan.description,
-      level: plan.level,
-      status: plan.status,
-      language: plan.language,
-      duration: plan.duration || "",
-      learning_outcomes: plan.learning_outcomes ? plan.learning_outcomes.join(", ") : "",
-      steps: plan.steps?.steps ? plan.steps.steps.join("\n") : "",
-      image_url: plan.image_url || "",
-      video_url: plan.video_url || "",
-      content_items: plan.content_items || [],
-    });
-    setIsDialogOpen(true);
+    setIsTabbedBuilderOpen(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -207,20 +178,22 @@ export function AdminLearningPlans() {
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      description: "",
-      level: "1",
-      status: "draft",
-      language: "English",
-      duration: "",
-      learning_outcomes: "",
-      steps: "",
-      image_url: "",
-      video_url: "",
-      content_items: [],
-    });
+  const getInitialData = (plan?: LearningPlan) => {
+    if (!plan) return {};
+    
+    return {
+      name: plan.name,
+      description: plan.description,
+      level: plan.level,
+      status: plan.status,
+      language: plan.language,
+      duration: plan.duration || "",
+      learning_outcomes: plan.learning_outcomes ? plan.learning_outcomes.join(", ") : "",
+      steps: plan.steps?.steps ? plan.steps.steps.join("\n") : "",
+      image_url: plan.image_url || "",
+      video_url: plan.video_url || "",
+      content_items: plan.content_items || [],
+    };
   };
 
   const getLevelBadge = (level: string) => {
@@ -258,9 +231,8 @@ export function AdminLearningPlans() {
                   <div className="h-3 bg-muted rounded w-full mb-1"></div>
                   <div className="h-3 bg-muted rounded w-2/3"></div>
                 </CardContent>
-              </Card>
-            ))}
-          </div>
+            </Card>
+          ))}
         </div>
       </AdminLayout>
     );
@@ -271,154 +243,10 @@ export function AdminLearningPlans() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Learning Plans</h1>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={() => { resetForm(); setEditingPlan(null); }}>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Learning Plan
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>
-                  {editingPlan ? "Edit Learning Plan" : "Create Learning Plan"}
-                </DialogTitle>
-                <DialogDescription>
-                  {editingPlan ? "Update the learning plan details" : "Add a new learning plan to the platform"}
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Name</label>
-                    <Input
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="Enter plan name..."
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Language</label>
-                    <Input
-                      value={formData.language}
-                      onChange={(e) => setFormData({ ...formData, language: e.target.value })}
-                      placeholder="English"
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Description</label>
-                  <Textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Enter plan description..."
-                    rows={4}
-                    required
-                  />
-                </div>
-
-                <UnifiedMediaUpload
-                  onMediaUpload={(url, type) => {
-                    if (type === 'image') {
-                      setFormData({ ...formData, image_url: url, video_url: url ? '' : formData.video_url });
-                    } else {
-                      setFormData({ ...formData, video_url: url, image_url: url ? '' : formData.image_url });
-                    }
-                  }}
-                  currentImageUrl={formData.image_url}
-                  currentVideoUrl={formData.video_url}
-                  bucketName="media-assets"
-                />
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Level</label>
-                    <Select
-                      value={formData.level}
-                      onValueChange={(value) => setFormData({ ...formData, level: value as any })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">Level 1</SelectItem>
-                        <SelectItem value="2">Level 2</SelectItem>
-                        <SelectItem value="3">Level 3</SelectItem>
-                        <SelectItem value="RED">RED</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Status</label>
-                    <Select
-                      value={formData.status}
-                      onValueChange={(value) => setFormData({ ...formData, status: value as any })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="draft">Draft</SelectItem>
-                        <SelectItem value="review">Review</SelectItem>
-                        <SelectItem value="published">Published</SelectItem>
-                        <SelectItem value="archived">Archived</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Duration (Optional)</label>
-                    <Input
-                      value={formData.duration}
-                      onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                      placeholder="e.g., 2 weeks"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Learning Outcomes (comma-separated)</label>
-                  <Textarea
-                    value={formData.learning_outcomes}
-                    onChange={(e) => setFormData({ ...formData, learning_outcomes: e.target.value })}
-                    placeholder="Understand AI basics, Apply machine learning, Create neural networks..."
-                    rows={3}
-                  />
-                </div>
-
-                <LearningPlanContentManager
-                  contentItems={formData.content_items}
-                  onUpdateContent={(items) => setFormData({ ...formData, content_items: items })}
-                />
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Learning Steps (one per line)</label>
-                  <Textarea
-                    value={formData.steps}
-                    onChange={(e) => setFormData({ ...formData, steps: e.target.value })}
-                    placeholder="Introduction to AI concepts
-Watch video tutorials
-Complete hands-on exercises
-Take final assessment"
-                    rows={6}
-                  />
-                </div>
-
-                <div className="flex justify-end gap-2">
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button type="submit">
-                    {editingPlan ? "Update" : "Create"}
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <Button onClick={() => { setEditingPlan(null); setIsTabbedBuilderOpen(true); }}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Learning Plan
+          </Button>
         </div>
 
         <div className="space-y-4">
@@ -477,69 +305,23 @@ Take final assessment"
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  <p className="text-muted-foreground text-sm">
-                    {plan.description.length > 200 
-                      ? `${plan.description.substring(0, 200)}...`
-                      : plan.description}
-                  </p>
-                  
-                  {plan.content_items && plan.content_items.length > 0 && (
-                    <div>
-                      <div className="text-sm font-medium text-muted-foreground mb-1">Content Items:</div>
-                      <div className="flex flex-wrap gap-1">
-                        {plan.content_items.slice(0, 3).map((item: any, index: number) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
-                            {item.type}: {item.name}
-                          </Badge>
-                        ))}
-                        {plan.content_items.length > 3 && (
-                          <Badge variant="secondary" className="text-xs">
-                            +{plan.content_items.length - 3} more
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {plan.learning_outcomes && plan.learning_outcomes.length > 0 && (
-                    <div>
-                      <div className="text-sm font-medium text-muted-foreground mb-1">Learning Outcomes:</div>
-                      <div className="flex flex-wrap gap-1">
-                        {plan.learning_outcomes.slice(0, 3).map((outcome, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
-                            {outcome}
-                          </Badge>
-                        ))}
-                        {plan.learning_outcomes.length > 3 && (
-                          <Badge variant="secondary" className="text-xs">
-                            +{plan.learning_outcomes.length - 3} more
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>Created: {new Date(plan.created_at).toLocaleDateString()} • Language: {plan.language}</span>
-                    <div className="flex items-center gap-1">
-                      <Star className="w-3 h-3 fill-current text-yellow-400" />
-                      <span>{plan.star_rating}/5</span>
-                    </div>
-                  </div>
-                </div>
+                <p className="text-muted-foreground text-sm">
+                  {plan.description.length > 200 
+                    ? `${plan.description.substring(0, 200)}...`
+                    : plan.description}
+                </p>
               </CardContent>
             </Card>
           ))}
-          
-          {plans.length === 0 && (
-            <Card>
-              <CardContent className="p-6 text-center">
-                <p className="text-muted-foreground">No learning plans found. Create your first learning plan to get started.</p>
-              </CardContent>
-            </Card>
-          )}
         </div>
+        
+        <TabbedLearningPlanBuilder
+          isOpen={isTabbedBuilderOpen}
+          onClose={() => setIsTabbedBuilderOpen(false)}
+          onSave={handleSavePlan}
+          initialData={getInitialData(editingPlan)}
+          isEditing={!!editingPlan}
+        />
       </div>
     </AdminLayout>
   );
