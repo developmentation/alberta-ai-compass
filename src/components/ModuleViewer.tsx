@@ -297,6 +297,13 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
 
   const handleEditContent = (contentIndex: number, field: string, value: any) => {
     const updatedSections = [...editingData.sections];
+    
+    // Ensure content is an array
+    if (!Array.isArray(updatedSections[currentSectionIndex].content)) {
+      updatedSections[currentSectionIndex].content = [];
+      return; // Can't edit content that doesn't exist
+    }
+    
     const updatedContent = [...updatedSections[currentSectionIndex].content];
     updatedContent[contentIndex] = {
       ...updatedContent[contentIndex],
@@ -314,6 +321,13 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
 
   const handleQuizTypeChange = (contentIndex: number, newQuizType: 'multiple-choice' | 'true-false' | 'short-answer') => {
     const updatedSections = [...editingData.sections];
+    
+    // Ensure content is an array
+    if (!Array.isArray(updatedSections[currentSectionIndex].content)) {
+      updatedSections[currentSectionIndex].content = [];
+      return; // Can't edit quiz that doesn't exist
+    }
+    
     const updatedContent = [...updatedSections[currentSectionIndex].content];
     
     // Set default options and correct answer based on quiz type
@@ -361,6 +375,12 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
     }
 
     const updatedSections = [...editingData.sections];
+    
+    // Ensure content is an array
+    if (!Array.isArray(updatedSections[currentSectionIndex].content)) {
+      updatedSections[currentSectionIndex].content = [];
+    }
+    
     const newContent: ContentItem = {
       type: 'text',
       value: 'New content item'
@@ -380,6 +400,12 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
     }
 
     const updatedSections = [...editingData.sections];
+    
+    // Ensure content is an array
+    if (!Array.isArray(updatedSections[currentSectionIndex].content)) {
+      updatedSections[currentSectionIndex].content = [];
+    }
+    
     const newContent: ContentItem = {
       type: type as any,
       ...(type === 'text' && { value: 'New text content' }),
@@ -419,6 +445,13 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
 
   const handleDeleteContent = (contentIndex: number) => {
     const updatedSections = [...editingData.sections];
+    
+    // Ensure content is an array
+    if (!Array.isArray(updatedSections[currentSectionIndex].content)) {
+      updatedSections[currentSectionIndex].content = [];
+      return; // Nothing to delete if content wasn't an array
+    }
+    
     updatedSections[currentSectionIndex].content.splice(contentIndex, 1);
     setEditingData({
       ...editingData,
