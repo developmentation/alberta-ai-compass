@@ -90,21 +90,63 @@ export function EnhancedMediaUpload({
     try {
       setGenerating(true);
 
-      const response = await supabase.functions.invoke('generate-image', {
+      console.log('Calling gemini-image function with prompt:', aiPrompt);
+
+      const response = await supabase.functions.invoke('gemini-image', {
         body: { 
           prompt: aiPrompt,
-          aspectRatio: aspectRatio
+          count: 1 // Generate only one image
         }
       });
 
       if (response.error) {
+        console.error('Supabase function error:', response.error);
         throw new Error(response.error.message);
       }
 
-      const { imageUrl: generatedUrl } = response.data;
+      console.log('Gemini-image function response:', response.data);
+
+      const { images } = response.data;
+
+      if (!images || images.length === 0) {
+        throw new Error('No images generated');
+      }
+
+      // Use the first generated image
+      const base64Image = images[0];
+
+      // Convert base64 to blob for upload to Supabase storage
+      const response2 = await fetch(base64Image);
+      const blob = await response2.blob();
+
+      // Generate unique filename
+      const fileName = `ai-generated-${Date.now()}-${Math.random().toString(36).substring(2)}.png`;
+      const filePath = `images/${fileName}`;
+
+      console.log('Uploading to Supabase storage:', filePath);
+
+      // Upload to Supabase storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from(bucketName)
+        .upload(filePath, blob, {
+          contentType: 'image/png',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw new Error(`Failed to upload image: ${uploadError.message}`);
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from(bucketName)
+        .getPublicUrl(filePath);
+
+      console.log('Image uploaded successfully:', publicUrl);
 
       if (onImageUpload) {
-        onImageUpload(generatedUrl);
+        onImageUpload(publicUrl);
       }
 
       toast({
