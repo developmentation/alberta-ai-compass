@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Wand2 } from 'lucide-react';
-import { EnhancedMediaUpload } from './EnhancedMediaUpload';
+import { UnifiedMediaUpload } from './UnifiedMediaUpload';
 
 interface ModuleCreatorProps {
   isOpen: boolean;
@@ -172,13 +172,19 @@ export function ModuleCreator({ isOpen, onClose, onModuleCreated }: ModuleCreato
                 />
               </div>
 
-              <EnhancedMediaUpload
-                onImageUpload={setImageUrl}
-                onVideoUpload={setVideoUrl}
-                imageUrl={imageUrl}
-                videoUrl={videoUrl}
+              <UnifiedMediaUpload
+                onMediaUpload={(url, type) => {
+                  if (type === 'image') {
+                    setImageUrl(url);
+                    if (url) setVideoUrl('');
+                  } else {
+                    setVideoUrl(url);
+                    if (url) setImageUrl('');
+                  }
+                }}
+                currentImageUrl={imageUrl}
+                currentVideoUrl={videoUrl}
                 bucketName="module-assets"
-                allowAiGeneration={true}
               />
             </CardContent>
           </Card>
