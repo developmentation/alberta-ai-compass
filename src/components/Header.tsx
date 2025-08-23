@@ -1,8 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Sparkles, LogIn, Menu, X } from "lucide-react";
+import { Sparkles, LogIn, Menu, X, Settings, LogOut, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface HeaderProps {
   onLoginClick: () => void;
@@ -11,6 +19,7 @@ interface HeaderProps {
 export const Header = ({ onLoginClick }: HeaderProps) => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, profile, signOut, isAdmin, isFacilitator } = useAuth();
 
   return (
     <>
@@ -52,23 +61,63 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-3">
               <ThemeToggle />
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/login')}
-                className="border border-border hover:border-primary/50"
-              >
-                <LogIn className="w-4 h-4" />
-                Log in
-              </Button>
-              <Button
-                size="sm"
-                className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow"
-                onClick={() => navigate('/ai-mentor')}
-              >
-                <Sparkles className="w-4 h-4" />
-                Create plan
-              </Button>
+              {user ? (
+                <>
+                  {isFacilitator && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigate('/admin')}
+                      className="border border-border hover:border-primary/50"
+                    >
+                      <Settings className="w-4 h-4" />
+                      Admin
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow"
+                    onClick={() => navigate('/ai-mentor')}
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    Create plan
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="border border-border hover:border-primary/50">
+                        <User className="w-4 h-4" />
+                        {profile?.full_name || user.email?.split('@')[0] || 'User'}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={signOut}>
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Sign out
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate('/login')}
+                    className="border border-border hover:border-primary/50"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    Log in
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow"
+                    onClick={() => navigate('/ai-mentor')}
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    Create plan
+                  </Button>
+                </>
+              )}
             </div>
 
             {/* Mobile Actions */}
@@ -130,29 +179,77 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
               </Link>
               
               <div className="pt-4 border-t border-border space-y-3">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    navigate('/login');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="w-full justify-start border border-border hover:border-primary/50"
-                >
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Log in
-                </Button>
-                <Button
-                  size="sm"
-                  className="w-full bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow"
-                  onClick={() => {
-                    navigate('/ai-mentor');
-                    setIsMobileMenuOpen(false);
-                  }}
-                >
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Create plan
-                </Button>
+                {user ? (
+                  <>
+                    {isFacilitator && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          navigate('/admin');
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="w-full justify-start border border-border hover:border-primary/50"
+                      >
+                        <Settings className="w-4 h-4 mr-2" />
+                        Admin
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      className="w-full bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow"
+                      onClick={() => {
+                        navigate('/ai-mentor');
+                        setIsMobileMenuOpen(false);
+                      }}
+                    >
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Create plan
+                    </Button>
+                    <div className="w-full p-2 border border-border rounded-md flex items-center gap-2">
+                      <User className="w-4 h-4" />
+                      <span className="text-sm">{profile?.full_name || user.email?.split('@')[0] || 'User'}</span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        signOut();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full justify-start border border-border hover:border-primary/50"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        navigate('/login');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full justify-start border border-border hover:border-primary/50"
+                    >
+                      <LogIn className="w-4 h-4 mr-2" />
+                      Log in
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="w-full bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow"
+                      onClick={() => {
+                        navigate('/ai-mentor');
+                        setIsMobileMenuOpen(false);
+                      }}
+                    >
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Create plan
+                    </Button>
+                  </>
+                )}
               </div>
             </nav>
           </div>
