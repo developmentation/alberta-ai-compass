@@ -37,7 +37,7 @@ const Index = () => {
   const contentItems = useMemo(() => [
     ...learningPlans.map(plan => ({ id: plan.id, type: 'learning_plan' })),
     ...news.map(item => ({ id: item.id, type: 'news' })),
-    ...articles.map(item => ({ id: item.id, type: 'articles' }))
+    ...articles.map(item => ({ id: item.id, type: 'article' }))
   ], [learningPlans, news, articles]);
 
   const { ratingsData } = useContentRatings(contentItems);

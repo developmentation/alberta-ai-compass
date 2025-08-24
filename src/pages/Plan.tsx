@@ -135,7 +135,7 @@ const Plan = () => {
                     .maybeSingle();
                   contentDetails = newsData ? { ...newsData, name: newsData.title } : null;
                   break;
-                case 'articles':
+        case 'article':
                   const { data: articleData } = await supabase
                     .from('articles')
                     .select('id, title, description, image_url, video_url, status, level, json_data')
@@ -267,7 +267,7 @@ const Plan = () => {
             metadata: content.metadata
           };
           break;
-        case 'articles':
+        case 'article':
           // Fetch full article data including json_data
           const { data: articleData } = await supabase
             .from('articles')
@@ -659,7 +659,7 @@ const Plan = () => {
               onClose={() => setIsViewerOpen(false)}
             />
           )}
-          {selectedContent && viewerType === 'articles' && (
+          {selectedContent && viewerType === 'article' && (
             <ArticleViewer 
               article={selectedContent}
               onClose={() => setIsViewerOpen(false)}

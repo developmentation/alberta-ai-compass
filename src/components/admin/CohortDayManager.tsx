@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, Calendar, X, Edit2, BookOpen, Newspaper, Wrench, MessageSquare, Users, GripVertical } from 'lucide-react';
+import { Plus, Calendar, X, Edit2, BookOpen, Newspaper, Wrench, MessageSquare, Users, GripVertical, FileText } from 'lucide-react';
 import { ContentSelector } from './ContentSelector';
 import { UnifiedMediaUpload } from './UnifiedMediaUpload';
 import { MediaDisplay } from './MediaDisplay';
@@ -16,7 +16,7 @@ interface ContentItem {
   id: string;
   name: string;
   description?: string;
-  type: 'module' | 'news' | 'tool' | 'prompt' | 'learning_plan';
+  type: 'module' | 'news' | 'article' | 'tool' | 'prompt' | 'learning_plan';
   status: string;
   image_url?: string;
   video_url?: string;
@@ -46,6 +46,7 @@ export function CohortDayManager({ days, onUpdateDays }: CohortDayManagerProps) 
     switch (type) {
       case 'module': return <BookOpen className="h-4 w-4" />;
       case 'news': return <Newspaper className="h-4 w-4" />;
+      case 'article': return <FileText className="h-4 w-4" />;
       case 'tool': return <Wrench className="h-4 w-4" />;
       case 'prompt': return <MessageSquare className="h-4 w-4" />;
       case 'learning_plan': return <Users className="h-4 w-4" />;
@@ -57,6 +58,7 @@ export function CohortDayManager({ days, onUpdateDays }: CohortDayManagerProps) 
     switch (type) {
       case 'module': return 'bg-blue-500';
       case 'news': return 'bg-green-500';
+      case 'article': return 'bg-red-500';
       case 'tool': return 'bg-purple-500';
       case 'prompt': return 'bg-orange-500';
       case 'learning_plan': return 'bg-indigo-500';

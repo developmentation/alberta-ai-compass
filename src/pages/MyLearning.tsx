@@ -29,7 +29,7 @@ export default function MyLearning() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedContent, setSelectedContent] = useState<any>(null);
-  const [viewerType, setViewerType] = useState<'news' | 'articles' | 'tool' | 'module' | 'prompt_library' | null>(null);
+  const [viewerType, setViewerType] = useState<'news' | 'article' | 'tool' | 'module' | 'prompt_library' | null>(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
 
   const handleLoginClick = () => setIsLoginModalOpen(true);
@@ -78,7 +78,7 @@ export default function MyLearning() {
               .single();
             contentData = promptData;
             break;
-          case 'articles':
+          case 'article':
             const { data: articleData } = await supabase
               .from('articles')
               .select('*')
@@ -91,7 +91,7 @@ export default function MyLearning() {
         
         if (contentData) {
           setSelectedContent(contentData);
-          setViewerType(item.type as 'news' | 'articles' | 'tool' | 'module' | 'prompt_library');
+          setViewerType(item.type as 'news' | 'article' | 'tool' | 'module' | 'prompt_library');
           // Only open the main dialog for non-prompt content
           // Prompts handle their own modal
           if (item.type !== 'prompt_library') {
@@ -120,7 +120,7 @@ export default function MyLearning() {
       learning_plan: 'bg-primary/10 text-primary',
       module: 'bg-secondary/10 text-secondary',
       news: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
-      articles: 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
+      article: 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
       tool: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
       prompt_library: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400'
     };
@@ -132,7 +132,7 @@ export default function MyLearning() {
       learning_plan: 'Learning Plan',
       module: 'Module',
       news: 'News',
-      articles: 'Article',
+      article: 'Article',
       tool: 'Tool',
       prompt_library: 'Prompt'
     };
@@ -363,7 +363,7 @@ export default function MyLearning() {
               onClose={handleCloseViewer}
             />
           )}
-          {selectedContent && viewerType === 'articles' && (
+          {selectedContent && viewerType === 'article' && (
             <ArticleViewer
               article={selectedContent}
               onClose={handleCloseViewer}

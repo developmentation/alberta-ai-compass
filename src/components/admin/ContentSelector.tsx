@@ -14,7 +14,7 @@ interface ContentItem {
   id: string;
   name: string;
   description?: string;
-  type: 'module' | 'news' | 'articles' | 'tool' | 'prompt' | 'learning_plan';
+  type: 'module' | 'news' | 'article' | 'tool' | 'prompt' | 'learning_plan';
   status: string;
   image_url?: string;
   video_url?: string;
@@ -30,7 +30,7 @@ interface ContentSelectorProps {
 export function ContentSelector({ isOpen, onClose, onSelect, selectedIds = [] }: ContentSelectorProps) {
   const [contentItems, setContentItems] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [contentType, setContentType] = useState<'all' | 'module' | 'news' | 'articles' | 'tool' | 'prompt' | 'learning_plan'>('all');
+  const [contentType, setContentType] = useState<'all' | 'module' | 'news' | 'article' | 'tool' | 'prompt' | 'learning_plan'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
 
@@ -77,7 +77,7 @@ export function ContentSelector({ isOpen, onClose, onSelect, selectedIds = [] }:
       }
 
       // Fetch articles
-      if (contentType === 'all' || contentType === 'articles') {
+      if (contentType === 'all' || contentType === 'article') {
         const { data: articles, error: articlesError } = await supabase
           .from('articles')
           .select('id, title, description, status, image_url, video_url')
@@ -88,7 +88,7 @@ export function ContentSelector({ isOpen, onClose, onSelect, selectedIds = [] }:
         console.log('Articles fetch result:', { articles, articlesError });
         
         if (articles) {
-          items.push(...articles.map((a: any) => ({ ...a, name: a.title, type: 'articles' as const })));
+          items.push(...articles.map((a: any) => ({ ...a, name: a.title, type: 'article' as const })));
         }
       }
 
@@ -160,7 +160,7 @@ export function ContentSelector({ isOpen, onClose, onSelect, selectedIds = [] }:
     switch (type) {
       case 'module': return <BookOpen className="h-4 w-4" />;
       case 'news': return <Newspaper className="h-4 w-4" />;
-      case 'articles': return <FileText className="h-4 w-4" />;
+      case 'article': return <FileText className="h-4 w-4" />;
       case 'tool': return <Wrench className="h-4 w-4" />;
       case 'prompt': return <MessageSquare className="h-4 w-4" />;
       case 'learning_plan': return <BookOpen className="h-4 w-4" />;
@@ -172,7 +172,7 @@ export function ContentSelector({ isOpen, onClose, onSelect, selectedIds = [] }:
     switch (type) {
       case 'module': return 'bg-blue-500';
       case 'news': return 'bg-green-500';
-      case 'articles': return 'bg-red-500';
+      case 'article': return 'bg-red-500';
       case 'tool': return 'bg-purple-500';
       case 'prompt': return 'bg-orange-500';
       case 'learning_plan': return 'bg-indigo-500';
@@ -201,7 +201,7 @@ export function ContentSelector({ isOpen, onClose, onSelect, selectedIds = [] }:
               <SelectItem value="all">All Content</SelectItem>
               <SelectItem value="module">Modules</SelectItem>
               <SelectItem value="news">News</SelectItem>
-              <SelectItem value="articles">Articles</SelectItem>
+              <SelectItem value="article">Articles</SelectItem>
               <SelectItem value="tool">Tools</SelectItem>
               <SelectItem value="prompt">Prompts</SelectItem>
               <SelectItem value="learning_plan">Learning Plans</SelectItem>

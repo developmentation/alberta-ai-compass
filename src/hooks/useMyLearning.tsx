@@ -15,7 +15,7 @@ export interface ContentItem {
   id: string;
   title: string;
   description: string;
-  type: 'learning_plan' | 'module' | 'news' | 'tool' | 'prompt_library' | 'articles';
+  type: 'learning_plan' | 'module' | 'news' | 'tool' | 'prompt_library' | 'article';
   image_url?: string;
   video_url?: string;
   created_at: string;
@@ -200,7 +200,7 @@ export function useMyLearning() {
               .maybeSingle();
             data = promptRes.data;
             break;
-          case 'articles':
+          case 'article':
             const articleRes = await supabase
               .from('articles')
               .select('id, title, description, image_url, video_url, created_at')
