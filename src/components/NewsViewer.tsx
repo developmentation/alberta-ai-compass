@@ -174,7 +174,7 @@ export function NewsViewer({ news, onClose, className = "" }: NewsViewerProps) {
                   className="justify-start"
                 >
                   <ExternalLink className="w-4 h-4 mr-2" />
-                  Twitter
+                  X
                 </Button>
               )}
               {socialLinks.linkedin && typeof socialLinks.linkedin === 'string' && socialLinks.linkedin.trim() && (

@@ -389,7 +389,7 @@ export function AdminNews() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs text-muted-foreground">Twitter</label>
+                      <label className="text-xs text-muted-foreground">X</label>
                       <Input
                         value={formData.metadata.social_links.twitter}
                         onChange={(e) => setFormData({
@@ -402,7 +402,7 @@ export function AdminNews() {
                             }
                           }
                         })}
-                        placeholder="Twitter URL"
+                        placeholder="X URL"
                       />
                     </div>
                     <div className="space-y-2">
