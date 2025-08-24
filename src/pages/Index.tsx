@@ -4,9 +4,11 @@ import { HeroSection } from "@/components/HeroSection";
 import { LearningPlanCard } from "@/components/LearningPlanCard";
 import { ArticleCard } from "@/components/ArticleCard";
 import { NewsCard } from "@/components/NewsCard";
+import { NewsViewer } from "@/components/NewsViewer";
 import { LoginModal } from "@/components/LoginModal";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useNews } from "@/hooks/useNews";
@@ -17,6 +19,8 @@ import { format, parseISO } from "date-fns";
 const Index = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [selectedNews, setSelectedNews] = useState<any>(null);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
 
   // Fetch data from database
   const { news, loading: newsLoading } = useNews();
@@ -88,10 +92,20 @@ const Index = () => {
         averageRating: rating?.averageRating || 0,
         totalVotes: rating?.totalVotes || 0,
         isBookmarked: rating?.isBookmarked || false,
-        onClick: () => {} // Can be enhanced to navigate to detailed view
+        onClick: () => handleNewsClick(item)
       };
     });
   }, [news, ratingsData]);
+
+  const handleNewsClick = (newsItem: any) => {
+    setSelectedNews(newsItem);
+    setIsViewerOpen(true);
+  };
+
+  const handleCloseViewer = () => {
+    setIsViewerOpen(false);
+    setSelectedNews(null);
+  };
 
   const articles = [
     {
@@ -288,6 +302,18 @@ const Index = () => {
         isOpen={isLoginOpen} 
         onClose={() => setIsLoginOpen(false)} 
       />
+
+      <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+          {selectedNews && (
+            <NewsViewer 
+              news={selectedNews} 
+              onClose={handleCloseViewer}
+              className="border-0"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
