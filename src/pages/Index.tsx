@@ -5,6 +5,7 @@ import { LearningPlanCard } from "@/components/LearningPlanCard";
 import { ArticleCard } from "@/components/ArticleCard";
 import { NewsCard } from "@/components/NewsCard";
 import { NewsViewer } from "@/components/NewsViewer";
+import { LoginModal } from "@/components/LoginModal";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -18,6 +19,7 @@ import { format, parseISO } from "date-fns";
 
 const Index = () => {
   const { user } = useAuth();
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedNews, setSelectedNews] = useState<any>(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
@@ -157,7 +159,7 @@ const Index = () => {
           <div className="absolute -bottom-24 -right-24 w-[28rem] h-[28rem] bg-primary-glow/20 blur-3xl rounded-full animate-glow-pulse" style={{ animationDelay: '1s' }} />
         </div>
 
-        <Header />
+        <Header onLoginClick={() => setIsLoginOpen(true)} />
         
         <main className="flex-1 relative z-10">
           <HeroSection 
@@ -297,6 +299,11 @@ const Index = () => {
 
         <Footer />
       </div>
+
+      <LoginModal 
+        isOpen={isLoginOpen} 
+        onClose={() => setIsLoginOpen(false)} 
+      />
 
       <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] p-0">

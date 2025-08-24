@@ -12,7 +12,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export const Header = () => {
+interface HeaderProps {
+  onLoginClick: () => void;
+}
+
+export const Header = ({ onLoginClick }: HeaderProps) => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, profile, signOut, isAdmin, isFacilitator } = useAuth();
@@ -92,7 +96,7 @@ export const Header = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => navigate('/auth')}
+                    onClick={() => navigate('/login')}
                     className="border border-border hover:border-primary/50"
                   >
                     <LogIn className="w-4 h-4" />
@@ -193,7 +197,7 @@ export const Header = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        navigate('/auth');
+                        navigate('/login');
                         setIsMobileMenuOpen(false);
                       }}
                       className="w-full justify-start border border-border hover:border-primary/50"

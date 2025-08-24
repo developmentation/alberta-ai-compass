@@ -30,7 +30,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               <MobileAdminSidebar onNavigate={() => setIsSheetOpen(false)} />
             </SheetContent>
           </Sheet>
-          <Header />
+          <Header onLoginClick={() => {}} />
         </div>
         
         <main className="flex-1 p-4 bg-background">
@@ -46,7 +46,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <AdminSidebar />
         
         <div className="flex-1 flex flex-col">
-          <Header />
+          <Header onLoginClick={() => {}} />
           
           <main className="flex-1 p-6 bg-background">
             {children}

@@ -105,7 +105,7 @@ const LearningHub = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Header />
+      <Header onLoginClick={() => {}} />
       {/* Background gradient effects */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-32 -left-32 w-96 h-96 bg-primary/20 blur-3xl rounded-full animate-glow-pulse" />

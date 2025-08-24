@@ -275,7 +275,7 @@ const Plan = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background text-foreground">
-        <Header />
+        <Header onLoginClick={() => {}} />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
@@ -290,7 +290,7 @@ const Plan = () => {
   if (error || !plan) {
     return (
       <div className="min-h-screen bg-background text-foreground">
-        <Header />
+        <Header onLoginClick={() => {}} />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-4">Plan Not Found</h1>
@@ -309,7 +309,7 @@ const Plan = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Header />
+      <Header onLoginClick={() => {}} />
 
       {/* Background gradient effects */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
