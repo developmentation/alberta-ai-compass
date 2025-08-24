@@ -1,5 +1,6 @@
 import { ReactNode, useState } from "react";
 import { AdminSidebar } from "./AdminSidebar";
+import { MobileAdminSidebar } from "./MobileAdminSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Header } from "@/components/Header";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -26,7 +27,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-72 p-0">
-              <AdminSidebar onNavigate={() => setIsSheetOpen(false)} />
+              <MobileAdminSidebar onNavigate={() => setIsSheetOpen(false)} />
             </SheetContent>
           </Sheet>
           <Header onLoginClick={() => {}} />
