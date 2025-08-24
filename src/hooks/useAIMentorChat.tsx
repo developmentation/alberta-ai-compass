@@ -27,6 +27,7 @@ export function useAIMentorChat() {
     if (!user?.email) return;
     
     try {
+      console.log('📚 Loading chat history for:', user.email);
       setIsLoadingHistory(true);
       const { data, error } = await supabase
         .from('ai_mentor')
@@ -34,7 +35,12 @@ export function useAIMentorChat() {
         .eq('user_email', user.email)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
+      console.log('📚 Chat history response:', { data, error });
+      
+      if (error) {
+        console.error('❌ Database error loading chat history:', error);
+        throw error;
+      }
 
       const formattedMessages = data?.map(msg => ({
         id: msg.id,
@@ -43,9 +49,16 @@ export function useAIMentorChat() {
         timestamp: msg.created_at,
       })) || [];
 
+      console.log('✅ Formatted messages:', formattedMessages);
       setMessages(formattedMessages);
     } catch (error) {
-      console.error('Error loading chat history:', error);
+      console.error('💥 Error loading chat history:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
+      // Don't show error to user for chat history - just start with empty chat
     } finally {
       setIsLoadingHistory(false);
     }
