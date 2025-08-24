@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, X, Wand2, Loader2, Play, Pause } from 'lucide-react';
+import { Upload, X, Wand2, Loader2, Play, Pause, Youtube } from 'lucide-react';
 
 interface UnifiedMediaUploadProps {
   onMediaUpload: (url: string, type: 'image' | 'video') => void;
@@ -26,6 +26,8 @@ export function UnifiedMediaUpload({
   const [uploading, setUploading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [isAiDialogOpen, setIsAiDialogOpen] = useState(false);
+  const [isYouTubeDialogOpen, setIsYouTubeDialogOpen] = useState(false);
+  const [youtubeUrl, setYoutubeUrl] = useState('');
   const [aiPrompt, setAiPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [videoPlaying, setVideoPlaying] = useState(false);
@@ -33,7 +35,38 @@ export function UnifiedMediaUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  console.log('UnifiedMediaUpload props:', { currentImageUrl, currentVideoUrl, uploading });
+  // Helper function to extract YouTube video ID from various URL formats
+  const extractYouTubeVideoId = (url: string): string | null => {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+      /youtube\.com\/v\/([a-zA-Z0-9_-]{11})/,
+      /youtube\.com\/user\/[^\/]+#p\/[^\/]+\/[^\/]+\/([a-zA-Z0-9_-]{11})/,
+      /youtube\.com\/.*[?&]v=([a-zA-Z0-9_-]{11})/
+    ];
+    
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+    
+    return null;
+  };
+
+  // Helper function to convert any YouTube URL to embed format
+  const convertToEmbedUrl = (url: string): string => {
+    const videoId = extractYouTubeVideoId(url);
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}`;
+    }
+    return url;
+  };
+
+  // Helper function to check if URL is a YouTube URL
+  const isYouTubeUrl = (url: string): boolean => {
+    return extractYouTubeVideoId(url) !== null;
+  };
 
   const uploadFile = async (file: File) => {
     try {
@@ -219,24 +252,40 @@ export function UnifiedMediaUpload({
           
           {currentVideoUrl && (
             <div className="relative w-full max-w-md">
-              <video
-                ref={videoRef}
-                src={currentVideoUrl}
-                className="w-full h-48 object-cover rounded-lg border"
-                onPlay={() => setVideoPlaying(true)}
-                onPause={() => setVideoPlaying(false)}
-                onEnded={() => setVideoPlaying(false)}
-                controls={false}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="absolute bottom-2 left-2"
-                onClick={toggleVideoPlayback}
-              >
-                {videoPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-              </Button>
+              {isYouTubeUrl(currentVideoUrl) ? (
+                <iframe
+                  src={convertToEmbedUrl(currentVideoUrl)}
+                  title="YouTube video player"
+                  width="100%"
+                  height="192"
+                  className="rounded-lg border"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                />
+              ) : (
+                <video
+                  ref={videoRef}
+                  src={currentVideoUrl}
+                  className="w-full h-48 object-cover rounded-lg border"
+                  onPlay={() => setVideoPlaying(true)}
+                  onPause={() => setVideoPlaying(false)}
+                  onEnded={() => setVideoPlaying(false)}
+                  controls={false}
+                />
+              )}
+              {!isYouTubeUrl(currentVideoUrl) && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="absolute bottom-2 left-2"
+                  onClick={toggleVideoPlayback}
+                >
+                  {videoPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                </Button>
+              )}
               <Button
                 type="button"
                 variant="destructive"
@@ -268,7 +317,48 @@ export function UnifiedMediaUpload({
           {uploading ? 'Uploading...' : (currentImageUrl || currentVideoUrl ? 'Replace Media' : 'Upload Image or Video')}
         </Button>
 
-        {allowAiGeneration && (
+        <Dialog open={isYouTubeDialogOpen} onOpenChange={setIsYouTubeDialogOpen}>
+          <DialogTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={uploading}
+              className="flex items-center gap-2"
+            >
+              <Youtube className="w-4 h-4" />
+              Add YouTube Video
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add YouTube Video</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="youtube-url">YouTube URL</Label>
+                <Input
+                  id="youtube-url"
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  value={youtubeUrl}
+                  onChange={(e) => setYoutubeUrl(e.target.value)}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={() => {
+                  if (youtubeUrl && extractYouTubeVideoId(youtubeUrl)) {
+                    onMediaUpload(youtubeUrl, 'video');
+                    setIsYouTubeDialogOpen(false);
+                    setYoutubeUrl('');
+                    toast({ title: "Success", description: "YouTube video added successfully" });
+                  } else {
+                    toast({ title: "Error", description: "Please enter a valid YouTube URL", variant: "destructive" });
+                  }
+                }}>Add Video</Button>
+                <Button variant="outline" onClick={() => { setIsYouTubeDialogOpen(false); setYoutubeUrl(''); }}>Cancel</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
           <Dialog open={isAiDialogOpen} onOpenChange={setIsAiDialogOpen}>
             <DialogTrigger asChild>
               <Button
