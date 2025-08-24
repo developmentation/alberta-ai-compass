@@ -123,13 +123,17 @@ export function AdminCohorts() {
                         contentDetails = newsData;
                         break;
                       case 'article':
-                        const { data: articleData } = await supabase
+                        console.log('Fetching article with ID:', item.content_id);
+                        const { data: articleData, error: articleError } = await supabase
                           .from('articles')
                           .select('id, title as name, description, image_url, video_url, status')
                           .eq('id', item.content_id)
                           .maybeSingle();
+                        console.log('Article query result:', { data: articleData, error: articleError });
+                        if (articleError) {
+                          console.error('Article query error:', articleError);
+                        }
                         contentDetails = articleData;
-                        console.log('Article data loaded:', { item: item.content_id, data: articleData });
                         break;
                       case 'tool':
                         const { data: toolData } = await supabase
