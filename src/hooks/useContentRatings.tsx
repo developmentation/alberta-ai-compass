@@ -15,30 +15,35 @@ export function useContentRatings(contentItems: Array<{id: string, type: string}
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (user && contentItems.length > 0) {
+    // Always fetch ratings, fetch bookmarks only if authenticated
+    if (contentItems.length > 0) {
       fetchRatingsAndBookmarks();
     }
   }, [user, contentItems]);
 
   const fetchRatingsAndBookmarks = async () => {
-    if (!user || contentItems.length === 0) return;
+    if (contentItems.length === 0) return;
 
     setLoading(true);
     try {
       const contentIds = contentItems.map(item => item.id);
       
-      // Fetch star ratings
+      // Always fetch star ratings (public data)
       const { data: starRatings } = await supabase
         .from('star_ratings')
         .select('content_id, average_rating, total_votes')
         .in('content_id', contentIds);
 
-      // Fetch user bookmarks
-      const { data: bookmarks } = await supabase
-        .from('user_bookmarks')
-        .select('content_id')
-        .eq('user_id', user.id)
-        .in('content_id', contentIds);
+      // Only fetch user bookmarks if authenticated
+      let bookmarks = null;
+      if (user) {
+        const { data } = await supabase
+          .from('user_bookmarks')
+          .select('content_id')
+          .eq('user_id', user.id)
+          .in('content_id', contentIds);
+        bookmarks = data;
+      }
 
       const bookmarkSet = new Set(bookmarks?.map(b => b.content_id) || []);
       
@@ -50,7 +55,7 @@ export function useContentRatings(contentItems: Array<{id: string, type: string}
           contentId: item.id,
           averageRating: rating?.average_rating || 0,
           totalVotes: rating?.total_votes || 0,
-          isBookmarked: bookmarkSet.has(item.id)
+          isBookmarked: user ? bookmarkSet.has(item.id) : false
         };
       });
       
