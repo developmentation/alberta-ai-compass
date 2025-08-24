@@ -96,7 +96,7 @@ export default function AdminLearningModules() {
       id: module.id,
       title: module.name || 'Untitled Module',
       description: module.description || '',
-      difficulty: module.level === '1' ? 'beginner' : module.level === '2' ? 'intermediate' : 'advanced',
+      level: module.level, // Keep the original level value
       duration: 30, // Default duration
       learningOutcomes: [],
       tags: [],
@@ -133,7 +133,7 @@ export default function AdminLearningModules() {
           },
           image_url: updatedData.imageUrl || null,
           video_url: updatedData.videoUrl || null,
-          level: updatedData.difficulty === 'beginner' ? '1' : updatedData.difficulty === 'intermediate' ? '2' : '3',
+          level: updatedData.level, // Use level directly
           updated_at: new Date().toISOString()
         })
         .eq('id', editingModule.id);

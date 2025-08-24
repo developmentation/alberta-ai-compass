@@ -51,7 +51,7 @@ interface ModuleData {
   id: string;
   title: string;
   description: string;
-  difficulty: string;
+  level: string;
   duration: number;
   learningOutcomes: string[];
   tags: string[];
@@ -186,10 +186,10 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">Difficulty Level</label>
+              <label className="text-sm font-medium mb-2 block">Level</label>
               <Select
-                value={editingData.difficulty}
-                onValueChange={(value) => setEditingData({ ...editingData, difficulty: value })}
+                value={editingData.level}
+                onValueChange={(value) => setEditingData({ ...editingData, level: value })}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -372,13 +372,13 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
               <CardContent className="p-6 text-center">
                 <Target className="w-8 h-8 text-primary mx-auto mb-3" />
                 <div className="text-2xl font-bold text-primary mb-1">
-                  {editingData.difficulty === '1' ? 'Level 1' :
-                   editingData.difficulty === '2' ? 'Level 2' :
-                   editingData.difficulty === '3' ? 'Level 3' :
-                   editingData.difficulty === 'red' ? 'RED' :
-                   editingData.difficulty}
+                  {editingData.level === '1' ? 'Level 1' :
+                   editingData.level === '2' ? 'Level 2' :
+                   editingData.level === '3' ? 'Level 3' :
+                   editingData.level === 'red' ? 'RED' :
+                   editingData.level}
                 </div>
-                <div className="text-sm text-muted-foreground">Difficulty Level</div>
+                <div className="text-sm text-muted-foreground">Level</div>
               </CardContent>
             </Card>
 
