@@ -62,7 +62,7 @@ export const LearningPlanCard = ({
           {title}
         </h3>
         <p className="text-muted-foreground mb-4 leading-relaxed">
-          {description}
+          {description.length > 100 ? `${description.substring(0, 100)}...` : description}
         </p>
 
         {/* Tags and Rating */}
