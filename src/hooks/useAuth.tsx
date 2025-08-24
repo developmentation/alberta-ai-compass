@@ -32,89 +32,125 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
   const { toast } = useToast();
+
+  // Fetch profile data for authenticated user
+  const fetchProfile = async (userId: string): Promise<Profile | null> => {
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return null;
+      }
+
+      return profile;
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      return null;
+    }
+  };
+
+  // Update last login timestamp
+  const updateLastLogin = async (userId: string) => {
+    try {
+      await supabase
+        .from('profiles')
+        .update({ last_login: new Date().toISOString() })
+        .eq('id', userId);
+    } catch (error) {
+      console.error('Error updating last login:', error);
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
-    
-    // Set up auth state listener FIRST - but without async operations
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+
+    const initializeAuth = async () => {
+      try {
+        // Get initial session
+        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+        
         if (!mounted) return;
+
+        if (error) {
+          console.error('Error getting initial session:', error);
+          setLoading(false);
+          setInitialized(true);
+          return;
+        }
+
+        // Set initial state
+        setSession(initialSession);
+        setUser(initialSession?.user ?? null);
+
+        // Fetch profile if we have a user
+        if (initialSession?.user) {
+          const profile = await fetchProfile(initialSession.user.id);
+          if (mounted) {
+            setProfile(profile);
+          }
+        } else {
+          setProfile(null);
+        }
+
+        setLoading(false);
+        setInitialized(true);
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        if (mounted) {
+          setLoading(false);
+          setInitialized(true);
+        }
+      }
+    };
+
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!mounted || !initialized) return;
         
         console.log('Auth state changed:', event, !!session);
         
         setSession(session);
         setUser(session?.user ?? null);
-        
-        if (!session) {
+
+        if (!session?.user) {
           setProfile(null);
           setLoading(false);
           return;
         }
+
+        // Handle authenticated user
+        setLoading(true);
         
-        // Defer profile fetching to avoid auth deadlocks
-        if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
-          setTimeout(async () => {
-            if (!mounted) return;
+        try {
+          const profile = await fetchProfile(session.user.id);
+          
+          if (mounted) {
+            setProfile(profile);
             
-            try {
-              const { data: profile } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', session.user.id)
-                .maybeSingle();
-              
-              if (!mounted) return;
-              
-              setProfile(profile);
-              setLoading(false);
-              
-              // Update last login only on actual sign in
-              if (profile && event === 'SIGNED_IN') {
-                await supabase
-                  .from('profiles')
-                  .update({ last_login: new Date().toISOString() })
-                  .eq('id', session.user.id);
-              }
-            } catch (error) {
-              console.error('Error fetching profile:', error);
-              if (mounted) {
-                setLoading(false);
-              }
+            // Update last login on sign in
+            if (event === 'SIGNED_IN' && profile) {
+              await updateLastLogin(session.user.id);
             }
-          }, 0);
-        } else {
-          setLoading(false);
+          }
+        } catch (error) {
+          console.error('Error in auth state change:', error);
+        } finally {
+          if (mounted) {
+            setLoading(false);
+          }
         }
       }
     );
-    
-    // THEN check for existing session
-    const initializeAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!mounted) return;
-        
-        console.log('Initial session check:', !!session);
-        
-        // Don't update state here if we already have a session from the listener
-        if (!session) {
-          setSession(null);
-          setUser(null);
-          setProfile(null);
-          setLoading(false);
-        }
-        // If we have a session, let the auth state listener handle it
-      } catch (error) {
-        console.error('Error initializing auth:', error);
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    };
-    
+
+    // Initialize auth
     initializeAuth();
 
     return () => {
@@ -165,21 +201,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      setLoading(true);
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
+        console.error('Sign in error:', error);
         toast({
           title: "Sign in failed",
           description: error.message,
           variant: "destructive",
         });
+        setLoading(false);
+        return { error };
       }
 
-      return { error };
+      console.log('Sign in successful:', data.user?.id);
+      
+      // Loading will be handled by the auth state listener
+      return { error: null };
     } catch (error: any) {
+      console.error('Sign in catch error:', error);
+      setLoading(false);
       return { error };
     }
   };
@@ -203,6 +249,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setProfile(null);
       setSession(null);
+      setLoading(false);
       
       toast({
         title: "Signed out",
@@ -214,6 +261,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setProfile(null);
       setSession(null);
+      setLoading(false);
       toast({
         title: "Signed out",
         description: "You have been signed out.",

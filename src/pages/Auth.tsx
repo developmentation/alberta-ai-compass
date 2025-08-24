@@ -34,10 +34,11 @@ export default function Auth() {
     const { error } = await signIn(loginForm.email, loginForm.password);
     
     if (!error) {
+      // Navigate after successful sign in - auth state will update automatically
       navigate('/admin');
+    } else {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   const handleSignup = async (e: React.FormEvent) => {

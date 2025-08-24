@@ -28,9 +28,9 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     if (!error) {
       onClose();
       navigate('/admin');
+    } else {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   return (
