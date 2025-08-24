@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Bookmark, Eye, Star, BookmarkCheck } from "lucide-react";
 import { Link } from "react-router-dom";
+import { ImageVideoViewer } from '@/components/ImageVideoViewer';
 
 interface LearningPlanCardProps {
   id: string;
@@ -10,6 +11,7 @@ interface LearningPlanCardProps {
   duration: string;
   level: string;
   image: string;
+  video?: string;
   tags: string[];
   averageRating?: number;
   totalVotes?: number;
@@ -23,20 +25,48 @@ export const LearningPlanCard = ({
   duration,
   level,
   image,
+  video,
   tags,
   averageRating = 0,
   totalVotes = 0,
   isBookmarked = false
 }: LearningPlanCardProps) => {
+  // Helper function to check if URL is a YouTube URL  
+  const isYouTubeUrl = (url: string): boolean => {
+    if (!url) return false;
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)/,
+      /youtube\.com\/v\//,
+      /youtube\.com\/user\/.*#p\/.*\/.*\//,
+      /youtube\.com\/.*[?&]v=/
+    ];
+    return patterns.some(pattern => pattern.test(url));
+  };
+
+  // Determine what to show - prioritize real images, then videos (including YouTube), then fallback
+  const hasRealImage = image && image !== "/placeholder.svg" && !image.includes('/videos/') && !isYouTubeUrl(image);
+  const hasVideo = video && (video.includes('/videos/') || isYouTubeUrl(video));
+
   return (
     <article className="group relative overflow-hidden rounded-2xl border border-border bg-card/40 backdrop-blur-sm hover:bg-card-hover transition-all duration-500 hover:shadow-elegant hover:scale-[1.02] hover:-translate-y-1">
-      {/* Image Section */}
+      {/* Image/Video Section */}
       <div className="relative h-48 overflow-hidden">
-        <img
-          src={image}
+        <ImageVideoViewer
+          imageUrl={hasRealImage ? image : undefined}
+          videoUrl={hasVideo ? video : undefined}
           alt={title}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          title={title}
+          className="h-full"
+          showControls={true}
         />
+        {/* Fallback for when no real media */}
+        {!hasRealImage && !hasVideo && image && (
+          <img
+            src={image}
+            alt={title}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
         <div className="absolute top-4 left-4 flex items-center gap-2">
           <Badge variant="secondary" className="bg-glass-bg border-glass-border backdrop-blur-md text-xs">

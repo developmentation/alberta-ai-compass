@@ -84,6 +84,7 @@ const LearningHub = () => {
              plan.level === 'red' ? 'RED' : 
              plan.level,
       image: plan.image_url || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1400&auto=format&fit=crop",
+      video: plan.video_url,
       tags: plan.learning_outcomes?.slice(0, 2) || ["AI Training", "Hands-on"],
       averageRating: ratingData?.averageRating || 0,
       totalVotes: ratingData?.totalVotes || 0,
