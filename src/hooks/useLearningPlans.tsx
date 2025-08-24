@@ -17,19 +17,15 @@ interface LearningPlan {
 }
 
 export function useLearningPlans() {
-  const { user } = useAuth();
   const [learningPlans, setLearningPlans] = useState<LearningPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user) {
-      fetchLearningPlans();
-    } else {
-      setLearningPlans([]);
-      setLoading(false);
-    }
-  }, [user]);
+    // Always fetch learning plans, regardless of auth status
+    // Published plans should be publicly accessible
+    fetchLearningPlans();
+  }, []);
 
   const fetchLearningPlans = async () => {
     try {
