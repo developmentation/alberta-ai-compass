@@ -229,7 +229,7 @@ export type Database = {
       cohort_content: {
         Row: {
           cohort_id: string
-          content_id: string
+          content_id: string | null
           content_type: string
           created_at: string | null
           created_by: string
@@ -242,7 +242,7 @@ export type Database = {
         }
         Insert: {
           cohort_id: string
-          content_id: string
+          content_id?: string | null
           content_type: string
           created_at?: string | null
           created_by: string
@@ -255,7 +255,7 @@ export type Database = {
         }
         Update: {
           cohort_id?: string
-          content_id?: string
+          content_id?: string | null
           content_type?: string
           created_at?: string | null
           created_by?: string
