@@ -22,24 +22,32 @@ export function useLearningPlans() {
 
   useEffect(() => {
     // Always fetch learning plans - they're now public
+    console.log('useLearningPlans: Starting fetch...');
     fetchLearningPlans();
   }, []); // Remove user dependency
 
   const fetchLearningPlans = async () => {
     try {
       setLoading(true);
+      console.log('useLearningPlans: Fetching from database...');
       const { data, error } = await supabase
         .from('learning_plans')
         .select('*')
         .eq('status', 'published')
         .order('created_at', { ascending: false });
 
+      console.log('useLearningPlans: Database response:', { data: data?.length, error });
+
       if (error) throw error;
       setLearningPlans(data || []);
+      console.log('useLearningPlans: Successfully loaded', data?.length || 0, 'plans');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch learning plans');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch learning plans';
+      console.error('useLearningPlans: Error fetching plans:', errorMessage);
+      setError(errorMessage);
     } finally {
       setLoading(false);
+      console.log('useLearningPlans: Loading complete');
     }
   };
 

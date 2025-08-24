@@ -20,7 +20,16 @@ const LearningHub = () => {
   const { learningPlans, loading, error } = useLearningPlans();
   
   const planItems = learningPlans.map(item => ({ id: item.id, type: 'learning_plan' }));
-  const { ratingsData } = useContentRatings(planItems);
+  const { ratingsData, loading: ratingsLoading } = useContentRatings(planItems);
+
+  // Debug logging to track loading states
+  console.log('LearningHub loading states:', { 
+    loading, 
+    error,
+    ratingsLoading,
+    plansCount: learningPlans.length,
+    planItems: planItems.length
+  });
 
   // Mock articles for now - these could come from the resources table or a separate articles table
   const articles = [
@@ -204,6 +213,9 @@ const LearningHub = () => {
               <div className="flex items-center justify-center py-16">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
                 <span className="ml-2 text-muted-foreground">Loading learning plans...</span>
+                <div className="text-xs text-muted-foreground mt-2">
+                  Debug: Loading={loading.toString()}, Plans={learningPlans.length}, Error={error || 'none'}
+                </div>
               </div>
             )}
             
@@ -212,6 +224,12 @@ const LearningHub = () => {
                 <p className="text-destructive text-lg">
                   Error loading learning plans: {error}
                 </p>
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary/80"
+                >
+                  Retry
+                </button>
               </div>
             )}
 
