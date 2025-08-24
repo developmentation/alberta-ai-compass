@@ -85,26 +85,24 @@ export const NewsCard = ({
               onPause={() => setVideoPlaying(false)}
               onEnded={() => setVideoPlaying(false)}
             />
-            {/* Video Controls */}
-            <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 hover:opacity-100 transition-opacity">
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="w-10 h-10 p-0 bg-white/90 hover:bg-white"
-                  onClick={toggleVideoPlayback}
-                >
-                  {videoPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="w-10 h-10 p-0 bg-white/90 hover:bg-white"
-                  onClick={toggleVideoMute}
-                >
-                  {videoMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                </Button>
-              </div>
+            {/* Video Controls - positioned in top right like admin */}
+            <div className="absolute top-2 right-2 flex gap-1 bg-black/40 rounded p-1 group-hover:opacity-100 opacity-0 transition-opacity">
+              <Button
+                size="sm"
+                variant="secondary"
+                className="w-8 h-8 p-0 bg-white/90 hover:bg-white"
+                onClick={toggleVideoPlayback}
+              >
+                {videoPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                className="w-8 h-8 p-0 bg-white/90 hover:bg-white"
+                onClick={toggleVideoMute}
+              >
+                {videoMuted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
+              </Button>
             </div>
           </div>
         ) : (
