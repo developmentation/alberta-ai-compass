@@ -113,6 +113,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
   const [isLoadingTranslation, setIsLoadingTranslation] = useState(false);
   const [hasStartedModule, setHasStartedModule] = useState(false);
   const [hasBegunModule, setHasBegunModule] = useState(false); // New state for tracking if user clicked Begin
+  const [activeTab, setActiveTab] = useState("info"); // State for tab management
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -159,6 +160,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
 
   const handleBeginModule = () => {
     setHasBegunModule(true);
+    setActiveTab("content"); // Switch to content tab when Begin is clicked
     if (user && moduleId) {
       trackProgress('started', 0);
       setHasStartedModule(true);
@@ -1407,7 +1409,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
       {/* Main Content with Tabs */}
       <main className="flex-1 overflow-y-auto">
         <div className="container mx-auto px-4 py-8">
-          <Tabs value={hasBegunModule ? "content" : "info"} className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="info">Module Info</TabsTrigger>
               <TabsTrigger value="content" disabled={!hasBegunModule}>Content</TabsTrigger>
