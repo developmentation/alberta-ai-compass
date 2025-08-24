@@ -18,6 +18,7 @@ import { useMyLearning } from '@/hooks/useMyLearning';
 import { useAuth } from '@/hooks/useAuth';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
+import { ImageVideoViewer } from '@/components/ImageVideoViewer';
 import { format } from 'date-fns';
 
 export default function MyLearning() {
@@ -294,12 +295,16 @@ export default function MyLearning() {
                             )}
                           </div>
                         </div>
-                        {item.image_url && (
+                        {(item.image_url || item.video_url) && (
                           <div className="w-full h-32 bg-muted rounded-lg overflow-hidden">
-                            <img 
-                              src={item.image_url} 
+                            <ImageVideoViewer
+                              imageUrl={item.image_url}
+                              videoUrl={item.video_url}
                               alt={item.title}
+                              title={item.title}
                               className="w-full h-full object-cover"
+                              aspectRatio="auto"
+                              showControls={true}
                             />
                           </div>
                         )}

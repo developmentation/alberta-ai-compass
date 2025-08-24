@@ -17,6 +17,7 @@ export interface ContentItem {
   description: string;
   type: 'learning_plan' | 'module' | 'news' | 'tool' | 'prompt_library';
   image_url?: string;
+  video_url?: string;
   created_at: string;
   rating?: number;
   completed_at?: string;
@@ -152,7 +153,7 @@ export function useMyLearning() {
           case 'learning_plan':
             const planRes = await supabase
               .from('learning_plans')
-              .select('id, name, description, image_url, created_at')
+              .select('id, name, description, image_url, video_url, created_at')
               .eq('id', item.content_id)
               .eq('status', 'published')
               .is('deleted_at', null)
@@ -162,7 +163,7 @@ export function useMyLearning() {
           case 'module':
             const moduleRes = await supabase
               .from('modules')
-              .select('id, name, description, image_url, created_at')
+              .select('id, name, description, image_url, video_url, created_at')
               .eq('id', item.content_id)
               .eq('status', 'published')
               .is('deleted_at', null)
@@ -172,7 +173,7 @@ export function useMyLearning() {
           case 'news':
             const newsRes = await supabase
               .from('news')
-              .select('id, title, description, image_url, created_at')
+              .select('id, title, description, image_url, video_url, created_at')
               .eq('id', item.content_id)
               .eq('status', 'published')
               .is('deleted_at', null)
@@ -182,7 +183,7 @@ export function useMyLearning() {
           case 'tool':
             const toolRes = await supabase
               .from('tools')
-              .select('id, name, description, image_url, created_at')
+              .select('id, name, description, image_url, video_url, created_at')
               .eq('id', item.content_id)
               .eq('status', 'published')
               .is('deleted_at', null)
@@ -192,7 +193,7 @@ export function useMyLearning() {
           case 'prompt_library':
             const promptRes = await supabase
               .from('prompt_library')
-              .select('id, name, description, image_url, created_at')
+              .select('id, name, description, image_url, video_url, created_at')
               .eq('id', item.content_id)
               .eq('status', 'published')
               .is('deleted_at', null)
@@ -210,6 +211,7 @@ export function useMyLearning() {
               description: data.description || '',
               type: item.content_type as ContentItem['type'],
               image_url: data.image_url || undefined,
+              video_url: data.video_url || undefined,
               created_at: data.created_at,
               rating: item.rating || undefined,
               completed_at: item.completed_at || undefined,
