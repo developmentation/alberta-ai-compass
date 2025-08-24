@@ -66,7 +66,12 @@ export function NewsViewer({ news, onClose, className = "" }: NewsViewerProps) {
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
             <Calendar className="w-4 h-4" />
-            <span>{format(new Date(news.created_at), 'MMMM d, yyyy')}</span>
+            <span>
+              {news.created_at && !isNaN(Date.parse(news.created_at)) 
+                ? format(new Date(news.created_at), 'MMMM d, yyyy')
+                : 'Date not available'
+              }
+            </span>
           </div>
           
           {/* Rating and bookmark section */}
