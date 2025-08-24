@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 
 interface LearningPlan {
   id: string;
@@ -17,31 +16,45 @@ interface LearningPlan {
 }
 
 export function useLearningPlans() {
-  const { user } = useAuth();
   const [learningPlans, setLearningPlans] = useState<LearningPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Always fetch learning plans - they're now public
+    console.log('useLearningPlans: Starting fetch...');
     fetchLearningPlans();
   }, []); // Remove user dependency
 
   const fetchLearningPlans = async () => {
     try {
       setLoading(true);
+      setError(null);
+      console.log('useLearningPlans: Fetching from database...');
+      
       const { data, error } = await supabase
         .from('learning_plans')
         .select('*')
         .eq('status', 'published')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      console.log('useLearningPlans: Database response:', { data: data?.length, error });
+
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+      
       setLearningPlans(data || []);
+      console.log('useLearningPlans: Successfully loaded', data?.length || 0, 'plans');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch learning plans');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch learning plans';
+      console.error('useLearningPlans: Error fetching plans:', errorMessage);
+      setError(errorMessage);
+      setLearningPlans([]); // Set empty array on error
     } finally {
       setLoading(false);
+      console.log('useLearningPlans: Loading complete');
     }
   };
 

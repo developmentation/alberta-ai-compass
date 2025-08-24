@@ -4,23 +4,27 @@ import { HeroSection } from "@/components/HeroSection";
 import { LearningPlanCard } from "@/components/LearningPlanCard";
 import { ArticleCard } from "@/components/ArticleCard";
 import { NewsCard } from "@/components/NewsCard";
-import { LoginModal } from "@/components/LoginModal";
+import { NewsViewer } from "@/components/NewsViewer";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useNews } from "@/hooks/useNews";
 import { useLearningPlans } from "@/hooks/useLearningPlans";
 import { useContentRatings } from "@/hooks/useContentRatings";
+import { useAuth } from "@/hooks/useAuth";
 import { format, parseISO } from "date-fns";
 
 const Index = () => {
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const { user } = useAuth();
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [selectedNews, setSelectedNews] = useState<any>(null);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
 
   // Fetch data from database
-  const { news, loading: newsLoading } = useNews();
-  const { learningPlans, loading: plansLoading } = useLearningPlans();
+  const { news, loading: newsLoading, error: newsError } = useNews();
+  const { learningPlans, loading: plansLoading, error: plansError } = useLearningPlans();
 
   // Prepare content items for ratings
   const contentItems = useMemo(() => [
@@ -28,7 +32,18 @@ const Index = () => {
     ...news.map(item => ({ id: item.id, type: 'news' }))
   ], [learningPlans, news]);
 
-  const { ratingsData } = useContentRatings(contentItems);
+  const { ratingsData, loading: ratingsLoading } = useContentRatings(contentItems, user?.id);
+
+  // Debug logging to track loading states
+  console.log('Loading states:', { 
+    newsLoading, 
+    plansLoading, 
+    ratingsLoading,
+    newsError,
+    plansError,
+    newsCount: news.length,
+    plansCount: learningPlans.length 
+  });
 
   // Featured Learning Plans - highest rated (or 3 newest if no ratings)
   const featuredPlans = useMemo(() => {
@@ -88,10 +103,20 @@ const Index = () => {
         averageRating: rating?.averageRating || 0,
         totalVotes: rating?.totalVotes || 0,
         isBookmarked: rating?.isBookmarked || false,
-        onClick: () => {} // Can be enhanced to navigate to detailed view
+        onClick: () => handleNewsClick(item)
       };
     });
   }, [news, ratingsData]);
+
+  const handleNewsClick = (newsItem: any) => {
+    setSelectedNews(newsItem);
+    setIsViewerOpen(true);
+  };
+
+  const handleCloseViewer = () => {
+    setIsViewerOpen(false);
+    setSelectedNews(null);
+  };
 
   const articles = [
     {
@@ -122,13 +147,19 @@ const Index = () => {
 
   const featuredArticles = articles.slice(0, 3);
 
-  // Show loading state
-  if (plansLoading || newsLoading) {
+  // Show error state only if both data sources failed completely
+  if (newsError && plansError) {
     return (
       <div className="min-h-screen bg-background text-foreground font-['Inter'] antialiased flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading content...</p>
+          <p className="text-destructive text-lg">Failed to load content</p>
+          <p className="text-muted-foreground mt-2">Please try refreshing the page</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary/80"
+          >
+            Refresh
+          </button>
         </div>
       </div>
     );
@@ -143,7 +174,7 @@ const Index = () => {
           <div className="absolute -bottom-24 -right-24 w-[28rem] h-[28rem] bg-primary-glow/20 blur-3xl rounded-full animate-glow-pulse" style={{ animationDelay: '1s' }} />
         </div>
 
-        <Header onLoginClick={() => setIsLoginOpen(true)} />
+        <Header />
         
         <main className="flex-1 relative z-10">
           <HeroSection 
@@ -169,11 +200,26 @@ const Index = () => {
                 </Link>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {featuredPlans.map((plan, index) => (
-                  <div key={plan.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
-                    <LearningPlanCard {...plan} />
+                {plansLoading ? (
+                  // Show skeleton loading cards while data loads
+                  [...Array(3)].map((_, i) => (
+                    <div key={i} className="bg-card rounded-xl border border-border p-6 animate-pulse">
+                      <div className="h-32 bg-muted rounded mb-4"></div>
+                      <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                      <div className="h-3 bg-muted rounded w-1/2"></div>
+                    </div>
+                  ))
+                ) : featuredPlans.length > 0 ? (
+                  featuredPlans.map((plan, index) => (
+                    <div key={plan.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
+                      <LearningPlanCard {...plan} />
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-8">
+                    <p className="text-muted-foreground">No learning plans available at this time.</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
             <div className="border-t border-border/50 mt-16" />
@@ -195,11 +241,26 @@ const Index = () => {
                 </Link>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {featuredNews.map((item, index) => (
-                  <div key={item.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
-                    <NewsCard {...item} />
+                {newsLoading ? (
+                  // Show skeleton loading cards while data loads
+                  [...Array(3)].map((_, i) => (
+                    <div key={i} className="bg-card rounded-xl border border-border p-6 animate-pulse">
+                      <div className="h-32 bg-muted rounded mb-4"></div>
+                      <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                      <div className="h-3 bg-muted rounded w-1/2"></div>
+                    </div>
+                  ))
+                ) : featuredNews.length > 0 ? (
+                  featuredNews.map((item, index) => (
+                    <div key={item.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
+                      <NewsCard {...item} />
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-8">
+                    <p className="text-muted-foreground">No news available at this time.</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
             <div className="border-t border-border/50 mt-16" />
@@ -284,10 +345,17 @@ const Index = () => {
         <Footer />
       </div>
 
-      <LoginModal 
-        isOpen={isLoginOpen} 
-        onClose={() => setIsLoginOpen(false)} 
-      />
+      <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+          {selectedNews && (
+            <NewsViewer 
+              news={selectedNews} 
+              onClose={handleCloseViewer}
+              className="border-0"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

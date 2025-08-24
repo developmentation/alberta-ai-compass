@@ -12,14 +12,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-interface HeaderProps {
-  onLoginClick: () => void;
-}
-
-export const Header = ({ onLoginClick }: HeaderProps) => {
+export const Header = () => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, profile, signOut, isAdmin, isFacilitator } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   return (
     <>
@@ -79,7 +80,7 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={signOut}>
+                      <DropdownMenuItem onClick={handleSignOut}>
                         <LogOut className="w-4 h-4 mr-2" />
                         Sign out
                       </DropdownMenuItem>
@@ -91,7 +92,7 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => navigate('/login')}
+                    onClick={() => navigate('/auth')}
                     className="border border-border hover:border-primary/50"
                   >
                     <LogIn className="w-4 h-4" />
@@ -177,7 +178,7 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        signOut();
+                        handleSignOut();
                         setIsMobileMenuOpen(false);
                       }}
                       className="w-full justify-start border border-border hover:border-primary/50"
@@ -192,7 +193,7 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        navigate('/login');
+                        navigate('/auth');
                         setIsMobileMenuOpen(false);
                       }}
                       className="w-full justify-start border border-border hover:border-primary/50"
