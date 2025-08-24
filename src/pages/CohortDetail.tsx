@@ -65,6 +65,7 @@ export default function CohortDetail() {
   const [selectedContent, setSelectedContent] = useState<any>(null);
   const [selectedViewer, setSelectedViewer] = useState<string | null>(null);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("content");
 
   useEffect(() => {
     if (id) {
@@ -485,7 +486,7 @@ export default function CohortDetail() {
           </div>
 
           {/* Main Content */}
-          <Tabs defaultValue="content" className="space-y-6">
+          <Tabs defaultValue="content" value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="content" className="flex items-center gap-2">
                 <BookOpen className="w-4 h-4" />
@@ -626,7 +627,7 @@ export default function CohortDetail() {
             </TabsContent>
 
             <TabsContent value="discussion">
-              <CohortDiscussions cohortId={cohort.id} />
+              <CohortDiscussions cohortId={cohort.id} isActive={activeTab === "discussion"} />
             </TabsContent>
           </Tabs>
         </div>

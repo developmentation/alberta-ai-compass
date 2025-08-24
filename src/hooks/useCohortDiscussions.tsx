@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -18,67 +18,13 @@ export interface CohortDiscussion {
   replies?: CohortDiscussion[];
 }
 
-export function useCohortDiscussions(cohortId?: string) {
+export function useCohortDiscussions(cohortId?: string, isActive: boolean = false) {
   const { user } = useAuth();
   const [discussions, setDiscussions] = useState<CohortDiscussion[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (cohortId) {
-      fetchDiscussions();
-      
-      // Set up real-time subscription for new messages
-      const channel = supabase
-        .channel('cohort-discussions-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'cohort_discussions',
-            filter: `cohort_id=eq.${cohortId}`
-          },
-          (payload) => {
-            console.log('New discussion message:', payload);
-            fetchDiscussions(); // Refetch to get complete data with user profiles
-          }
-        )
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'cohort_discussions',
-            filter: `cohort_id=eq.${cohortId}`
-          },
-          (payload) => {
-            console.log('Updated discussion message:', payload);
-            fetchDiscussions(); // Refetch to get updated data
-          }
-        )
-        .on(
-          'postgres_changes',
-          {
-            event: 'DELETE',
-            schema: 'public',
-            table: 'cohort_discussions',
-            filter: `cohort_id=eq.${cohortId}`
-          },
-          (payload) => {
-            console.log('Deleted discussion message:', payload);
-            fetchDiscussions(); // Refetch to remove deleted items
-          }
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
-  }, [cohortId]);
-
-  const fetchDiscussions = async () => {
+  const fetchDiscussions = useCallback(async () => {
     if (!cohortId) return;
     
     setLoading(true);
@@ -151,7 +97,73 @@ export function useCohortDiscussions(cohortId?: string) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [cohortId]);
+
+  useEffect(() => {
+    if (cohortId) {
+      fetchDiscussions();
+      
+      // Set up real-time subscription for new messages
+      const channel = supabase
+        .channel('cohort-discussions-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'cohort_discussions',
+            filter: `cohort_id=eq.${cohortId}`
+          },
+          (payload) => {
+            console.log('New discussion message:', payload);
+            fetchDiscussions(); // Refetch to get complete data with user profiles
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'cohort_discussions',
+            filter: `cohort_id=eq.${cohortId}`
+          },
+          (payload) => {
+            console.log('Updated discussion message:', payload);
+            fetchDiscussions(); // Refetch to get updated data
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'DELETE',
+            schema: 'public',
+            table: 'cohort_discussions',
+            filter: `cohort_id=eq.${cohortId}`
+          },
+          (payload) => {
+            console.log('Deleted discussion message:', payload);
+            fetchDiscussions(); // Refetch to remove deleted items
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [cohortId]);
+
+  // Add polling when discussion tab is active
+  useEffect(() => {
+    if (!cohortId || !isActive) return;
+
+    const interval = setInterval(() => {
+      console.log('Polling for new discussions...');
+      fetchDiscussions();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [cohortId, isActive, fetchDiscussions]);
 
   const createDiscussion = async (message: string, parentId?: string) => {
     if (!user || !cohortId || !message.trim()) return;

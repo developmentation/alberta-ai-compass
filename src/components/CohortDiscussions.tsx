@@ -13,11 +13,12 @@ import { toast } from 'sonner';
 
 interface CohortDiscussionsProps {
   cohortId: string;
+  isActive?: boolean;
 }
 
-export function CohortDiscussions({ cohortId }: CohortDiscussionsProps) {
+export function CohortDiscussions({ cohortId, isActive = false }: CohortDiscussionsProps) {
   const { user } = useAuth();
-  const { discussions, loading, submitting, createDiscussion, updateDiscussion, deleteDiscussion } = useCohortDiscussions(cohortId);
+  const { discussions, loading, submitting, createDiscussion, updateDiscussion, deleteDiscussion } = useCohortDiscussions(cohortId, isActive);
   const [newMessage, setNewMessage] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingMessage, setEditingMessage] = useState('');
