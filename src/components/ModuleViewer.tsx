@@ -292,22 +292,6 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
       </div>
     </div>
   );
-    if (!user || !moduleId) return;
-
-    try {
-      const { error } = await supabase.functions.invoke('track-progress', {
-        body: {
-          moduleId,
-          completion,
-          status
-        }
-      });
-
-      if (error) throw error;
-    } catch (error: any) {
-      console.error('Error tracking progress:', error);
-    }
-  };
 
   const handleNextSection = () => {
     if (!editingData.sections || editingData.sections.length === 0) return;
