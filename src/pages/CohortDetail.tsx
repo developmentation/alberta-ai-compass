@@ -322,7 +322,8 @@ export default function CohortDetail() {
         console.error('Error loading module data:', error);
       }
     } else {
-      setSelectedContent(content.content_data);
+      // For other content types, use the content_data which contains the full details
+      setSelectedContent(content.content_data || content);
       setSelectedViewer(content.type);
     }
   };
