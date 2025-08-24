@@ -10,10 +10,24 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children, requireAdmin, requireFacilitator }: ProtectedRouteProps) {
   const { user, profile, loading } = useAuth();
+  const [timeoutReached, setTimeoutReached] = useState(false);
   
   console.log('ProtectedRoute state:', { user: !!user, profile: !!profile, loading, role: profile?.role });
 
-  if (loading) {
+  // Timeout fallback to prevent infinite loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.log('ProtectedRoute: Loading timeout reached, proceeding...');
+        setTimeoutReached(true);
+      }
+    }, 5000); // 5 second timeout
+
+    return () => clearTimeout(timeout);
+  }, [loading]);
+
+  // Show loading only if we're actually loading and haven't timed out
+  if (loading && !timeoutReached) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
@@ -29,11 +43,14 @@ export function ProtectedRoute({ children, requireAdmin, requireFacilitator }: P
     return <Navigate to="/auth" replace />;
   }
 
+  // For admin/facilitator routes, we need a profile with the right role
   if (requireAdmin && profile?.role !== 'admin') {
+    console.log('ProtectedRoute: Admin required but user role is:', profile?.role);
     return <Navigate to="/" replace />;
   }
 
   if (requireFacilitator && !['facilitator', 'admin'].includes(profile?.role || '')) {
+    console.log('ProtectedRoute: Facilitator required but user role is:', profile?.role);
     return <Navigate to="/" replace />;
   }
 

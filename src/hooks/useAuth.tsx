@@ -35,8 +35,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
 
   // Fetch profile data for authenticated user
-  const fetchProfile = async (userId: string): Promise<Profile | null> => {
+  const fetchProfile = async (userId: string, userEmail?: string): Promise<Profile | null> => {
     try {
+      console.log('Fetching profile for user:', userId);
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
@@ -48,6 +49,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return null;
       }
 
+      if (!profile) {
+        console.log('No profile found for user, attempting to create one');
+        // If no profile exists, try to create a basic one
+        if (userEmail) {
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              id: userId,
+              email: userEmail,
+              role: 'public'
+            })
+            .select()
+            .single();
+            
+          if (createError) {
+            console.error('Error creating profile:', createError);
+            return null;
+          }
+          
+          console.log('Created new profile:', newProfile);
+          return newProfile;
+        }
+        return null;
+      }
+
+      console.log('Found profile:', profile);
       return profile;
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -70,9 +97,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    // Set up auth state listener FIRST
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         if (!mounted) return;
         
         console.log('Auth state changed:', event, !!session);
@@ -86,63 +113,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        // Handle authenticated user - fetch profile
-        try {
-          setLoading(true);
-          const profile = await fetchProfile(session.user.id);
-          
-          if (mounted) {
-            setProfile(profile);
+        // Handle authenticated user - fetch profile with timeout
+        setLoading(true);
+        setTimeout(async () => {
+          try {
+            const profile = await fetchProfile(session.user.id, session.user.email);
             
-            // Update last login on sign in
-            if (event === 'SIGNED_IN' && profile) {
-              await updateLastLogin(session.user.id);
+            if (mounted) {
+              console.log('Profile fetched:', !!profile, profile?.role);
+              setProfile(profile);
+              
+              // Update last login on sign in
+              if (event === 'SIGNED_IN' && profile) {
+                await updateLastLogin(session.user.id);
+              }
+            }
+          } catch (error) {
+            console.error('Error fetching profile:', error);
+            if (mounted) {
+              setProfile(null);
+            }
+          } finally {
+            if (mounted) {
+              setLoading(false);
             }
           }
-        } catch (error) {
-          console.error('Error in auth state change:', error);
-          if (mounted) {
-            setProfile(null);
-          }
-        } finally {
-          if (mounted) {
-            setLoading(false);
-          }
-        }
+        }, 0);
       }
     );
 
-    // Get initial session AFTER setting up the listener
+    // Get initial session
     const initializeAuth = async () => {
       try {
-        setLoading(true);
-        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+        const { data: { session: initialSession } } = await supabase.auth.getSession();
         
         if (!mounted) return;
 
-        if (error) {
-          console.error('Error getting initial session:', error);
-          setLoading(false);
-          return;
-        }
-
-        console.log('Initial session:', !!initialSession);
+        console.log('Initial session check:', !!initialSession);
         
-        setSession(initialSession);
-        setUser(initialSession?.user ?? null);
-
-        if (initialSession?.user) {
-          const profile = await fetchProfile(initialSession.user.id);
-          if (mounted) {
-            setProfile(profile);
-          }
-        } else {
+        // Let the auth state listener handle the session
+        if (!initialSession) {
+          setSession(null);
+          setUser(null);
           setProfile(null);
+          setLoading(false);
         }
-
-        setLoading(false);
+        // If there is a session, the listener will handle it
       } catch (error) {
-        console.error('Error initializing auth:', error);
+        console.error('Error getting initial session:', error);
         if (mounted) {
           setLoading(false);
         }
@@ -156,7 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []); // Remove session dependency to avoid loops
+  }, []);
 
   const signUp = async (email: string, password: string, fullName?: string) => {
     try {
