@@ -45,13 +45,18 @@ export function useMyLearning() {
   }, [user, filter]);
 
   const fetchMyLearningData = async () => {
-    if (!user) return;
+    if (!user) {
+      console.log('useMyLearning: No user found');
+      return;
+    }
 
+    console.log('useMyLearning: Fetching data for user:', user.id, 'filter:', filter);
     setLoading(true);
     setError(null);
     
     try {
       // Fetch stats
+      console.log('useMyLearning: Fetching stats...');
       const [bookmarksRes, completionsRes, ratingsRes] = await Promise.all([
         supabase
           .from('user_bookmarks')
@@ -66,6 +71,12 @@ export function useMyLearning() {
           .select('id')
           .eq('user_id', user.id)
       ]);
+
+      console.log('useMyLearning: Stats results:', {
+        bookmarks: bookmarksRes,
+        completions: completionsRes,
+        ratings: ratingsRes
+      });
 
       setStats({
         bookmarked: bookmarksRes.data?.length || 0,
