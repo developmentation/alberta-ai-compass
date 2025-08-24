@@ -10,18 +10,10 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children, requireAdmin, requireFacilitator }: ProtectedRouteProps) {
   const { user, profile, loading } = useAuth();
-  const [timeoutReached, setTimeoutReached] = useState(false);
+  
+  console.log('ProtectedRoute state:', { user: !!user, profile: !!profile, loading, role: profile?.role });
 
-  // Set a timeout to prevent infinite loading
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setTimeoutReached(true);
-    }, 10000); // 10 second timeout
-
-    return () => clearTimeout(timeout);
-  }, []);
-
-  if (loading && !timeoutReached) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
@@ -32,7 +24,8 @@ export function ProtectedRoute({ children, requireAdmin, requireFacilitator }: P
     );
   }
 
-  if (!user || timeoutReached) {
+  if (!user) {
+    console.log('ProtectedRoute: No user, redirecting to auth');
     return <Navigate to="/auth" replace />;
   }
 

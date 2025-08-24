@@ -32,7 +32,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false);
   const { toast } = useToast();
 
   // Fetch profile data for authenticated user
@@ -71,52 +70,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    const initializeAuth = async () => {
-      try {
-        // Get initial session
-        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
-        
-        if (!mounted) return;
-
-        if (error) {
-          console.error('Error getting initial session:', error);
-          setLoading(false);
-          setInitialized(true);
-          return;
-        }
-
-        // Set initial state
-        setSession(initialSession);
-        setUser(initialSession?.user ?? null);
-
-        // Fetch profile if we have a user
-        if (initialSession?.user) {
-          const profile = await fetchProfile(initialSession.user.id);
-          if (mounted) {
-            setProfile(profile);
-          }
-        } else {
-          setProfile(null);
-        }
-
-        setLoading(false);
-        setInitialized(true);
-      } catch (error) {
-        console.error('Error initializing auth:', error);
-        if (mounted) {
-          setLoading(false);
-          setInitialized(true);
-        }
-      }
-    };
-
-    // Set up auth state listener
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (!mounted || !initialized) return;
+        if (!mounted) return;
         
         console.log('Auth state changed:', event, !!session);
         
+        setLoading(true);
         setSession(session);
         setUser(session?.user ?? null);
 
@@ -126,9 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        // Handle authenticated user
-        setLoading(true);
-        
+        // Handle authenticated user - fetch profile
         try {
           const profile = await fetchProfile(session.user.id);
           
@@ -142,6 +101,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         } catch (error) {
           console.error('Error in auth state change:', error);
+          if (mounted) {
+            setProfile(null);
+          }
         } finally {
           if (mounted) {
             setLoading(false);
@@ -150,6 +112,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
+    // Get initial session AFTER setting up the listener
+    const initializeAuth = async () => {
+      try {
+        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+        
+        if (!mounted) return;
+
+        if (error) {
+          console.error('Error getting initial session:', error);
+          setLoading(false);
+          return;
+        }
+
+        // If we already have a session from the listener, don't process it again
+        if (session) return;
+
+        console.log('Initial session:', !!initialSession);
+        
+        setSession(initialSession);
+        setUser(initialSession?.user ?? null);
+
+        if (initialSession?.user) {
+          const profile = await fetchProfile(initialSession.user.id);
+          if (mounted) {
+            setProfile(profile);
+          }
+        } else {
+          setProfile(null);
+        }
+
+        setLoading(false);
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
     // Initialize auth
     initializeAuth();
 
@@ -157,7 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, []); // Remove session dependency to avoid loops
 
   const signUp = async (email: string, password: string, fullName?: string) => {
     try {
@@ -201,7 +202,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      setLoading(true);
+      console.log('Login attempt:', { email, password });
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -215,17 +216,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           description: error.message,
           variant: "destructive",
         });
-        setLoading(false);
         return { error };
       }
 
       console.log('Sign in successful:', data.user?.id);
       
-      // Loading will be handled by the auth state listener
+      // Don't set loading here - let the auth state listener handle it
       return { error: null };
     } catch (error: any) {
       console.error('Sign in catch error:', error);
-      setLoading(false);
       return { error };
     }
   };
@@ -234,7 +233,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { error } = await supabase.auth.signOut();
       
-      // If the error is about missing session, that's actually fine - user is already signed out
       if (error && !error.message.includes('session')) {
         console.error('Sign out error:', error);
         toast({
@@ -245,23 +243,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       
-      // Clear local state regardless of whether there was a session or not
-      setUser(null);
-      setProfile(null);
-      setSession(null);
-      setLoading(false);
-      
+      // State will be cleared by the auth state listener
       toast({
         title: "Signed out",
         description: "You have been successfully signed out.",
       });
     } catch (error: any) {
-      // Even if there's an error, clear local state
       console.log('Sign out error (clearing state anyway):', error);
-      setUser(null);
-      setProfile(null);
-      setSession(null);
-      setLoading(false);
+      // State will be cleared by the auth state listener
       toast({
         title: "Signed out",
         description: "You have been signed out.",
