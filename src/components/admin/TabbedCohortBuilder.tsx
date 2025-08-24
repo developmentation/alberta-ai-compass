@@ -67,14 +67,24 @@ export function TabbedCohortBuilder({
   const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    if (initialData) {
+    if (initialData && Object.keys(initialData).length > 0) {
       console.log('TabbedCohortBuilder - Initial Data:', initialData);
       console.log('TabbedCohortBuilder - Current formData before update:', formData);
-      setFormData(prev => {
-        const updated = { ...prev, ...initialData };
-        console.log('TabbedCohortBuilder - Updated formData:', updated);
-        return updated;
-      });
+      
+      // Only update if we're opening for editing (have meaningful initial data)
+      // or if this is the first time opening (formData is empty)
+      const isFormEmpty = !formData.name && !formData.description && formData.days.length === 0;
+      const hasValidInitialData = initialData.name || initialData.days?.length > 0;
+      
+      if (isFormEmpty || hasValidInitialData) {
+        setFormData(prev => {
+          const updated = { ...prev, ...initialData };
+          console.log('TabbedCohortBuilder - Updated formData:', updated);
+          return updated;
+        });
+      } else {
+        console.log('TabbedCohortBuilder - Skipping update to preserve current form state');
+      }
     }
   }, [initialData]);
 
