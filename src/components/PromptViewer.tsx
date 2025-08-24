@@ -105,8 +105,8 @@ export function PromptViewer({ prompt, children, open, onOpenChange }: PromptVie
       <DialogTrigger asChild>
         {children || <Button variant="outline">View Prompt</Button>}
       </DialogTrigger>
-      <DialogContent className="w-[90vw] h-[90vh] max-w-none max-h-none p-0">
-        <div className="flex flex-col h-full">
+      <DialogContent className="w-[90vw] h-[90vh] max-w-none max-h-none p-0 overflow-hidden">
+        <div className="flex flex-col h-full overflow-hidden">
           <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
             <DialogTitle className="flex items-center gap-3 text-2xl">
               {prompt.name}
@@ -130,14 +130,14 @@ export function PromptViewer({ prompt, children, open, onOpenChange }: PromptVie
             )}
           </DialogHeader>
 
-          <div className="flex-1 min-h-0">
-            <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
-              {/* Left Column */}
-              <div className="flex flex-col h-full border-r border-border overflow-hidden">
-                <ScrollArea className="h-full">
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <ScrollArea className="h-full w-full">
+              <div className="grid grid-cols-1 lg:grid-cols-2 min-h-full">
+                {/* Left Column */}
+                <div className="flex flex-col border-r border-border">
                   <div className="p-6 space-y-4">
                     {/* Purpose & Use Case - Max 50% height */}
-                    <div className="max-h-[50%]">
+                    <div className="max-h-[50vh]">
                       {/* Image */}
                       {prompt.image_url && (
                         <div className="aspect-video rounded-lg overflow-hidden bg-muted max-h-32 mb-4">
@@ -160,7 +160,7 @@ export function PromptViewer({ prompt, children, open, onOpenChange }: PromptVie
                         <CardContent>
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1 max-h-40 overflow-y-auto">
-                              <p className="text-foreground whitespace-pre-wrap text-sm">{prompt.purpose}</p>
+                              <p className="text-foreground whitespace-pre-wrap text-sm break-words">{prompt.purpose}</p>
                             </div>
                             <Button
                               variant="outline"
@@ -185,9 +185,9 @@ export function PromptViewer({ prompt, children, open, onOpenChange }: PromptVie
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="bg-muted/50 p-4 rounded-lg mb-4">
+                        <div className="bg-muted/50 p-4 rounded-lg mb-4 overflow-hidden">
                           <div className="max-h-32 overflow-y-auto">
-                            <p className="text-foreground whitespace-pre-wrap font-mono text-sm leading-relaxed">
+                            <p className="text-foreground whitespace-pre-wrap font-mono text-sm leading-relaxed break-words">
                               {prompt.description}
                             </p>
                           </div>
@@ -240,9 +240,9 @@ export function PromptViewer({ prompt, children, open, onOpenChange }: PromptVie
                         </CardHeader>
                         <CardContent>
                           <div className="space-y-4">
-                            <div className="bg-muted/50 p-4 rounded-lg">
+                            <div className="bg-muted/50 p-4 rounded-lg overflow-hidden">
                               <div className="max-h-24 overflow-y-auto">
-                                <p className="text-foreground whitespace-pre-wrap font-mono text-sm leading-relaxed">
+                                <p className="text-foreground whitespace-pre-wrap font-mono text-sm leading-relaxed break-words">
                                   {prompt.sample_output}
                                 </p>
                               </div>
@@ -260,56 +260,57 @@ export function PromptViewer({ prompt, children, open, onOpenChange }: PromptVie
                       </Card>
                     )}
                   </div>
-                </ScrollArea>
-              </div>
+                </div>
 
-              {/* Right Column - AI Response */}
-              <div className="flex flex-col h-full overflow-hidden">
-                {executionResult ? (
-                  <div className="flex flex-col h-full overflow-hidden">
-                    <div className="flex items-center justify-between p-6 pb-4 border-b flex-shrink-0">
-                      <div className="flex items-center gap-2">
-                        <Play className="w-5 h-5" />
-                        <h3 className="text-lg font-semibold">AI Response</h3>
+                {/* Right Column - AI Response */}
+                <div className="flex flex-col overflow-hidden">
+                  {executionResult ? (
+                    <div className="flex flex-col h-full overflow-hidden">
+                      <div className="flex items-center justify-between p-6 pb-4 border-b flex-shrink-0">
+                        <div className="flex items-center gap-2">
+                          <Play className="w-5 h-5" />
+                          <h3 className="text-lg font-semibold">AI Response</h3>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleCopy(executionResult, 'AI Response')}
+                        >
+                          <Copy className="w-4 h-4 mr-2" />
+                          {copiedField === 'AI Response' ? 'Copied!' : 'Copy Response'}
+                        </Button>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleCopy(executionResult, 'AI Response')}
-                      >
-                        <Copy className="w-4 h-4 mr-2" />
-                        {copiedField === 'AI Response' ? 'Copied!' : 'Copy Response'}
-                      </Button>
-                    </div>
-                    <div className="flex-1 min-h-0 p-6 overflow-hidden">
-                      <div className="h-full bg-gradient-to-br from-primary/5 to-accent/5 rounded-lg border overflow-hidden">
-                        <ScrollArea className="h-full w-full p-4">
-                          <div className="prose prose-sm max-w-none dark:prose-invert break-words overflow-wrap-anywhere">
-                            <ReactMarkdown 
-                              components={{
-                                p: ({ children }) => <p className="break-words">{children}</p>,
-                                pre: ({ children }) => <pre className="overflow-x-auto whitespace-pre-wrap break-words">{children}</pre>,
-                                code: ({ children }) => <code className="break-words">{children}</code>
-                              }}
-                            >
-                              {executionResult}
-                            </ReactMarkdown>
+                      <div className="flex-1 min-h-0 p-6 overflow-hidden">
+                        <div className="h-full bg-gradient-to-br from-primary/5 to-accent/5 rounded-lg border overflow-hidden">
+                          <div className="h-full p-4 overflow-y-auto">
+                            <div className="prose prose-sm max-w-none dark:prose-invert break-words">
+                              <ReactMarkdown 
+                                components={{
+                                  p: ({ children }) => <p className="break-words overflow-wrap-anywhere">{children}</p>,
+                                  pre: ({ children }) => <pre className="overflow-x-auto whitespace-pre-wrap break-all max-w-full">{children}</pre>,
+                                  code: ({ children }) => <code className="break-all max-w-full inline-block">{children}</code>,
+                                  div: ({ children }) => <div className="break-words max-w-full">{children}</div>
+                                }}
+                              >
+                                {executionResult}
+                              </ReactMarkdown>
+                            </div>
                           </div>
-                        </ScrollArea>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="text-center text-muted-foreground">
-                      <Play className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                      <p className="text-lg font-medium">Execute the prompt to see AI response</p>
-                      <p className="text-sm">Click "Execute Prompt" to generate AI content</p>
+                  ) : (
+                    <div className="flex items-center justify-center h-full p-6">
+                      <div className="text-center text-muted-foreground">
+                        <Play className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p className="text-lg font-medium">Execute the prompt to see AI response</p>
+                        <p className="text-sm">Click "Execute Prompt" to generate AI content</p>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
+            </ScrollArea>
           </div>
         </div>
       </DialogContent>
