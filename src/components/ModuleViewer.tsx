@@ -1386,7 +1386,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background overflow-auto">
+    <div className="h-full flex flex-col bg-background overflow-hidden">
       <div className="h-full flex flex-col">
         {/* Header */}
       <header className="border-b bg-card shadow-sm sticky top-0 z-40">

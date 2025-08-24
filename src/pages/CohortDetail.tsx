@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Calendar, Clock, Users, BookOpen, MessageSquare, Play, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -648,10 +648,18 @@ export default function CohortDetail() {
         />
       )}
       {(selectedViewer === 'module' || selectedViewer === 'learning_module') && selectedContent && (
-        <ModuleViewer 
-          moduleData={selectedContent}
-          onClose={handleCloseViewer}
-        />
+        <Dialog open={!!selectedContent && (selectedViewer === 'module' || selectedViewer === 'learning_module')} onOpenChange={(open) => {
+          if (!open) {
+            handleCloseViewer();
+          }
+        }}>
+          <DialogContent className="max-w-7xl h-[90vh] p-0 overflow-y-auto">
+            <ModuleViewer 
+              moduleData={selectedContent}
+              onClose={handleCloseViewer}
+            />
+          </DialogContent>
+        </Dialog>
       )}
 
       {/* Prompt Viewer - Uses its own modal system */}
