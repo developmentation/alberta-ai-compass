@@ -29,7 +29,6 @@ export function useModules() {
       const { data, error } = await supabase
         .from('modules')
         .select('*')
-        .eq('status', 'published')
         .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
