@@ -107,7 +107,7 @@ export function PromptViewer({ prompt, children, open, onOpenChange }: PromptVie
       </DialogTrigger>
       <DialogContent className="w-[90vw] h-[90vh] max-w-none max-h-none p-0">
         <div className="flex flex-col h-full">
-          <DialogHeader className="p-6 pb-4 border-b">
+          <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
             <DialogTitle className="flex items-center gap-3 text-2xl">
               {prompt.name}
               {prompt.stars && (
@@ -130,150 +130,151 @@ export function PromptViewer({ prompt, children, open, onOpenChange }: PromptVie
             )}
           </DialogHeader>
 
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 min-h-0">
             <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
-              {/* Left Column - Split into Purpose (top) and Description (bottom) */}
-              <div className="flex flex-col border-r border-border" style={{ height: '100%' }}>
-                {/* Top Half - Purpose and Image */}
-                <div className="border-b border-border" style={{ height: '50%', minHeight: 0 }}>
-                  <ScrollArea className="h-full">
-                    <div className="p-6 space-y-4">
-                      {/* Image */}
-                      {prompt.image_url && (
-                        <div className="aspect-video rounded-lg overflow-hidden bg-muted max-h-32">
-                          <img
-                            src={prompt.image_url}
-                            alt={prompt.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      )}
-
-                      {/* Purpose */}
-                      <Card>
-                        <CardHeader className="pb-3">
-                          <CardTitle className="flex items-center gap-2 text-lg">
-                            <Target className="w-5 h-5" />
-                            Purpose & Use Case
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1 max-h-40 overflow-y-auto">
-                              <p className="text-foreground whitespace-pre-wrap text-sm">{prompt.purpose}</p>
-                            </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleCopy(prompt.purpose, 'Purpose')}
-                            >
-                              <Copy className="w-4 h-4" />
-                              {copiedField === 'Purpose' ? 'Copied!' : 'Copy'}
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </ScrollArea>
-                </div>
-
-                {/* Bottom Half - Description and Controls */}
-                <div style={{ height: '50%', minHeight: 0 }}>
-                  <ScrollArea className="h-full">
-                    <div className="p-6 space-y-4">
-                      {/* Description */}
-                      <Card>
-                        <CardHeader className="pb-3">
-                          <CardTitle className="flex items-center gap-2 text-lg">
-                            <Lightbulb className="w-5 h-5" />
-                            Prompt Description
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="bg-muted/50 p-4 rounded-lg mb-4">
-                            <div className="max-h-32 overflow-y-auto">
-                              <p className="text-foreground whitespace-pre-wrap font-mono text-sm leading-relaxed">
-                                {prompt.description}
-                              </p>
-                            </div>
-                          </div>
-                          
-                          {/* User Input Textarea */}
-                          <div className="space-y-2 mb-4">
-                            <label className="text-sm font-medium">Additional Context (Optional)</label>
-                            <Textarea
-                              value={userInput}
-                              onChange={(e) => setUserInput(e.target.value)}
-                              placeholder="Add any additional context or instructions here..."
-                              className="min-h-[80px] max-h-24 resize-none"
+              {/* Left Column */}
+              <div className="flex flex-col h-full border-r border-border">
+                {/* Purpose & Use Case - 50% of left column */}
+                <div className="h-1/2 min-h-0 border-b border-border">
+                  <div className="h-full overflow-hidden">
+                    <ScrollArea className="h-full">
+                      <div className="p-6 space-y-4">
+                        {/* Image */}
+                        {prompt.image_url && (
+                          <div className="aspect-video rounded-lg overflow-hidden bg-muted max-h-32">
+                            <img
+                              src={prompt.image_url}
+                              alt={prompt.name}
+                              className="w-full h-full object-cover"
                             />
                           </div>
-                          
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleCopy(prompt.description, 'Prompt')}
-                            >
-                              <Copy className="w-4 h-4 mr-2" />
-                              {copiedField === 'Prompt' ? 'Copied!' : 'Copy Prompt'}
-                            </Button>
-                            <Button
-                              onClick={handleExecutePrompt}
-                              disabled={isExecuting}
-                              size="sm"
-                            >
-                              {isExecuting ? (
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              ) : (
-                                <Play className="w-4 h-4 mr-2" />
-                              )}
-                              {isExecuting ? 'Executing...' : 'Execute Prompt'}
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
+                        )}
 
-                      {/* Sample Output */}
-                      {prompt.sample_output && (
+                        {/* Purpose */}
                         <Card>
                           <CardHeader className="pb-3">
                             <CardTitle className="flex items-center gap-2 text-lg">
-                              <Eye className="w-5 h-5" />
-                              Sample Output
+                              <Target className="w-5 h-5" />
+                              Purpose & Use Case
                             </CardTitle>
                           </CardHeader>
                           <CardContent>
-                            <div className="space-y-4">
-                              <div className="bg-muted/50 p-4 rounded-lg">
-                                <div className="max-h-24 overflow-y-auto">
-                                  <p className="text-foreground whitespace-pre-wrap font-mono text-sm leading-relaxed">
-                                    {prompt.sample_output}
-                                  </p>
-                                </div>
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1">
+                                <p className="text-foreground whitespace-pre-wrap text-sm">{prompt.purpose}</p>
                               </div>
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleCopy(prompt.sample_output!, 'Sample Output')}
+                                onClick={() => handleCopy(prompt.purpose, 'Purpose')}
+                                className="flex-shrink-0"
                               >
-                                <Copy className="w-4 h-4 mr-2" />
-                                {copiedField === 'Sample Output' ? 'Copied!' : 'Copy Sample'}
+                                <Copy className="w-4 h-4" />
+                                {copiedField === 'Purpose' ? 'Copied!' : 'Copy'}
                               </Button>
                             </div>
                           </CardContent>
                         </Card>
-                      )}
-                    </div>
-                  </ScrollArea>
+                      </div>
+                    </ScrollArea>
+                  </div>
+                </div>
+
+                {/* Prompt Description - 50% of left column */}
+                <div className="h-1/2 min-h-0">
+                  <div className="h-full overflow-hidden">
+                    <ScrollArea className="h-full">
+                      <div className="p-6 space-y-4">
+                        {/* Description */}
+                        <Card>
+                          <CardHeader className="pb-3">
+                            <CardTitle className="flex items-center gap-2 text-lg">
+                              <Lightbulb className="w-5 h-5" />
+                              Prompt Description
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="bg-muted/50 p-4 rounded-lg mb-4">
+                              <p className="text-foreground whitespace-pre-wrap font-mono text-sm leading-relaxed">
+                                {prompt.description}
+                              </p>
+                            </div>
+                            
+                            {/* User Input Textarea */}
+                            <div className="space-y-2 mb-4">
+                              <label className="text-sm font-medium">Additional Context (Optional)</label>
+                              <Textarea
+                                value={userInput}
+                                onChange={(e) => setUserInput(e.target.value)}
+                                placeholder="Add any additional context or instructions here..."
+                                className="min-h-[80px] resize-none"
+                              />
+                            </div>
+                            
+                            <div className="flex gap-2 flex-wrap">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleCopy(prompt.description, 'Prompt')}
+                              >
+                                <Copy className="w-4 h-4 mr-2" />
+                                {copiedField === 'Prompt' ? 'Copied!' : 'Copy Prompt'}
+                              </Button>
+                              <Button
+                                onClick={handleExecutePrompt}
+                                disabled={isExecuting}
+                                size="sm"
+                              >
+                                {isExecuting ? (
+                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                ) : (
+                                  <Play className="w-4 h-4 mr-2" />
+                                )}
+                                {isExecuting ? 'Executing...' : 'Execute Prompt'}
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        {/* Sample Output */}
+                        {prompt.sample_output && (
+                          <Card>
+                            <CardHeader className="pb-3">
+                              <CardTitle className="flex items-center gap-2 text-lg">
+                                <Eye className="w-5 h-5" />
+                                Sample Output
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-4">
+                                <div className="bg-muted/50 p-4 rounded-lg">
+                                  <p className="text-foreground whitespace-pre-wrap font-mono text-sm leading-relaxed">
+                                    {prompt.sample_output}
+                                  </p>
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleCopy(prompt.sample_output!, 'Sample Output')}
+                                >
+                                  <Copy className="w-4 h-4 mr-2" />
+                                  {copiedField === 'Sample Output' ? 'Copied!' : 'Copy Sample'}
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        )}
+                      </div>
+                    </ScrollArea>
+                  </div>
                 </div>
               </div>
 
               {/* Right Column - AI Response */}
-              <div className="flex flex-col" style={{ height: '100%' }}>
+              <div className="flex flex-col h-full">
                 {executionResult ? (
-                  <div className="flex flex-col h-full p-6">
-                    <div className="flex items-center justify-between mb-4 flex-shrink-0">
+                  <div className="flex flex-col h-full">
+                    <div className="flex items-center justify-between p-6 pb-4 border-b flex-shrink-0">
                       <div className="flex items-center gap-2">
                         <Play className="w-5 h-5" />
                         <h3 className="text-lg font-semibold">AI Response</h3>
@@ -287,12 +288,14 @@ export function PromptViewer({ prompt, children, open, onOpenChange }: PromptVie
                         {copiedField === 'AI Response' ? 'Copied!' : 'Copy Response'}
                       </Button>
                     </div>
-                    <div className="flex-1 bg-gradient-to-br from-primary/5 to-accent/5 p-4 rounded-lg border min-h-0">
-                      <ScrollArea className="h-full w-full">
-                        <div className="prose prose-sm max-w-none dark:prose-invert pr-4">
-                          <ReactMarkdown>{executionResult}</ReactMarkdown>
-                        </div>
-                      </ScrollArea>
+                    <div className="flex-1 min-h-0 p-6">
+                      <div className="h-full bg-gradient-to-br from-primary/5 to-accent/5 p-4 rounded-lg border">
+                        <ScrollArea className="h-full w-full">
+                          <div className="prose prose-sm max-w-none dark:prose-invert pr-4">
+                            <ReactMarkdown>{executionResult}</ReactMarkdown>
+                          </div>
+                        </ScrollArea>
+                      </div>
                     </div>
                   </div>
                 ) : (
