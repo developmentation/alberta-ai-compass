@@ -89,27 +89,46 @@ export function ImageVideoViewer({
       return (
         <div 
           className={`relative ${baseClasses}`}
-          onClick={(e) => {
+          onPointerDown={(e) => {
             e.preventDefault();
             e.stopPropagation();
           }}
-          onMouseDown={(e) => {
+          onPointerUp={(e) => {
             e.preventDefault();
             e.stopPropagation();
           }}
-          style={{ pointerEvents: 'auto' }}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          style={{ 
+            pointerEvents: 'auto',
+            isolation: 'isolate',
+            zIndex: 10
+          }}
         >
           <iframe
             src={convertToEmbedUrl(videoUrl)}
             title={title || "YouTube video player"}
             width="100%"
             height="100%"
-            className="absolute inset-0 w-full h-full rounded-lg pointer-events-auto"
+            className="absolute inset-0 w-full h-full rounded-lg"
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             referrerPolicy="strict-origin-when-cross-origin"
             allowFullScreen
-            style={{ pointerEvents: 'auto' }}
+            style={{ 
+              pointerEvents: 'auto',
+              zIndex: 20
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            onMouseUp={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
           />
         </div>
       );
