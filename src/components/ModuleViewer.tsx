@@ -227,15 +227,14 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
             <label className="text-sm font-medium mb-2 block">Module Media</label>
             <UnifiedMediaUpload
               onMediaUpload={(url, type) => {
-                console.log('Media upload callback:', { url, type, current: { imageUrl: editingData.imageUrl, videoUrl: editingData.videoUrl } });
                 if (type === 'image') {
                   setEditingData({ ...editingData, imageUrl: url, videoUrl: url ? '' : editingData.videoUrl });
                 } else {
                   setEditingData({ ...editingData, videoUrl: url, imageUrl: url ? '' : editingData.imageUrl });
                 }
               }}
-              currentImageUrl={editingData.imageUrl}
-              currentVideoUrl={editingData.videoUrl}
+              currentImageUrl={editingData.imageUrl || ''}
+              currentVideoUrl={editingData.videoUrl || ''}
               bucketName="module-assets"
               allowAiGeneration={true}
             />

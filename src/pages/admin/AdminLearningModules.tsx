@@ -101,8 +101,8 @@ export default function AdminLearningModules() {
       learningOutcomes: module.json_data?.learningOutcomes || [],
       tags: module.json_data?.tags || [],
       sections: module.json_data?.sections || [],
-      imageUrl: module.image_url || undefined,
-      videoUrl: module.video_url || undefined
+      imageUrl: module.image_url || '',
+      videoUrl: module.video_url || ''
     };
   };
 
