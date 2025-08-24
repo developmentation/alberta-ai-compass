@@ -226,11 +226,21 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
           <div>
             <label className="text-sm font-medium mb-2 block">Module Media</label>
             <UnifiedMediaUpload
+              key={`${editingData.imageUrl}-${editingData.videoUrl}`}
               onMediaUpload={(url, type) => {
+                console.log('Media upload callback:', { url, type });
                 if (type === 'image') {
-                  setEditingData({ ...editingData, imageUrl: url, videoUrl: url ? undefined : editingData.videoUrl });
+                  setEditingData(prev => ({ 
+                    ...prev, 
+                    imageUrl: url,
+                    videoUrl: url ? prev.videoUrl : undefined // Keep existing video if new image, clear if removing image
+                  }));
                 } else {
-                  setEditingData({ ...editingData, videoUrl: url, imageUrl: url ? undefined : editingData.imageUrl });
+                  setEditingData(prev => ({ 
+                    ...prev, 
+                    videoUrl: url,
+                    imageUrl: url ? prev.imageUrl : undefined // Keep existing image if new video, clear if removing video
+                  }));
                 }
               }}
               currentImageUrl={editingData.imageUrl}
