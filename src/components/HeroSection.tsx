@@ -36,7 +36,7 @@ export const HeroSection = ({ onSearch, searchResults }: HeroSectionProps) => {
 
           {/* Right Column - Video Player (Desktop only) */}
           <div className="hidden lg:block animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            <div className="relative">
+            <div className="relative w-3/4 mx-auto">
               <div className="aspect-square bg-card/60 backdrop-blur-sm border border-border rounded-2xl overflow-hidden">
                 <video 
                   className="w-full h-full object-cover rounded-2xl"
