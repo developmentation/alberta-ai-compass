@@ -98,8 +98,8 @@ export default function AdminLearningModules() {
       description: module.description || '',
       level: module.level, // Keep the original level value
       duration: module.json_data?.duration || 30, // Use actual duration from json_data
-      learningOutcomes: [],
-      tags: [],
+      learningOutcomes: module.json_data?.learningOutcomes || [],
+      tags: module.json_data?.tags || [],
       sections: module.json_data?.sections || [],
       imageUrl: module.image_url || undefined,
       videoUrl: module.video_url || undefined
@@ -130,7 +130,9 @@ export default function AdminLearningModules() {
           json_data: {
             ...updatedData,
             sections: updatedData.sections,
-            duration: updatedData.duration
+            duration: updatedData.duration,
+            learningOutcomes: updatedData.learningOutcomes,
+            tags: updatedData.tags
           },
           image_url: updatedData.imageUrl || null,
           video_url: updatedData.videoUrl || null,

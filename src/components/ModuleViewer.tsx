@@ -226,21 +226,29 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
           <div>
             <label className="text-sm font-medium mb-2 block">Module Media</label>
             <UnifiedMediaUpload
-              key={`${editingData.imageUrl}-${editingData.videoUrl}`}
+              key={`media-${editingData.id}-${Date.now()}`}
               onMediaUpload={(url, type) => {
-                console.log('Media upload callback:', { url, type });
+                console.log('Media upload callback:', { url, type, currentState: { imageUrl: editingData.imageUrl, videoUrl: editingData.videoUrl } });
                 if (type === 'image') {
-                  setEditingData(prev => ({ 
-                    ...prev, 
-                    imageUrl: url,
-                    videoUrl: url ? prev.videoUrl : undefined // Keep existing video if new image, clear if removing image
-                  }));
+                  setEditingData(prev => {
+                    const newData = { 
+                      ...prev, 
+                      imageUrl: url || undefined,
+                      videoUrl: url ? prev.videoUrl : prev.videoUrl // Keep existing video regardless
+                    };
+                    console.log('Updated image state:', newData);
+                    return newData;
+                  });
                 } else {
-                  setEditingData(prev => ({ 
-                    ...prev, 
-                    videoUrl: url,
-                    imageUrl: url ? prev.imageUrl : undefined // Keep existing image if new video, clear if removing video
-                  }));
+                  setEditingData(prev => {
+                    const newData = { 
+                      ...prev, 
+                      videoUrl: url || undefined,
+                      imageUrl: url ? prev.imageUrl : prev.imageUrl // Keep existing image regardless
+                    };
+                    console.log('Updated video state:', newData);
+                    return newData;
+                  });
                 }
               }}
               currentImageUrl={editingData.imageUrl}
