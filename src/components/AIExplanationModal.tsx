@@ -11,6 +11,7 @@ interface AIExplanationModalProps {
   moduleTitle: string;
   currentSection?: string;
   context?: string;
+  language?: string;
 }
 
 export function AIExplanationModal({ 
@@ -18,7 +19,8 @@ export function AIExplanationModal({
   onClose, 
   moduleTitle, 
   currentSection,
-  context 
+  context,
+  language 
 }: AIExplanationModalProps) {
   const [question, setQuestion] = useState('');
   const [conversation, setConversation] = useState<Array<{ type: 'user' | 'ai', content: string }>>([]);
