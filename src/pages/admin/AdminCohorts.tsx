@@ -126,14 +126,14 @@ export function AdminCohorts() {
                         console.log('Fetching article with ID:', item.content_id);
                         const { data: articleData, error: articleError } = await supabase
                           .from('articles')
-                          .select('id, title as name, description, image_url, video_url, status')
+                          .select('id, title, description, image_url, video_url, status')
                           .eq('id', item.content_id)
                           .maybeSingle();
                         console.log('Article query result:', { data: articleData, error: articleError });
                         if (articleError) {
                           console.error('Article query error:', articleError);
                         }
-                        contentDetails = articleData;
+                        contentDetails = articleData ? { ...articleData, name: articleData.title } : null;
                         break;
                       case 'tool':
                         const { data: toolData } = await supabase
