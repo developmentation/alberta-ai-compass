@@ -25,7 +25,7 @@ interface NewsViewerProps {
 }
 
 export function NewsViewer({ news, onClose, className = "" }: NewsViewerProps) {
-  const socialLinks = news.metadata || {};
+  const socialLinks = news.metadata?.social_links || {};
   const { isBookmarked, toggleBookmark } = useBookmarks(news.id, 'news');
   const { userRating, aggregatedRating, submitRating } = useRatings(news.id, 'news');
   
@@ -159,14 +159,14 @@ export function NewsViewer({ news, onClose, className = "" }: NewsViewerProps) {
       </Card>
 
       {/* Social Links */}
-      {socialLinks && Object.keys(socialLinks).length > 0 && (
+      {socialLinks && Object.values(socialLinks).some(link => typeof link === 'string' && link.trim()) && (
         <Card>
           <CardHeader>
             <CardTitle>Related Links</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {socialLinks.twitter && (
+              {socialLinks.twitter && typeof socialLinks.twitter === 'string' && socialLinks.twitter.trim() && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -177,7 +177,7 @@ export function NewsViewer({ news, onClose, className = "" }: NewsViewerProps) {
                   Twitter
                 </Button>
               )}
-              {socialLinks.linkedin && (
+              {socialLinks.linkedin && typeof socialLinks.linkedin === 'string' && socialLinks.linkedin.trim() && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -188,7 +188,7 @@ export function NewsViewer({ news, onClose, className = "" }: NewsViewerProps) {
                   LinkedIn
                 </Button>
               )}
-              {socialLinks.facebook && (
+              {socialLinks.facebook && typeof socialLinks.facebook === 'string' && socialLinks.facebook.trim() && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -199,15 +199,15 @@ export function NewsViewer({ news, onClose, className = "" }: NewsViewerProps) {
                   Facebook
                 </Button>
               )}
-              {socialLinks.website && (
+              {socialLinks.instagram && typeof socialLinks.instagram === 'string' && socialLinks.instagram.trim() && (
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleSocialLink(socialLinks.website)}
+                  onClick={() => handleSocialLink(socialLinks.instagram)}
                   className="justify-start"
                 >
                   <ExternalLink className="w-4 h-4 mr-2" />
-                  Website
+                  Instagram
                 </Button>
               )}
             </div>
