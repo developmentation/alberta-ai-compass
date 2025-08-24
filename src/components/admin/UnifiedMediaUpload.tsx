@@ -23,6 +23,8 @@ export function UnifiedMediaUpload({
   bucketName = 'media-assets',
   allowAiGeneration = true
 }: UnifiedMediaUploadProps) {
+  console.log('UnifiedMediaUpload - Received props:', { currentImageUrl, currentVideoUrl, bucketName });
+  
   const [uploading, setUploading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [isAiDialogOpen, setIsAiDialogOpen] = useState(false);

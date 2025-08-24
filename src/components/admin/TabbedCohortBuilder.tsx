@@ -69,7 +69,12 @@ export function TabbedCohortBuilder({
   useEffect(() => {
     if (initialData) {
       console.log('TabbedCohortBuilder - Initial Data:', initialData);
-      setFormData(prev => ({ ...prev, ...initialData }));
+      console.log('TabbedCohortBuilder - Current formData before update:', formData);
+      setFormData(prev => {
+        const updated = { ...prev, ...initialData };
+        console.log('TabbedCohortBuilder - Updated formData:', updated);
+        return updated;
+      });
     }
   }, [initialData]);
 
