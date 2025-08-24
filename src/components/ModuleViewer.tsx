@@ -160,7 +160,10 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
 
   const handleBeginModule = () => {
     setHasBegunModule(true);
-    setActiveTab("content"); // Switch to content tab when Begin is clicked
+    // Only auto-switch to content tab in view mode, not admin mode
+    if (!isAdminMode) {
+      setActiveTab("content");
+    }
     if (user && moduleId) {
       trackProgress('started', 0);
       setHasStartedModule(true);
@@ -170,128 +173,289 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
   // Module Info Tab Content
   const renderModuleInfo = () => (
     <div className="space-y-8">
-      {/* Hero Section with Media */}
-      <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-primary/5 to-muted border border-border">
-        {editingData.videoUrl || editingData.imageUrl ? (
-          <div className="relative h-64 sm:h-80">
-            {editingData.videoUrl ? (
-              <video
-                src={editingData.videoUrl}
-                className="w-full h-full object-cover"
-                controls
-                poster={editingData.imageUrl}
+      {/* Admin Editing Interface */}
+      {isAdminMode && isEditable ? (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Title</label>
+              <Input
+                value={editingData.title}
+                onChange={(e) => setEditingData({ ...editingData, title: e.target.value })}
+                className="text-lg font-bold"
               />
-            ) : (
-              <img
-                src={editingData.imageUrl}
-                alt={editingData.title}
-                className="w-full h-full object-cover"
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Difficulty Level</label>
+              <Select
+                value={editingData.difficulty}
+                onValueChange={(value) => setEditingData({ ...editingData, difficulty: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">Level 1</SelectItem>
+                  <SelectItem value="2">Level 2</SelectItem>
+                  <SelectItem value="3">Level 3</SelectItem>
+                  <SelectItem value="red">RED</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Description</label>
+              <Textarea
+                value={editingData.description}
+                onChange={(e) => setEditingData({ ...editingData, description: e.target.value })}
+                rows={4}
               />
-            )}
-            <div className="absolute inset-0 bg-black/20" />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Duration (minutes)</label>
+              <Input
+                type="number"
+                value={editingData.duration}
+                onChange={(e) => setEditingData({ ...editingData, duration: parseInt(e.target.value) || 0 })}
+              />
+            </div>
           </div>
-        ) : (
-          <div className="h-64 sm:h-80 flex items-center justify-center">
-            <BookOpen className="w-16 h-16 text-muted-foreground" />
+          
+          {/* Media Upload Section */}
+          <div>
+            <label className="text-sm font-medium mb-2 block">Module Media</label>
+            <UnifiedMediaUpload
+              onMediaUpload={(url, type) => {
+                if (type === 'image') {
+                  setEditingData({ ...editingData, imageUrl: url, videoUrl: url ? undefined : editingData.videoUrl });
+                } else {
+                  setEditingData({ ...editingData, videoUrl: url, imageUrl: url ? undefined : editingData.imageUrl });
+                }
+              }}
+              currentImageUrl={editingData.imageUrl}
+              currentVideoUrl={editingData.videoUrl}
+              bucketName="module-assets"
+              allowAiGeneration={true}
+            />
           </div>
-        )}
-        
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6 text-white">
-          <h1 className="text-2xl sm:text-3xl font-bold mb-2">{editingData.title}</h1>
-          <p className="text-white/90 text-sm sm:text-base">{editingData.description}</p>
+
+          {/* Learning Outcomes Editing */}
+          <div>
+            <label className="text-sm font-medium mb-2 block">Learning Outcomes</label>
+            <div className="space-y-2">
+              {editingData.learningOutcomes?.map((outcome, index) => (
+                <div key={index} className="flex gap-2">
+                  <Input
+                    value={outcome}
+                    onChange={(e) => {
+                      const newOutcomes = [...(editingData.learningOutcomes || [])];
+                      newOutcomes[index] = e.target.value;
+                      setEditingData({ ...editingData, learningOutcomes: newOutcomes });
+                    }}
+                    placeholder="Learning outcome"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const newOutcomes = editingData.learningOutcomes?.filter((_, i) => i !== index) || [];
+                      setEditingData({ ...editingData, learningOutcomes: newOutcomes });
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const newOutcomes = [...(editingData.learningOutcomes || []), ''];
+                  setEditingData({ ...editingData, learningOutcomes: newOutcomes });
+                }}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Learning Outcome
+              </Button>
+            </div>
+          </div>
+
+          {/* Tags Editing */}
+          <div>
+            <label className="text-sm font-medium mb-2 block">Tags</label>
+            <div className="space-y-2">
+              {editingData.tags?.map((tag, index) => (
+                <div key={index} className="flex gap-2">
+                  <Input
+                    value={tag}
+                    onChange={(e) => {
+                      const newTags = [...(editingData.tags || [])];
+                      newTags[index] = e.target.value;
+                      setEditingData({ ...editingData, tags: newTags });
+                    }}
+                    placeholder="Tag"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const newTags = editingData.tags?.filter((_, i) => i !== index) || [];
+                      setEditingData({ ...editingData, tags: newTags });
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const newTags = [...(editingData.tags || []), ''];
+                  setEditingData({ ...editingData, tags: newTags });
+                }}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Tag
+              </Button>
+            </div>
+          </div>
         </div>
-      </div>
-
-      {/* Module Details */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6 text-center">
-            <Target className="w-8 h-8 text-primary mx-auto mb-3" />
-            <div className="text-2xl font-bold text-primary mb-1">{editingData.difficulty}</div>
-            <div className="text-sm text-muted-foreground">Difficulty Level</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6 text-center">
-            <Clock className="w-8 h-8 text-primary mx-auto mb-3" />
-            <div className="text-2xl font-bold text-primary mb-1">{editingData.duration}</div>
-            <div className="text-sm text-muted-foreground">Minutes</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6 text-center">
-            <BookOpen className="w-8 h-8 text-primary mx-auto mb-3" />
-            <div className="text-2xl font-bold text-primary mb-1">{editingData.sections?.length || 0}</div>
-            <div className="text-sm text-muted-foreground">Sections</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6 text-center">
-            <Globe className="w-8 h-8 text-primary mx-auto mb-3" />
-            <div className="text-2xl font-bold text-primary mb-1">
-              {SUPPORTED_LANGUAGES.find(lang => lang.code === currentLanguage)?.flag || '🌐'}
+      ) : (
+        <>
+          {/* Hero Section with Media */}
+          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-primary/5 to-muted border border-border">
+            {editingData.videoUrl || editingData.imageUrl ? (
+              <div className="relative h-64 sm:h-80">
+                {editingData.videoUrl ? (
+                  <video
+                    src={editingData.videoUrl}
+                    className="w-full h-full object-cover"
+                    controls
+                    poster={editingData.imageUrl}
+                  />
+                ) : (
+                  <img
+                    src={editingData.imageUrl}
+                    alt={editingData.title}
+                    className="w-full h-full object-cover"
+                  />
+                )}
+                <div className="absolute inset-0 bg-black/20" />
+              </div>
+            ) : (
+              <div className="h-64 sm:h-80 flex items-center justify-center">
+                <BookOpen className="w-16 h-16 text-muted-foreground" />
+              </div>
+            )}
+            
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6 text-white">
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2">{editingData.title}</h1>
+              <p className="text-white/90 text-sm sm:text-base">{editingData.description}</p>
             </div>
-            <div className="text-sm text-muted-foreground">
-              {SUPPORTED_LANGUAGES.find(lang => lang.code === currentLanguage)?.name || currentLanguage}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
 
-      {/* Learning Outcomes */}
-      {editingData.learningOutcomes && editingData.learningOutcomes.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-primary" />
-              Learning Outcomes
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-3">
-              {editingData.learningOutcomes.map((outcome, index) => (
-                <li key={index} className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-muted-foreground">{outcome}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+          {/* Module Details */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="p-6 text-center">
+                <Target className="w-8 h-8 text-primary mx-auto mb-3" />
+                <div className="text-2xl font-bold text-primary mb-1">
+                  {editingData.difficulty === '1' ? 'Level 1' :
+                   editingData.difficulty === '2' ? 'Level 2' :
+                   editingData.difficulty === '3' ? 'Level 3' :
+                   editingData.difficulty === 'red' ? 'RED' :
+                   editingData.difficulty}
+                </div>
+                <div className="text-sm text-muted-foreground">Difficulty Level</div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6 text-center">
+                <Clock className="w-8 h-8 text-primary mx-auto mb-3" />
+                <div className="text-2xl font-bold text-primary mb-1">{editingData.duration}</div>
+                <div className="text-sm text-muted-foreground">Minutes</div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6 text-center">
+                <BookOpen className="w-8 h-8 text-primary mx-auto mb-3" />
+                <div className="text-2xl font-bold text-primary mb-1">{editingData.sections?.length || 0}</div>
+                <div className="text-sm text-muted-foreground">Sections</div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6 text-center">
+                <Globe className="w-8 h-8 text-primary mx-auto mb-3" />
+                <div className="text-2xl font-bold text-primary mb-1">
+                  {SUPPORTED_LANGUAGES.find(lang => lang.code === currentLanguage)?.flag || '🌐'}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {SUPPORTED_LANGUAGES.find(lang => lang.code === currentLanguage)?.name || currentLanguage}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Learning Outcomes */}
+          {editingData.learningOutcomes && editingData.learningOutcomes.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-primary" />
+                  Learning Outcomes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  {editingData.learningOutcomes.map((outcome, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">{outcome}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Tags */}
+          {editingData.tags && editingData.tags.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Tags</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  {editingData.tags.map((tag, index) => (
+                    <Badge key={index} variant="secondary">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Begin Button - only show in view mode */}
+          {!isAdminMode && (
+            <div className="flex justify-center pt-8">
+              <Button 
+                onClick={handleBeginModule} 
+                size="lg" 
+                className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow px-8 py-6 text-lg"
+              >
+                <Play className="w-5 h-5 mr-2" />
+                Begin Module
+              </Button>
+            </div>
+          )}
+        </>
       )}
-
-      {/* Tags */}
-      {editingData.tags && editingData.tags.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Tags</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {editingData.tags.map((tag, index) => (
-                <Badge key={index} variant="secondary">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Begin Button */}
-      <div className="flex justify-center pt-8">
-        <Button 
-          onClick={handleBeginModule} 
-          size="lg" 
-          className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow px-8 py-6 text-lg"
-        >
-          <Play className="w-5 h-5 mr-2" />
-          Begin Module
-        </Button>
-      </div>
     </div>
   );
 
@@ -1263,75 +1427,12 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
               )}
               
               <div className="flex-1">
-                {/* Show admin editing form in admin mode */}
-                {isAdminMode && isEditable ? (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-sm font-medium mb-1 block">Title</label>
-                        <Input
-                          value={editingData.title}
-                          onChange={(e) => setEditingData({ ...editingData, title: e.target.value })}
-                          className="text-lg font-bold"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium mb-1 block">Difficulty</label>
-                        <Select
-                          value={editingData.difficulty}
-                          onValueChange={(value) => setEditingData({ ...editingData, difficulty: value })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="beginner">Beginner</SelectItem>
-                            <SelectItem value="intermediate">Intermediate</SelectItem>
-                            <SelectItem value="advanced">Advanced</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-sm font-medium mb-1 block">Description</label>
-                        <Textarea
-                          value={editingData.description}
-                          onChange={(e) => setEditingData({ ...editingData, description: e.target.value })}
-                          rows={3}
-                        />
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium mb-1 block">Duration (minutes)</label>
-                        <Input
-                          type="number"
-                          value={editingData.duration}
-                          onChange={(e) => setEditingData({ ...editingData, duration: parseInt(e.target.value) || 0 })}
-                        />
-                      </div>
-                    </div>
-                    <UnifiedMediaUpload
-                      onMediaUpload={(url, type) => {
-                        if (type === 'image') {
-                          setEditingData({ ...editingData, imageUrl: url, videoUrl: url ? undefined : editingData.videoUrl });
-                        } else {
-                          setEditingData({ ...editingData, videoUrl: url, imageUrl: url ? undefined : editingData.imageUrl });
-                        }
-                      }}
-                      currentImageUrl={editingData.imageUrl}
-                      currentVideoUrl={editingData.videoUrl}
-                      bucketName="module-assets"
-                      allowAiGeneration={true}
-                    />
-                  </div>
-                ) : (
-                  <div>
-                    <h1 className="text-xl font-bold">{editingData.title}</h1>
-                    <p className="text-muted-foreground text-sm">
-                      {hasBegunModule ? `Section ${currentSectionIndex + 1} of ${editingData.sections.length}` : 'Module Overview'}
-                    </p>
-                  </div>
-                )}
+                <div>
+                  <h1 className="text-xl font-bold">{editingData.title}</h1>
+                  <p className="text-muted-foreground text-sm">
+                    {hasBegunModule ? `Section ${currentSectionIndex + 1} of ${editingData.sections.length}` : 'Module Overview'}
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -1412,7 +1513,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="info">Module Info</TabsTrigger>
-              <TabsTrigger value="content" disabled={!hasBegunModule}>Content</TabsTrigger>
+              <TabsTrigger value="content">Content</TabsTrigger>
             </TabsList>
             
             <TabsContent value="info" className="mt-6">
