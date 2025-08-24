@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from '@/hooks/useAuth';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { User, X } from "lucide-react";
 
 interface LoginModalProps {
@@ -17,7 +17,6 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,10 +26,9 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     
     if (!error) {
       onClose();
-      navigate('/admin');
-    } else {
-      setLoading(false);
     }
+    
+    setLoading(false);
   };
 
   return (

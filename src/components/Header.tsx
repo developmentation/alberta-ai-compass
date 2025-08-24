@@ -21,11 +21,6 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, profile, signOut, isAdmin, isFacilitator } = useAuth();
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
-  };
-
   return (
     <>
       <header className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b border-border/50">
@@ -84,7 +79,7 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={handleSignOut}>
+                      <DropdownMenuItem onClick={signOut}>
                         <LogOut className="w-4 h-4 mr-2" />
                         Sign out
                       </DropdownMenuItem>
@@ -182,7 +177,7 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        handleSignOut();
+                        signOut();
                         setIsMobileMenuOpen(false);
                       }}
                       className="w-full justify-start border border-border hover:border-primary/50"

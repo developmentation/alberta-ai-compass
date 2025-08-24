@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
 interface Profile {
@@ -32,133 +33,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Fetch profile data for authenticated user
-  const fetchProfile = async (userId: string): Promise<Profile | null> => {
-    try {
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-      
-      if (error) {
-        console.error('Error fetching profile:', error);
-        return null;
-      }
-
-      return profile;
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-      return null;
-    }
-  };
-
-  // Update last login timestamp
-  const updateLastLogin = async (userId: string) => {
-    try {
-      await supabase
-        .from('profiles')
-        .update({ last_login: new Date().toISOString() })
-        .eq('id', userId);
-    } catch (error) {
-      console.error('Error updating last login:', error);
-    }
-  };
-
   useEffect(() => {
-    let mounted = true;
-
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (!mounted) return;
-        
-        console.log('Auth state changed:', event, !!session);
-        
-        setLoading(true);
         setSession(session);
         setUser(session?.user ?? null);
-
-        if (!session?.user) {
-          setProfile(null);
-          setLoading(false);
-          return;
-        }
-
-        // Handle authenticated user - fetch profile
-        try {
-          const profile = await fetchProfile(session.user.id);
-          
-          if (mounted) {
-            setProfile(profile);
-            
-            // Update last login on sign in
-            if (event === 'SIGNED_IN' && profile) {
-              await updateLastLogin(session.user.id);
+        
+        if (session?.user) {
+          // Fetch user profile with a slight delay to avoid recursion
+          setTimeout(async () => {
+            try {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+              
+              setProfile(profile);
+              
+              if (profile) {
+                // Update last login
+                await supabase
+                  .from('profiles')
+                  .update({ last_login: new Date().toISOString() })
+                  .eq('id', session.user.id);
+              }
+            } catch (error) {
+              console.error('Error fetching profile:', error);
             }
-          }
-        } catch (error) {
-          console.error('Error in auth state change:', error);
-          if (mounted) {
-            setProfile(null);
-          }
-        } finally {
-          if (mounted) {
-            setLoading(false);
-          }
-        }
-      }
-    );
-
-    // Get initial session AFTER setting up the listener
-    const initializeAuth = async () => {
-      try {
-        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
-        
-        if (!mounted) return;
-
-        if (error) {
-          console.error('Error getting initial session:', error);
-          setLoading(false);
-          return;
-        }
-
-        // If we already have a session from the listener, don't process it again
-        if (session) return;
-
-        console.log('Initial session:', !!initialSession);
-        
-        setSession(initialSession);
-        setUser(initialSession?.user ?? null);
-
-        if (initialSession?.user) {
-          const profile = await fetchProfile(initialSession.user.id);
-          if (mounted) {
-            setProfile(profile);
-          }
+          }, 0);
         } else {
           setProfile(null);
         }
-
+        
         setLoading(false);
-      } catch (error) {
-        console.error('Error initializing auth:', error);
-        if (mounted) {
-          setLoading(false);
-        }
       }
-    };
+    );
 
-    // Initialize auth
-    initializeAuth();
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (!session) {
+        setLoading(false);
+      }
+    });
 
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, []); // Remove session dependency to avoid loops
+    return () => subscription.unsubscribe();
+  }, []);
 
   const signUp = async (email: string, password: string, fullName?: string) => {
     try {
@@ -202,60 +128,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      console.log('Login attempt:', { email, password });
-      
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
-        console.error('Sign in error:', error);
         toast({
           title: "Sign in failed",
           description: error.message,
           variant: "destructive",
         });
-        return { error };
       }
 
-      console.log('Sign in successful:', data.user?.id);
-      
-      // Don't set loading here - let the auth state listener handle it
-      return { error: null };
+      return { error };
     } catch (error: any) {
-      console.error('Sign in catch error:', error);
       return { error };
     }
   };
 
   const signOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      
-      if (error && !error.message.includes('session')) {
-        console.error('Sign out error:', error);
-        toast({
-          title: "Sign out failed",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // State will be cleared by the auth state listener
-      toast({
-        title: "Signed out",
-        description: "You have been successfully signed out.",
-      });
-    } catch (error: any) {
-      console.log('Sign out error (clearing state anyway):', error);
-      // State will be cleared by the auth state listener
-      toast({
-        title: "Signed out",
-        description: "You have been signed out.",
-      });
-    }
+    await supabase.auth.signOut();
+    navigate('/');
+    toast({
+      title: "Signed out",
+      description: "You have been successfully signed out.",
+    });
   };
 
   const isAdmin = profile?.role === 'admin';

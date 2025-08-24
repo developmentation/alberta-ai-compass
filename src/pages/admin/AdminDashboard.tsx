@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Users, GraduationCap, Newspaper, Wrench, MessageSquare } from "lucide-react";
 
 interface PlatformStats {
@@ -13,35 +14,33 @@ interface PlatformStats {
 }
 
 export function AdminDashboard() {
+  const { isAdmin } = useAuth();
   const [stats, setStats] = useState<PlatformStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Check if user is admin by trying to call the admin function
         const { data, error } = await supabase.rpc('get_platform_statistics');
         
         if (error) {
           console.error('Error fetching platform statistics:', error);
-          setIsAdmin(false);
         } else if (data && data.length > 0) {
           setStats(data[0]);
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false);
         }
       } catch (error) {
         console.error('Error:', error);
-        setIsAdmin(false);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchStats();
-  }, []);
+    if (isAdmin) {
+      fetchStats();
+    } else {
+      setLoading(false);
+    }
+  }, [isAdmin]);
 
   const statsCards = [
     {

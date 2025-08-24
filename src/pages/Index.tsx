@@ -1,113 +1,75 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
 import { LearningPlanCard } from "@/components/LearningPlanCard";
 import { ArticleCard } from "@/components/ArticleCard";
 import { NewsCard } from "@/components/NewsCard";
-import { NewsViewer } from "@/components/NewsViewer";
 import { LoginModal } from "@/components/LoginModal";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useNews } from "@/hooks/useNews";
-import { useLearningPlans } from "@/hooks/useLearningPlans";
-import { useContentRatings } from "@/hooks/useContentRatings";
-import { useAuth } from "@/hooks/useAuth";
-import { format, parseISO } from "date-fns";
 
 const Index = () => {
-  const { user } = useAuth();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [selectedNews, setSelectedNews] = useState<any>(null);
-  const [isViewerOpen, setIsViewerOpen] = useState(false);
 
-  // Fetch data from database
-  const { news, loading: newsLoading } = useNews();
-  const { learningPlans, loading: plansLoading } = useLearningPlans();
+  const learningPlans = [
+    {
+      id: "1",
+      title: "Prompt Engineering Foundations",
+      description: "Principles, patterns, and evaluation for reliable prompting.",
+      duration: "4 weeks",
+      level: "Beginner",
+      image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1400&auto=format&fit=crop",
+      tags: ["Structured patterns", "Hands-on labs"]
+    },
+    {
+      id: "2",
+      title: "Build Retrieval-Augmented Generation",
+      description: "Index, embed, and ground responses with verifiable sources.",
+      duration: "3 weeks",
+      level: "Intermediate",
+      image: "https://images.unsplash.com/photo-1621619856624-42fd193a0661?w=1080&q=80",
+      tags: ["Vector DBs", "Guardrails"]
+    },
+    {
+      id: "3",
+      title: "Responsible AI & Data Ethics",
+      description: "Fairness, privacy, and risk mitigation in real deployments.",
+      duration: "2 weeks",
+      level: "Advanced",
+      image: "https://images.unsplash.com/photo-1642615835477-d303d7dc9ee9?w=1080&q=80",
+      tags: ["Governance", "Policy"]
+    }
+  ];
 
-  // Prepare content items for ratings
-  const contentItems = useMemo(() => [
-    ...learningPlans.map(plan => ({ id: plan.id, type: 'learning_plan' })),
-    ...news.map(item => ({ id: item.id, type: 'news' }))
-  ], [learningPlans, news]);
-
-  const { ratingsData } = useContentRatings(contentItems, user?.id);
-
-  // Featured Learning Plans - highest rated (or 3 newest if no ratings)
-  const featuredPlans = useMemo(() => {
-    // Sort original plans first by rating (if available) then by created_at
-    const sortedOriginalPlans = [...learningPlans].sort((a, b) => {
-      const ratingA = ratingsData[a.id];
-      const ratingB = ratingsData[b.id];
-      
-      // If both have ratings, sort by average rating
-      if (ratingA?.averageRating && ratingB?.averageRating) {
-        return ratingB.averageRating - ratingA.averageRating;
-      }
-      
-      // If one has rating and other doesn't, prioritize the one with rating
-      if (ratingA?.averageRating && !ratingB?.averageRating) return -1;
-      if (!ratingA?.averageRating && ratingB?.averageRating) return 1;
-      
-      // Otherwise sort by created_at (newest first)
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    });
-
-    // Transform top 3 plans
-    return sortedOriginalPlans.slice(0, 3).map(plan => {
-      const rating = ratingsData[plan.id];
-      return {
-        id: plan.id,
-        title: plan.name,
-        description: plan.description,
-        duration: 'Self-paced', // Simplified for now
-        level: plan.level?.charAt(0).toUpperCase() + plan.level?.slice(1) || 'Beginner',
-        image: plan.image_url || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1400&auto=format&fit=crop",
-        tags: plan.learning_outcomes?.slice(0, 2) || ['AI Learning'],
-        averageRating: rating?.averageRating || 0,
-        totalVotes: rating?.totalVotes || 0,
-        isBookmarked: rating?.isBookmarked || false
-      };
-    });
-  }, [learningPlans, ratingsData]);
-
-  // Featured News - 3 most recent
-  const featuredNews = useMemo(() => {
-    // Sort original news by created_at (newest first)
-    const sortedOriginalNews = [...news].sort((a, b) => 
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
-
-    // Transform top 3 news items
-    return sortedOriginalNews.slice(0, 3).map(item => {
-      const rating = ratingsData[item.id];
-      return {
-        id: item.id,
-        title: item.title,
-        description: item.description,
-        date: format(parseISO(item.created_at), 'MMM dd, yyyy'),
-        category: item.level?.charAt(0).toUpperCase() + item.level?.slice(1) || 'Update',
-        image: item.image_url || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1400&auto=format&fit=crop",
-        averageRating: rating?.averageRating || 0,
-        totalVotes: rating?.totalVotes || 0,
-        isBookmarked: rating?.isBookmarked || false,
-        onClick: () => handleNewsClick(item)
-      };
-    });
-  }, [news, ratingsData]);
-
-  const handleNewsClick = (newsItem: any) => {
-    setSelectedNews(newsItem);
-    setIsViewerOpen(true);
-  };
-
-  const handleCloseViewer = () => {
-    setIsViewerOpen(false);
-    setSelectedNews(null);
-  };
+  const newsItems = [
+    {
+      id: 1,
+      title: "Open models surge in quality across benchmarks",
+      description: "Community-driven models narrow performance gaps.",
+      date: "2 days ago",
+      category: "Update",
+      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1400&auto=format&fit=crop"
+    },
+    {
+      id: 2,
+      title: "Emerging AI safety standards gain traction",
+      description: "From incident reporting to evals—what changes now.",
+      date: "5 days ago",
+      category: "Policy",
+      image: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=1400&auto=format&fit=crop"
+    },
+    {
+      id: 3,
+      title: "New eval suites simplify model comparisons",
+      description: "Lightweight harnesses and standardized reporting.",
+      date: "1 week ago",
+      category: "Tooling",
+      image: "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=1400&auto=format&fit=crop"
+    }
+  ];
 
   const articles = [
     {
@@ -136,19 +98,10 @@ const Index = () => {
     }
   ];
 
+  // Reduced datasets for homepage preview
+  const featuredPlans = learningPlans.slice(0, 3);
+  const featuredNews = newsItems.slice(0, 3);
   const featuredArticles = articles.slice(0, 3);
-
-  // Show loading state
-  if (plansLoading || newsLoading) {
-    return (
-      <div className="min-h-screen bg-background text-foreground font-['Inter'] antialiased flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading content...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background text-foreground font-['Inter'] antialiased selection:bg-primary/30 selection:text-primary-foreground">
@@ -304,18 +257,6 @@ const Index = () => {
         isOpen={isLoginOpen} 
         onClose={() => setIsLoginOpen(false)} 
       />
-
-      <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-          {selectedNews && (
-            <NewsViewer 
-              news={selectedNews} 
-              onClose={handleCloseViewer}
-              className="border-0"
-            />
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

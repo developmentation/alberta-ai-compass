@@ -1,6 +1,6 @@
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode } from 'react';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -10,22 +10,16 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children, requireAdmin, requireFacilitator }: ProtectedRouteProps) {
   const { user, profile, loading } = useAuth();
-  
-  console.log('ProtectedRoute state:', { user: !!user, profile: !!profile, loading, role: profile?.role });
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   if (!user) {
-    console.log('ProtectedRoute: No user, redirecting to auth');
     return <Navigate to="/auth" replace />;
   }
 
