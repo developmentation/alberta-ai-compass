@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { LearningPlanCard } from "@/components/LearningPlanCard";
+import { ModuleCard } from "@/components/ModuleCard";
 import { ArticleCard } from "@/components/ArticleCard";
 import { ArticleViewer } from "@/components/ArticleViewer";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Search, Filter, Loader2, Star, Bookmark } from "lucide-react";
 import { useLearningPlans } from "@/hooks/useLearningPlans";
+import { useModules } from "@/hooks/useModules";
 import { useArticles } from "@/hooks/useArticles";
 import { useAuth } from "@/hooks/useAuth";
 import { useContentRatings } from "@/hooks/useContentRatings";
@@ -24,11 +26,13 @@ const LearningHub = () => {
   
   const { user } = useAuth();
   const { learningPlans, loading: plansLoading, error: plansError } = useLearningPlans();
+  const { modules, loading: modulesLoading, error: modulesError } = useModules();
   const { articles, loading: articlesLoading, error: articlesError } = useArticles();
   
-  // Prepare content items for ratings - include both plans and articles
+  // Prepare content items for ratings - include plans, modules, and articles
   const contentItems = [
     ...learningPlans.map(item => ({ id: item.id, type: 'learning_plan' })),
+    ...modules.map(item => ({ id: item.id, type: 'module' })),
     ...articles.map(item => ({ id: item.id, type: 'article' }))
   ];
   const { ratingsData } = useContentRatings(contentItems);
@@ -44,8 +48,8 @@ const LearningHub = () => {
   };
 
   // Loading state
-  const loading = plansLoading || articlesLoading;
-  const error = plansError || articlesError;
+  const loading = plansLoading || modulesLoading || articlesLoading;
+  const error = plansError || modulesError || articlesError;
 
   // Transform and filter articles from database
   const filteredArticles = articles
@@ -124,6 +128,55 @@ const LearningHub = () => {
       isBookmarked: ratingData?.isBookmarked || false
     };
   });
+
+  // Transform and filter modules from database  
+  const filteredModules = modules
+    .filter(module => {
+      const moduleLevel = module.level?.toLowerCase();
+      const matchesFilter = activeFilter === "all" || 
+        (activeFilter === "1" && moduleLevel === "1") ||
+        (activeFilter === "2" && moduleLevel === "2") ||
+        (activeFilter === "3" && moduleLevel === "3") ||
+        (activeFilter === "red" && moduleLevel === "red");
+        
+      const matchesSearch = (module.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           module.description.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const ratingData = ratingsData[module.id];
+      const matchesRating = minStarRating === 0 || (ratingData?.averageRating || 0) >= minStarRating;
+      const matchesBookmark = !showBookmarkedOnly || (ratingData?.isBookmarked || false);
+      
+      return matchesFilter && matchesSearch && matchesRating && matchesBookmark;
+    })
+    .map(module => {
+      const ratingData = ratingsData[module.id];
+      // Try to parse json_data to get learning outcomes for tags
+      let learningOutcomes: string[] = [];
+      try {
+        const jsonData = typeof module.json_data === 'string' ? JSON.parse(module.json_data) : module.json_data;
+        learningOutcomes = jsonData?.learningOutcomes || jsonData?.learning_outcomes || [];
+      } catch (e) {
+        // If parsing fails, use empty array
+      }
+      
+      return {
+        id: module.id,
+        title: module.name || 'Untitled Module',
+        description: module.description,
+        level: module.level === '1' ? 'Beginner' : 
+               module.level === '2' ? 'Intermediate' : 
+               module.level === '3' ? 'Advanced' : 
+               module.level === 'red' ? 'RED' : 
+               module.level || 'Beginner',
+        image: module.image_url || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1400&auto=format&fit=crop",
+        video: module.video_url,
+        tags: learningOutcomes.slice(0, 2).length > 0 ? learningOutcomes.slice(0, 2) : ["AI Learning", "Module"],
+        averageRating: ratingData?.averageRating || 0,
+        totalVotes: ratingData?.totalVotes || 0,
+        isBookmarked: ratingData?.isBookmarked || false,
+        estimatedTime: "30 min" // Default estimate, could be derived from json_data if available
+      };
+    });
 
 
   return (
@@ -260,6 +313,59 @@ const LearningHub = () => {
                   <div className="text-center py-16">
                     <p className="text-muted-foreground text-lg">
                       No learning plans available at this time.
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </section>
+
+        {/* Learning Modules */}
+        <section className="py-16 border-t border-border/50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-12 animate-fade-in-up">
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">Learning Modules</h2>
+              <p className="text-muted-foreground">Interactive modules with hands-on exercises and assessments.</p>
+            </div>
+
+            {modulesLoading && (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <span className="ml-2 text-muted-foreground">Loading modules...</span>
+              </div>
+            )}
+            
+            {modulesError && (
+              <div className="text-center py-16">
+                <p className="text-destructive text-lg">
+                  Error loading modules: {modulesError}
+                </p>
+              </div>
+            )}
+
+            {!modulesLoading && !modulesError && (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {filteredModules.map((module, index) => (
+                    <div key={module.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
+                      <ModuleCard {...module} />
+                    </div>
+                  ))}
+                </div>
+
+                {filteredModules.length === 0 && modules.length > 0 && (
+                  <div className="text-center py-16">
+                    <p className="text-muted-foreground text-lg">
+                      No modules found matching your criteria. Try adjusting your search or filters.
+                    </p>
+                  </div>
+                )}
+                
+                {modules.length === 0 && (
+                  <div className="text-center py-16">
+                    <p className="text-muted-foreground text-lg">
+                      No modules available at this time.
                     </p>
                   </div>
                 )}
