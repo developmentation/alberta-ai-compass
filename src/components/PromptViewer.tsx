@@ -98,161 +98,182 @@ export function PromptViewer({ prompt, children, open, onOpenChange }: PromptVie
       <DialogTrigger asChild>
         {children || <Button variant="outline">View Prompt</Button>}
       </DialogTrigger>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-3 text-2xl">
-            {prompt.name}
-            {prompt.stars && (
-              <div className="flex items-center gap-1">
-                <div className="flex">{renderStars(prompt.stars)}</div>
-                <span className="text-sm text-muted-foreground">
-                  {prompt.stars}/5
-                </span>
+      <DialogContent className="w-[90vw] h-[90vh] max-w-none max-h-none p-0">
+        <div className="flex flex-col h-full">
+          <DialogHeader className="p-6 pb-4 border-b">
+            <DialogTitle className="flex items-center gap-3 text-2xl">
+              {prompt.name}
+              {prompt.stars && (
+                <div className="flex items-center gap-1">
+                  <div className="flex">{renderStars(prompt.stars)}</div>
+                  <span className="text-sm text-muted-foreground">
+                    {prompt.stars}/5
+                  </span>
+                </div>
+              )}
+            </DialogTitle>
+            {sectorTags.length > 0 && (
+              <div className="flex gap-2 flex-wrap mt-2">
+                {sectorTags.map((tag: string, index: number) => (
+                  <Badge key={index} variant="outline" className="text-xs">
+                    {tag}
+                  </Badge>
+                ))}
               </div>
             )}
-          </DialogTitle>
-          {sectorTags.length > 0 && (
-            <div className="flex gap-2 flex-wrap mt-2">
-              {sectorTags.map((tag: string, index: number) => (
-                <Badge key={index} variant="outline" className="text-xs">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          )}
-        </DialogHeader>
+          </DialogHeader>
 
-        <div className="space-y-6 mt-4">
-          {/* Image */}
-          {prompt.image_url && (
-            <div className="aspect-video rounded-lg overflow-hidden bg-muted">
-              <img
-                src={prompt.image_url}
-                alt={prompt.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
-
-          {/* Description */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Lightbulb className="w-5 h-5" />
-                Prompt Description
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-muted/50 p-4 rounded-lg">
-                <p className="text-foreground whitespace-pre-wrap font-mono text-sm leading-relaxed">
-                  {prompt.description}
-                </p>
-              </div>
-              <div className="flex gap-2 mt-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleCopy(prompt.description, 'Prompt')}
-                >
-                  <Copy className="w-4 h-4 mr-2" />
-                  {copiedField === 'Prompt' ? 'Copied!' : 'Copy Prompt'}
-                </Button>
-                <Button
-                  onClick={handleExecutePrompt}
-                  disabled={isExecuting}
-                  size="sm"
-                >
-                  {isExecuting ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <Play className="w-4 h-4 mr-2" />
+          <div className="flex-1 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
+              {/* Left Column - Purpose and Description */}
+              <div className="p-6 overflow-y-auto border-r border-border">
+                <div className="space-y-6">
+                  {/* Image */}
+                  {prompt.image_url && (
+                    <div className="aspect-video rounded-lg overflow-hidden bg-muted">
+                      <img
+                        src={prompt.image_url}
+                        alt={prompt.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                   )}
-                  {isExecuting ? 'Executing...' : 'Execute Prompt'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
 
-          {/* Purpose */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Target className="w-5 h-5" />
-                Purpose & Use Case
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-start justify-between gap-4">
-                <p className="text-foreground whitespace-pre-wrap flex-1">{prompt.purpose}</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleCopy(prompt.purpose, 'Purpose')}
-                >
-                  <Copy className="w-4 h-4" />
-                  {copiedField === 'Purpose' ? 'Copied!' : 'Copy'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                  {/* Purpose */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-lg">
+                        <Target className="w-5 h-5" />
+                        Purpose & Use Case
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-start justify-between gap-4">
+                        <p className="text-foreground whitespace-pre-wrap flex-1">{prompt.purpose}</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleCopy(prompt.purpose, 'Purpose')}
+                        >
+                          <Copy className="w-4 h-4" />
+                          {copiedField === 'Purpose' ? 'Copied!' : 'Copy'}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
 
-          {/* Sample Output */}
-          {prompt.sample_output && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Eye className="w-5 h-5" />
-                  Sample Output
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="bg-muted/50 p-4 rounded-lg">
-                    <p className="text-foreground whitespace-pre-wrap font-mono text-sm leading-relaxed">
-                      {prompt.sample_output}
-                    </p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleCopy(prompt.sample_output!, 'Sample Output')}
-                  >
-                    <Copy className="w-4 h-4 mr-2" />
-                    {copiedField === 'Sample Output' ? 'Copied!' : 'Copy Sample'}
-                  </Button>
+                  {/* Description */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-lg">
+                        <Lightbulb className="w-5 h-5" />
+                        Prompt Description
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="bg-muted/50 p-4 rounded-lg">
+                        <p className="text-foreground whitespace-pre-wrap font-mono text-sm leading-relaxed">
+                          {prompt.description}
+                        </p>
+                      </div>
+                      <div className="flex gap-2 mt-4">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleCopy(prompt.description, 'Prompt')}
+                        >
+                          <Copy className="w-4 h-4 mr-2" />
+                          {copiedField === 'Prompt' ? 'Copied!' : 'Copy Prompt'}
+                        </Button>
+                        <Button
+                          onClick={handleExecutePrompt}
+                          disabled={isExecuting}
+                          size="sm"
+                        >
+                          {isExecuting ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <Play className="w-4 h-4 mr-2" />
+                          )}
+                          {isExecuting ? 'Executing...' : 'Execute Prompt'}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Sample Output */}
+                  {prompt.sample_output && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-lg">
+                          <Eye className="w-5 h-5" />
+                          Sample Output
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="bg-muted/50 p-4 rounded-lg">
+                            <p className="text-foreground whitespace-pre-wrap font-mono text-sm leading-relaxed">
+                              {prompt.sample_output}
+                            </p>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleCopy(prompt.sample_output!, 'Sample Output')}
+                          >
+                            <Copy className="w-4 h-4 mr-2" />
+                            {copiedField === 'Sample Output' ? 'Copied!' : 'Copy Sample'}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              </div>
 
-          {/* Execution Result */}
-          {executionResult && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Play className="w-5 h-5" />
-                  AI Response
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="bg-gradient-to-br from-primary/5 to-accent/5 p-4 rounded-lg border">
-                    <p className="text-foreground whitespace-pre-wrap text-sm leading-relaxed">
-                      {executionResult}
-                    </p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleCopy(executionResult, 'AI Response')}
-                  >
-                    <Copy className="w-4 h-4 mr-2" />
-                    {copiedField === 'AI Response' ? 'Copied!' : 'Copy Response'}
-                  </Button>
+              {/* Right Column - AI Response */}
+              <div className="p-6 overflow-y-auto">
+                <div className="h-full">
+                  {executionResult ? (
+                    <Card className="h-full">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-lg">
+                          <Play className="w-5 h-5" />
+                          AI Response
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="flex-1">
+                        <div className="space-y-4 h-full">
+                          <div className="bg-gradient-to-br from-primary/5 to-accent/5 p-4 rounded-lg border flex-1 overflow-y-auto">
+                            <p className="text-foreground whitespace-pre-wrap text-sm leading-relaxed">
+                              {executionResult}
+                            </p>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleCopy(executionResult, 'AI Response')}
+                          >
+                            <Copy className="w-4 h-4 mr-2" />
+                            {copiedField === 'AI Response' ? 'Copied!' : 'Copy Response'}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-center text-muted-foreground">
+                        <Play className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p className="text-lg font-medium">Execute the prompt to see AI response</p>
+                        <p className="text-sm">Click "Execute Prompt" to generate AI content</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              </div>
+            </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
