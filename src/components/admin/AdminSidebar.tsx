@@ -54,7 +54,7 @@ const adminMenuItems: AdminMenuItem[] = [
     url: "/admin/learning",
     icon: GraduationCap,
     children: [
-      { title: "Learning Plans", url: "/admin/learning/plans", icon: GraduationCap },
+      { title: "Plans", url: "/admin/learning/plans", icon: GraduationCap },
       { title: "Modules", url: "/admin/learning/modules", icon: GraduationCap },
       { title: "Cohorts", url: "/admin/learning/cohorts", icon: Users },
     ]
