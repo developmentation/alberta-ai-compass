@@ -27,7 +27,7 @@ export default function MyLearning() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedContent, setSelectedContent] = useState<any>(null);
-  const [viewerType, setViewerType] = useState<'news' | 'tool' | 'module' | 'prompt' | null>(null);
+  const [viewerType, setViewerType] = useState<'news' | 'tool' | 'module' | 'prompt_library' | null>(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
 
   const handleLoginClick = () => setIsLoginModalOpen(true);
@@ -67,7 +67,7 @@ export default function MyLearning() {
               .single();
             contentData = moduleData;
             break;
-          case 'prompt':
+          case 'prompt_library':
             const { data: promptData } = await supabase
               .from('prompt_library')
               .select('*')
@@ -79,7 +79,7 @@ export default function MyLearning() {
         
         if (contentData) {
           setSelectedContent(contentData);
-          setViewerType(item.type as 'news' | 'tool' | 'module' | 'prompt');
+          setViewerType(item.type as 'news' | 'tool' | 'module' | 'prompt_library');
           setIsViewerOpen(true);
         }
       } catch (error) {
@@ -105,7 +105,7 @@ export default function MyLearning() {
       module: 'bg-secondary/10 text-secondary',
       news: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
       tool: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-      prompt: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400'
+      prompt_library: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400'
     };
     return colors[type as keyof typeof colors] || 'bg-muted text-muted-foreground';
   };
@@ -116,7 +116,7 @@ export default function MyLearning() {
       module: 'Module',
       news: 'News',
       tool: 'Tool',
-      prompt: 'Prompt'
+      prompt_library: 'Prompt'
     };
     return labels[type as keyof typeof labels] || type;
   };
@@ -370,7 +370,7 @@ export default function MyLearning() {
       </Dialog>
 
       {/* Prompt Viewer - Uses its own modal */}
-      {selectedContent && viewerType === 'prompt' && (
+      {selectedContent && viewerType === 'prompt_library' && (
         <PromptViewer
           prompt={selectedContent}
           open={isViewerOpen}
