@@ -24,7 +24,8 @@ export function MediaDisplay({
         videoUrl={videoUrl}
         alt={title}
         title={title}
-        className={imageUrl ? imageClassName : videoClassName}
+        className="w-full h-full object-cover"
+        aspectRatio="auto"
         showControls={true}
       />
     </div>

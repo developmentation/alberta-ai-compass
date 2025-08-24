@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
+import { ImageVideoViewer } from '@/components/ImageVideoViewer';
 
 export default function Cohorts() {
   const { user } = useAuth();
@@ -107,12 +108,16 @@ export default function Cohorts() {
                 {userCohorts.map((membership) => (
                   <Card key={membership.id} className="hover:shadow-lg transition-shadow">
                     <CardHeader>
-                      {membership.cohort?.image_url && (
+                      {(membership.cohort?.image_url || membership.cohort?.video_url) && (
                         <div className="w-full h-32 bg-muted rounded-lg overflow-hidden mb-4">
-                          <img 
-                            src={membership.cohort.image_url} 
+                          <ImageVideoViewer
+                            imageUrl={membership.cohort.image_url}
+                            videoUrl={membership.cohort.video_url}
                             alt={membership.cohort.name}
+                            title={membership.cohort.name}
                             className="w-full h-full object-cover"
+                            aspectRatio="auto"
+                            showControls={true}
                           />
                         </div>
                       )}

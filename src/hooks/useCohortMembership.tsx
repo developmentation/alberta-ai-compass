@@ -18,6 +18,7 @@ export interface CohortMember {
     end_date?: string;
     status: string;
     image_url?: string;
+    video_url?: string;
   };
 }
 
@@ -51,7 +52,8 @@ export function useCohortMembership() {
             start_date,
             end_date,
             status,
-            image_url
+            image_url,
+            video_url
           )
         `)
         .or(`user_id.eq.${user.id},email.eq.${profile.email}`)
