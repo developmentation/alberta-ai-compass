@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { 
   ChevronLeft, 
@@ -30,7 +31,9 @@ import {
   Play,
   Pause,
   Volume2,
-  Globe
+  Globe,
+  Settings,
+  Book
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -106,6 +109,13 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
   const [translations, setTranslations] = useState<Record<string, ModuleData>>({});
   const [isLoadingTranslation, setIsLoadingTranslation] = useState(false);
   const [hasStartedModule, setHasStartedModule] = useState(false);
+  const [activeTab, setActiveTab] = useState('content');
+  const [metadataForm, setMetadataForm] = useState({
+    title: moduleData.title || '',
+    description: moduleData.description || '',
+    difficulty: moduleData.difficulty || '1',
+    duration: moduleData.duration || 30
+  });
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -122,6 +132,12 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
       })) || []
     };
     setEditingData(normalizedData);
+    setMetadataForm({
+      title: normalizedData.title || '',
+      description: normalizedData.description || '',
+      difficulty: normalizedData.difficulty || '1',
+      duration: normalizedData.duration || 30
+    });
   }, [moduleData]);
 
   // Track module start when component mounts and user is logged in
@@ -493,39 +509,6 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
     });
   };
 
-  const handleFileUpload = async (file: File, contentIndex: number) => {
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('media')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('media')
-        .getPublicUrl(filePath);
-
-      handleEditContent(contentIndex, 'url', publicUrl);
-      setIsUploadDialogOpen(false);
-      setUploadContentIndex(null);
-
-      toast({
-        title: "Success",
-        description: "File uploaded successfully",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to upload file",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleMediaUpload = (url: string, type: 'image' | 'video', contentIndex: number) => {
     handleEditContent(contentIndex, 'url', url);
     if (type === 'image') {
@@ -559,21 +542,8 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
     }
   }, [showResults, user, moduleId]);
 
-  // Load available translations - simplified for now
-  const loadAvailableTranslations = async () => {
-    // Since there's no translations table in the current schema, 
-    // we'll just set up English as the default language
-    setAvailableLanguages(['en']);
-    setTranslations({ en: moduleData });
-    setCurrentLanguage('en');
-    setEditingData(moduleData);
-  };
-
   const handleLanguageChange = async (newLanguage: string) => {
     if (newLanguage === currentLanguage) return;
-
-    console.log('Changing language from', currentLanguage, 'to', newLanguage);
-    console.log('Available translations:', translations);
 
     setIsLoadingTranslation(true);
     
@@ -582,16 +552,12 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
       
       if (newLanguage === 'en') {
         // Use original data for English
-        console.log('Loading original English content');
         setEditingData(moduleData);
       } else if (translations[newLanguage]) {
         // Use translation if available
-        console.log('Loading translated content for', newLanguage);
-        console.log('Translation data:', translations[newLanguage]);
         setEditingData(translations[newLanguage]);
       } else {
         // Fallback to original if translation doesn't exist
-        console.log('No translation available for', newLanguage, 'falling back to English');
         setEditingData(moduleData);
         toast({
           title: "Translation not available",
@@ -610,13 +576,6 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
       setIsLoadingTranslation(false);
     }
   };
-
-  // Load translations on component mount
-  useEffect(() => {
-    if (moduleId) {
-      loadAvailableTranslations();
-    }
-  }, [moduleId]);
 
   const handleRetakeModule = () => {
     setCurrentSectionIndex(0);
@@ -952,68 +911,70 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                         placeholder="Type your answer here..."
                         value={userAnswer || ''}
                         onChange={(e) => handleQuizAnswer(index, e.target.value)}
+                        disabled={quizResult !== undefined}
                         rows={3}
                       />
                     </div>
                   ) : (
                     <div className="space-y-2">
                       {content.options?.map((option, optionIndex) => (
-                        <label key={optionIndex} className={`flex items-center space-x-2 p-2 rounded cursor-pointer transition-colors ${
-                          quizResult !== undefined && option === content.correctAnswer 
-                            ? 'bg-green-100 text-green-800 border-green-300' 
-                            : quizResult !== undefined && userAnswer === option && option !== content.correctAnswer
-                            ? 'bg-red-100 text-red-800 border-red-300'
-                            : 'hover:bg-muted'
-                        }`}>
-                          <input
-                            type="radio"
-                            name={quizKey}
-                            value={option}
-                            checked={userAnswer === option}
-                            onChange={(e) => handleQuizAnswer(index, e.target.value)}
-                            className="radio"
-                          />
-                          <span>{option}</span>
-                        </label>
+                        <Button
+                          key={optionIndex}
+                          variant={userAnswer === option ? "default" : "outline"}
+                          className="w-full justify-start"
+                          onClick={() => handleQuizAnswer(index, option)}
+                          disabled={quizResult !== undefined}
+                        >
+                          {option}
+                        </Button>
                       ))}
                     </div>
                   )}
-                  <div className="flex gap-2">
-                    {userAnswer && quizResult === undefined && (
-                      <Button
-                        onClick={() => handleQuizSubmit(index, content.correctAnswer!, content.quizType)}
-                        disabled={isEvaluatingAnswer[quizKey]}
-                      >
-                        {isEvaluatingAnswer[quizKey] ? 'Evaluating...' : 'Submit Answer'}
-                      </Button>
-                    )}
-                    {quizResult !== undefined && (
-                      <Button
-                        variant="outline"
-                        onClick={() => handleQuizReset(index)}
-                      >
-                        Try Again
-                      </Button>
-                    )}
-                  </div>
+                  
+                  {quizResult === undefined && userAnswer && (
+                    <Button
+                      onClick={() => handleQuizSubmit(index, content.correctAnswer || '', content.quizType)}
+                      className="w-full"
+                    >
+                      Submit Answer
+                    </Button>
+                  )}
+                  
                   {quizResult !== undefined && (
-                    <div className="p-3 rounded-lg bg-muted">
-                      {content.quizType === 'short-answer' ? (
-                        <div className="space-y-2">
-                          {shortAnswerEvaluations[quizKey] && (
-                            <p className="text-sm">
-                              {shortAnswerEvaluations[quizKey]}
-                            </p>
-                          )}
-                          {isEvaluatingAnswer[quizKey] && (
-                            <p className="text-sm text-muted-foreground">Analyzing your answer...</p>
-                          )}
-                        </div>
-                      ) : (
-                        <p className="text-sm">
+                    <div className="mt-4 space-y-2">
+                      <div className={`p-3 rounded border ${quizResult ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
+                        <p className={quizResult ? 'text-green-700' : 'text-red-700'}>
                           {quizResult ? content.feedback?.correct : content.feedback?.incorrect}
                         </p>
+                      </div>
+                      
+                      {/* Show AI evaluation for short answers */}
+                      {content.quizType === 'short-answer' && (
+                        <div className="mt-4">
+                          <h4 className="font-medium text-sm mb-2">AI Evaluation:</h4>
+                          <div className="p-3 bg-muted rounded-md">
+                            {isEvaluatingAnswer[quizKey] ? (
+                              <div className="flex items-center gap-2">
+                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent"></div>
+                                <span className="text-sm">Evaluating your answer...</span>
+                              </div>
+                            ) : shortAnswerEvaluations[quizKey] ? (
+                              <ReactMarkdown>
+                                {shortAnswerEvaluations[quizKey]}
+                              </ReactMarkdown>
+                            ) : null}
+                          </div>
+                        </div>
                       )}
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleQuizReset(index)}
+                      >
+                        <RotateCcw className="mr-2 h-4 w-4" />
+                        Try Again
+                      </Button>
                     </div>
                   )}
                 </>
@@ -1052,146 +1013,62 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Sheet open={isTableOfContentsOpen} onOpenChange={setIsTableOfContentsOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Menu className="h-4 w-4" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="left">
-                  <SheetHeader>
-                    <SheetTitle>Table of Contents</SheetTitle>
-                    {isAdminMode && isEditable && (
-                      <Button onClick={handleAddSection} size="sm" className="mt-2">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Section
-                      </Button>
-                    )}
-                  </SheetHeader>
-                  <ScrollArea className="h-full mt-6">
-                    <div className="space-y-2">
-                      {editingData.sections.map((section, index) => (
-                        <div key={section.id} className="space-y-2">
-                          <Button
-                            variant={index === currentSectionIndex ? "default" : "ghost"}
-                            className="w-full justify-start h-auto p-3"
-                            onClick={() => {
-                              setCurrentSectionIndex(index);
-                              setIsTableOfContentsOpen(false);
-                            }}
-                          >
-                            <div className="flex items-center gap-2">
-                              {completedSections.has(index) ? (
-                                <CheckCircle className="h-4 w-4 text-green-500" />
-                              ) : (
-                                <Circle className="h-4 w-4" />
-                              )}
-                              <span className="text-left">{section.title}</span>
-                            </div>
-                          </Button>
-                          {isAdminMode && isEditable && (
-                            <div className="flex gap-1 px-3">
-                              <Input
-                                value={section.title}
-                                onChange={(e) => handleEditSectionTitle(index, e.target.value)}
-                                className="h-8 text-xs"
-                                placeholder="Section title"
-                              />
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleDeleteSection(index)}
-                                className="h-8 w-8 p-0"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </SheetContent>
-              </Sheet>
+              {!isAdminMode && (
+                <Sheet open={isTableOfContentsOpen} onOpenChange={setIsTableOfContentsOpen}>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Menu className="mr-2 h-4 w-4" />
+                      Contents
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="w-80">
+                    <SheetHeader>
+                      <SheetTitle>Table of Contents</SheetTitle>
+                    </SheetHeader>
+                    <ScrollArea className="h-full mt-4">
+                      <div className="space-y-2">
+                        {editingData.sections.map((section, index) => (
+                          <div key={index} className="space-y-1">
+                            <Button
+                              variant={currentSectionIndex === index ? "default" : "ghost"}
+                              className="w-full justify-start h-auto p-3"
+                              onClick={() => {
+                                setCurrentSectionIndex(index);
+                                setIsTableOfContentsOpen(false);
+                                setShowResults(false);
+                              }}
+                            >
+                              <div className="text-left space-y-1">
+                                <div className="text-sm font-medium">{section.title}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {section.content?.length || 0} items
+                                </div>
+                              </div>
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </SheetContent>
+                </Sheet>
+              )}
               
-              <div className="flex-1">
-                {isAdminMode && isEditable ? (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-sm font-medium mb-1 block">Title</label>
-                        <Input
-                          value={editingData.title}
-                          onChange={(e) => setEditingData({ ...editingData, title: e.target.value })}
-                          className="text-lg font-bold"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium mb-1 block">Difficulty</label>
-                        <Select
-                          value={editingData.difficulty}
-                          onValueChange={(value) => setEditingData({ ...editingData, difficulty: value })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="beginner">Beginner</SelectItem>
-                            <SelectItem value="intermediate">Intermediate</SelectItem>
-                            <SelectItem value="advanced">Advanced</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-sm font-medium mb-1 block">Description</label>
-                        <Textarea
-                          value={editingData.description}
-                          onChange={(e) => setEditingData({ ...editingData, description: e.target.value })}
-                          rows={3}
-                        />
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium mb-1 block">Duration (minutes)</label>
-                        <Input
-                          type="number"
-                          value={editingData.duration}
-                          onChange={(e) => setEditingData({ ...editingData, duration: parseInt(e.target.value) || 0 })}
-                        />
-                      </div>
-                    </div>
-                    <UnifiedMediaUpload
-                      onMediaUpload={(url, type) => {
-                        if (type === 'image') {
-                          setEditingData({ ...editingData, imageUrl: url, videoUrl: url ? undefined : editingData.videoUrl });
-                        } else {
-                          setEditingData({ ...editingData, videoUrl: url, imageUrl: url ? undefined : editingData.imageUrl });
-                        }
-                      }}
-                      currentImageUrl={editingData.imageUrl}
-                      currentVideoUrl={editingData.videoUrl}
-                      bucketName="module-assets"
-                      allowAiGeneration={true}
-                    />
+              {!isAdminMode && (
+                <div>
+                  <h1 className="text-xl font-bold">{editingData.title}</h1>
+                  <p className="text-muted-foreground mt-1">{editingData.description}</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Badge variant="outline">{editingData.difficulty}</Badge>
+                    <Badge variant="outline">{editingData.duration} min</Badge>
                   </div>
-                ) : (
-                  <div>
-                    <h1 className="text-xl font-bold">{editingData.title}</h1>
-                    <p className="text-muted-foreground mt-1">{editingData.description}</p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <Badge variant="outline">{editingData.difficulty}</Badge>
-                      <Badge variant="outline">{editingData.duration} min</Badge>
-                    </div>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-4">
               {isAdminMode && isEditable && (
                 <Button
-                  onClick={() => onSave?.(editingData)}
+                  onClick={handleSaveChanges}
                   variant="default"
                   size="sm"
                 >
@@ -1199,9 +1076,11 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                   Save Changes
                 </Button>
               )}
-              <div className="text-sm text-muted-foreground">
-                Section {currentSectionIndex + 1} of {editingData.sections.length}
-              </div>
+              {!isAdminMode && (
+                <div className="text-sm text-muted-foreground">
+                  Section {currentSectionIndex + 1} of {editingData.sections.length}
+                </div>
+              )}
               {moduleId && availableLanguages.length > 1 && !isAdminMode && (
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">Language:</span>
@@ -1229,13 +1108,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                   </Select>
                 </div>
               )}
-              {isAdminMode && isEditable && (
-                <Button onClick={handleSaveChanges} size="sm">
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Changes
-                </Button>
-              )}
-              {onClose && !isAdminMode && (
+              {onClose && (
                 <Button onClick={onClose} variant="outline" size="sm">
                   <X className="mr-2 h-4 w-4" />
                   Close
@@ -1244,142 +1117,366 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
             </div>
           </div>
 
-          <div className="mt-4">
-            <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
-              <span>Progress</span>
-              <span>{Math.round(progress)}%</span>
+          {!isAdminMode && (
+            <div className="mt-4">
+              <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
+                <span>Progress</span>
+                <span>{Math.round(progress)}%</span>
+              </div>
+              <Progress value={progress} className="h-2" />
             </div>
-            <Progress value={progress} className="h-2" />
-          </div>
+          )}
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="container mx-auto px-4 py-8">
-          {showResults ? (
-            <Card className="max-w-4xl mx-auto">
-              <CardHeader className="text-center">
-                <CardTitle className="text-3xl flex items-center justify-center gap-2">
-                  <Trophy className="h-8 w-8 text-yellow-500" />
-                  Module Complete!
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6 text-center">
-                <div className="text-6xl font-bold text-primary">
-                  {calculateScore()}%
-                </div>
-                <div className="text-xl">
-                  {calculateScore() >= 70 ? (
-                    <div className="text-green-600">
-                      🎉 Congratulations! You've passed the module!
-                    </div>
-                  ) : (
-                    <div className="text-orange-600">
-                      Good attempt! Would you like to try again?
-                    </div>
-                  )}
-                </div>
-                <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground max-w-md mx-auto">
-                  <div>
-                    <div className="font-medium">Correct Answers</div>
-                    <div>{Object.values(quizResults).filter(Boolean).length}</div>
-                  </div>
-                  <div>
-                    <div className="font-medium">Total Questions</div>
-                    <div>{Object.keys(quizResults).length}</div>
-                  </div>
-                </div>
-                <div className="flex gap-4 justify-center">
-                  <Button onClick={handleRetakeModule} variant="outline">
-                    <RotateCcw className="mr-2 h-4 w-4" />
-                    Retake Module
-                  </Button>
-                  {calculateScore() >= 70 && !isAdminMode && (
-                    <Button onClick={onClose || (() => window.location.href = '/modules')}>
-                      Continue Learning
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="max-w-4xl mx-auto">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-2xl">{currentSection?.title}</CardTitle>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsAskAIOpen(true)}
-                    >
-                      <Bot className="mr-2 h-4 w-4" />
-                      Ask AI
-                    </Button>
-                    {isAdminMode && isEditable && (
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleAddContent}
+      {isAdminMode ? (
+        <main className="flex-1 overflow-y-auto">
+          <div className="container mx-auto px-4 py-8">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="metadata" className="flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  Module Metadata
+                </TabsTrigger>
+                <TabsTrigger value="content" className="flex items-center gap-2">
+                  <Book className="h-4 w-4" />
+                  Module Content
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="metadata" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Module Metadata</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Module Title</label>
+                        <Input
+                          value={metadataForm.title}
+                          onChange={(e) => {
+                            setMetadataForm({ ...metadataForm, title: e.target.value });
+                            setEditingData({ ...editingData, title: e.target.value });
+                          }}
+                          placeholder="e.g., Introduction to Email Security"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Level</label>
+                        <Select 
+                          value={metadataForm.difficulty} 
+                          onValueChange={(value) => {
+                            setMetadataForm({ ...metadataForm, difficulty: value });
+                            setEditingData({ ...editingData, difficulty: value });
+                          }}
                         >
-                          <Plus className="mr-2 h-4 w-4" />
-                          Add Content
-                        </Button>
-                        <Select onValueChange={handleAddContentByType}>
-                          <SelectTrigger className="w-[140px]">
-                            <SelectValue placeholder="Content type" />
+                          <SelectTrigger>
+                            <SelectValue />
                           </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="text">Text</SelectItem>
-                            <SelectItem value="list">List</SelectItem>
-                            <SelectItem value="quiz">Quiz</SelectItem>
-                            <SelectItem value="image">Image</SelectItem>
-                            <SelectItem value="video">Video</SelectItem>
-                            <SelectItem value="audio">Audio</SelectItem>
+                          <SelectContent className="z-50">
+                            <SelectItem value="1">Level 1</SelectItem>
+                            <SelectItem value="2">Level 2</SelectItem>
+                            <SelectItem value="3">Level 3</SelectItem>
+                            <SelectItem value="RED">RED Level</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
-                    )}
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Description</label>
+                        <Textarea
+                          value={metadataForm.description}
+                          onChange={(e) => {
+                            setMetadataForm({ ...metadataForm, description: e.target.value });
+                            setEditingData({ ...editingData, description: e.target.value });
+                          }}
+                          placeholder="Brief description of what this module teaches..."
+                          rows={4}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Duration (minutes)</label>
+                        <Input
+                          type="number"
+                          value={metadataForm.duration}
+                          onChange={(e) => {
+                            const duration = parseInt(e.target.value) || 0;
+                            setMetadataForm({ ...metadataForm, duration });
+                            setEditingData({ ...editingData, duration });
+                          }}
+                          placeholder="30"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Media Upload</label>
+                      <UnifiedMediaUpload
+                        onMediaUpload={(url, type) => {
+                          if (type === 'image') {
+                            setEditingData({ ...editingData, imageUrl: url, videoUrl: url ? undefined : editingData.videoUrl });
+                          } else {
+                            setEditingData({ ...editingData, videoUrl: url, imageUrl: url ? undefined : editingData.imageUrl });
+                          }
+                        }}
+                        currentImageUrl={editingData.imageUrl}
+                        currentVideoUrl={editingData.videoUrl}
+                        bucketName="module-assets"
+                        allowAiGeneration={true}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="content" className="mt-6">
+                <div className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle>Module Content</CardTitle>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Section {currentSectionIndex + 1} of {editingData.sections.length}: {currentSection?.title}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleAddSection}
+                          >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add Section
+                          </Button>
+                          <Sheet open={isTableOfContentsOpen} onOpenChange={setIsTableOfContentsOpen}>
+                            <SheetTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                <Menu className="mr-2 h-4 w-4" />
+                                Sections ({editingData.sections.length})
+                              </Button>
+                            </SheetTrigger>
+                            <SheetContent side="left" className="w-80">
+                              <SheetHeader>
+                                <SheetTitle>Module Sections</SheetTitle>
+                              </SheetHeader>
+                              <ScrollArea className="h-full mt-4">
+                                <div className="space-y-2">
+                                  {editingData.sections.map((section, index) => (
+                                    <div key={index} className="space-y-1">
+                                      <Button
+                                        variant={currentSectionIndex === index ? "default" : "ghost"}
+                                        className="w-full justify-start h-auto p-3"
+                                        onClick={() => {
+                                          setCurrentSectionIndex(index);
+                                          setIsTableOfContentsOpen(false);
+                                        }}
+                                      >
+                                        <div className="text-left space-y-1">
+                                          <div className="text-sm font-medium">{section.title}</div>
+                                          <div className="text-xs text-muted-foreground">
+                                            {section.content?.length || 0} items
+                                          </div>
+                                        </div>
+                                      </Button>
+                                      <div className="flex gap-1 px-3">
+                                        <Input
+                                          value={section.title}
+                                          onChange={(e) => handleEditSectionTitle(index, e.target.value)}
+                                          className="h-8 text-xs"
+                                          placeholder="Section title"
+                                        />
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => handleDeleteSection(index)}
+                                          className="h-8 w-8 p-0"
+                                        >
+                                          <Trash2 className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </ScrollArea>
+                            </SheetContent>
+                          </Sheet>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold">{currentSection?.title}</h3>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleAddContent}
+                          >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add Content
+                          </Button>
+                          <Select onValueChange={handleAddContentByType}>
+                            <SelectTrigger className="w-[140px]">
+                              <SelectValue placeholder="Content type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="text">Text</SelectItem>
+                              <SelectItem value="list">List</SelectItem>
+                              <SelectItem value="quiz">Quiz</SelectItem>
+                              <SelectItem value="image">Image</SelectItem>
+                              <SelectItem value="video">Video</SelectItem>
+                              <SelectItem value="audio">Audio</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <Separator />
+                      <div className="space-y-6">
+                        {Array.isArray(currentSection?.content) && currentSection.content.map((content, index) => renderContent(content, index))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Navigation for Content Tab */}
+                  <div className="flex items-center justify-between">
+                    <Button
+                      variant="outline"
+                      onClick={handlePreviousSection}
+                      disabled={currentSectionIndex === 0}
+                    >
+                      <ChevronLeft className="mr-2 h-4 w-4" />
+                      Previous Section
+                    </Button>
+
+                    <div className="text-sm text-muted-foreground">
+                      {currentSectionIndex + 1} / {editingData.sections.length}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        if (currentSectionIndex < editingData.sections.length - 1) {
+                          setCurrentSectionIndex(currentSectionIndex + 1);
+                        }
+                      }}
+                      disabled={currentSectionIndex >= editingData.sections.length - 1}
+                    >
+                      Next Section
+                      <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {Array.isArray(currentSection?.content) && currentSection.content.map((content, index) => renderContent(content, index))}
-              </CardContent>
-            </Card>
-          )}
-
-        {/* Navigation */}
-        <div className="flex items-center justify-between mt-8 max-w-4xl mx-auto">
-          <Button
-            variant="outline"
-            onClick={handlePreviousSection}
-            disabled={currentSectionIndex === 0 && !showResults}
-          >
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Previous
-          </Button>
-
-          <div className="text-sm text-muted-foreground">
-            {showResults ? "Results" : `${currentSectionIndex + 1} / ${editingData.sections.length}`}
+              </TabsContent>
+            </Tabs>
           </div>
+        </main>
+      ) : (
+        <main className="flex-1 overflow-y-auto">
+          <div className="container mx-auto px-4 py-8">
+            {showResults ? (
+              <Card className="max-w-4xl mx-auto">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-3xl flex items-center justify-center gap-2">
+                    <Trophy className="h-8 w-8 text-yellow-500" />
+                    Module Complete!
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6 text-center">
+                  <div className="text-6xl font-bold text-primary">
+                    {calculateScore()}%
+                  </div>
+                  <div className="text-xl">
+                    {calculateScore() >= 70 ? (
+                      <div className="text-green-600">
+                        🎉 Congratulations! You've passed the module!
+                      </div>
+                    ) : (
+                      <div className="text-orange-600">
+                        Good attempt! Would you like to try again?
+                      </div>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground max-w-md mx-auto">
+                    <div>
+                      <div className="font-medium">Correct Answers</div>
+                      <div>{Object.values(quizResults).filter(Boolean).length}</div>
+                    </div>
+                    <div>
+                      <div className="font-medium">Total Questions</div>
+                      <div>{Object.keys(quizResults).length}</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-4 justify-center">
+                    <Button onClick={handleRetakeModule} variant="outline">
+                      <RotateCcw className="mr-2 h-4 w-4" />
+                      Retake Module
+                    </Button>
+                    {calculateScore() >= 70 && !isAdminMode && (
+                      <Button onClick={onClose || (() => window.location.href = '/modules')}>
+                        Continue Learning
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="max-w-4xl mx-auto">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-2xl">{currentSection?.title}</CardTitle>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsAskAIOpen(true)}
+                      >
+                        <Bot className="mr-2 h-4 w-4" />
+                        Ask AI
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {Array.isArray(currentSection?.content) && currentSection.content.map((content, index) => renderContent(content, index))}
+                </CardContent>
+              </Card>
+            )}
 
-          {!showResults ? (
-            <Button
-              onClick={handleNextSection}
-              disabled={false}
-            >
-              {currentSectionIndex === editingData.sections.length - 1 ? 'Finish' : 'Next'}
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
-          ) : (
-            <div></div>
-          )}
-        </div>
-        </div>
-      </main>
+            {/* Navigation for Learning Mode */}
+            <div className="flex items-center justify-between mt-8 max-w-4xl mx-auto">
+              <Button
+                variant="outline"
+                onClick={handlePreviousSection}
+                disabled={currentSectionIndex === 0 && !showResults}
+              >
+                <ChevronLeft className="mr-2 h-4 w-4" />
+                Previous
+              </Button>
+
+              <div className="text-sm text-muted-foreground">
+                {showResults ? "Results" : `${currentSectionIndex + 1} / ${editingData.sections.length}`}
+              </div>
+
+              {!showResults ? (
+                <Button
+                  onClick={handleNextSection}
+                  disabled={false}
+                >
+                  {currentSectionIndex === editingData.sections.length - 1 ? 'Finish' : 'Next'}
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+              ) : (
+                <div></div>
+              )}
+            </div>
+          </div>
+        </main>
+      )}
 
       {/* Upload/Generate Dialog */}
       <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
@@ -1407,12 +1504,8 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
         onClose={() => setIsAskAIOpen(false)}
         moduleTitle={editingData.title}
         currentSection={currentSection?.title || ''}
-        context={Array.isArray(currentSection?.content) ? currentSection.content.map(c => {
-          if (c.type === 'text') return c.value;
-          if (c.type === 'quiz') return `Quiz: ${c.question}`;
-          if (c.type === 'list') return `List: ${(c.value as string[]).join(', ')}`;
-          return `${c.type} content`;
-        }).join('\n') : ''}
+        context={JSON.stringify(currentSection?.content || [])}
+        language={currentLanguage}
       />
     </div>
   );
