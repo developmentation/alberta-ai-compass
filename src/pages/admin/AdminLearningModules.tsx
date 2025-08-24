@@ -97,7 +97,7 @@ export default function AdminLearningModules() {
       title: module.name || 'Untitled Module',
       description: module.description || '',
       level: module.level, // Keep the original level value
-      duration: 30, // Default duration
+      duration: module.json_data?.duration || 30, // Use actual duration from json_data
       learningOutcomes: [],
       tags: [],
       sections: module.json_data?.sections || [],
@@ -129,7 +129,8 @@ export default function AdminLearningModules() {
           description: updatedData.description,
           json_data: {
             ...updatedData,
-            sections: updatedData.sections
+            sections: updatedData.sections,
+            duration: updatedData.duration
           },
           image_url: updatedData.imageUrl || null,
           video_url: updatedData.videoUrl || null,
