@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_mentor: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          updated_at: string
+          user_email: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          updated_at?: string
+          user_email: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          updated_at?: string
+          user_email?: string
+        }
+        Relationships: []
+      }
       allowed_domains: {
         Row: {
           added_by: string | null
