@@ -18,7 +18,7 @@ interface CohortContentManagerProps {
 
 interface CohortContent {
   id: string;
-  content_type: 'learning_plan' | 'module' | 'tool' | 'news' | 'prompt';
+  content_type: 'learning_plan' | 'module' | 'tool' | 'news' | 'prompt' | 'article';
   content_id: string;
   day_number: number;
   order_index: number;
@@ -28,7 +28,7 @@ interface CohortContent {
 interface ContentOption {
   id: string;
   title: string;
-  type: 'learning_plan' | 'module' | 'tool' | 'news' | 'prompt';
+  type: 'learning_plan' | 'module' | 'tool' | 'news' | 'prompt' | 'article';
 }
 
 export function CohortContentManager({ cohortId, cohortName }: CohortContentManagerProps) {
@@ -46,7 +46,8 @@ export function CohortContentManager({ cohortId, cohortName }: CohortContentMana
     module: BookOpen,
     tool: Wrench,
     news: Newspaper,
-    prompt: MessageSquare
+    prompt: MessageSquare,
+    article: Newspaper
   };
 
   const contentTypeLabels = {
@@ -54,7 +55,8 @@ export function CohortContentManager({ cohortId, cohortName }: CohortContentMana
     module: 'Module',
     tool: 'Tool',
     news: 'News',
-    prompt: 'Prompt'
+    prompt: 'Prompt',
+    article: 'Article'
   };
 
   useEffect(() => {
@@ -115,6 +117,13 @@ export function CohortContentManager({ cohortId, cohortName }: CohortContentMana
                 .eq('id', item.content_id)
                 .single();
               title = contentData?.name || title;
+            } else if (item.content_type === 'article') {
+              const { data: contentData } = await supabase
+                .from('articles')
+                .select('title')
+                .eq('id', item.content_id)
+                .single();
+              title = contentData?.title || title;
             }
           } catch (error) {
             console.error('Error fetching content title:', error);
@@ -122,7 +131,7 @@ export function CohortContentManager({ cohortId, cohortName }: CohortContentMana
 
           return {
             ...item,
-            content_type: item.content_type as 'learning_plan' | 'module' | 'tool' | 'news' | 'prompt',
+            content_type: item.content_type as 'learning_plan' | 'module' | 'tool' | 'news' | 'prompt' | 'article',
             content_title: title
           };
         })
@@ -143,12 +152,13 @@ export function CohortContentManager({ cohortId, cohortName }: CohortContentMana
 
   const fetchAvailableContent = async () => {
     try {
-      const [plans, modules, tools, news, prompts] = await Promise.all([
+      const [plans, modules, tools, news, prompts, articles] = await Promise.all([
         supabase.from('learning_plans').select('id, name').eq('status', 'published').is('deleted_at', null),
         supabase.from('modules').select('id, description').eq('status', 'published').is('deleted_at', null),
         supabase.from('tools').select('id, name').eq('status', 'published').is('deleted_at', null),
         supabase.from('news').select('id, title').eq('status', 'published').is('deleted_at', null),
-        supabase.from('prompt_library').select('id, name').eq('status', 'published').is('deleted_at', null)
+        supabase.from('prompt_library').select('id, name').eq('status', 'published').is('deleted_at', null),
+        supabase.from('articles').select('id, title').eq('status', 'published').is('deleted_at', null)
       ]);
 
       const allContent: ContentOption[] = [
@@ -156,7 +166,8 @@ export function CohortContentManager({ cohortId, cohortName }: CohortContentMana
         ...(modules.data || []).map(item => ({ id: item.id, title: item.description, type: 'module' as const })),
         ...(tools.data || []).map(item => ({ id: item.id, title: item.name, type: 'tool' as const })),
         ...(news.data || []).map(item => ({ id: item.id, title: item.title, type: 'news' as const })),
-        ...(prompts.data || []).map(item => ({ id: item.id, title: item.name, type: 'prompt' as const }))
+        ...(prompts.data || []).map(item => ({ id: item.id, title: item.name, type: 'prompt' as const })),
+        ...(articles.data || []).map(item => ({ id: item.id, title: item.title, type: 'article' as const }))
       ];
 
       setAvailableContent(allContent);
@@ -319,6 +330,7 @@ export function CohortContentManager({ cohortId, cohortName }: CohortContentMana
                     <SelectItem value="tool">Tool</SelectItem>
                     <SelectItem value="news">News</SelectItem>
                     <SelectItem value="prompt">Prompt</SelectItem>
+                    <SelectItem value="article">Article</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

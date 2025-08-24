@@ -18,6 +18,7 @@ import { NewsViewer } from '@/components/NewsViewer';
 import { ToolViewer } from '@/components/ToolViewer';
 import { ModuleViewer } from '@/components/ModuleViewer';
 import { PromptViewer } from '@/components/PromptViewer';
+import { ArticleViewer } from '@/components/ArticleViewer';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -188,6 +189,15 @@ export default function CohortDetail() {
                       .is('deleted_at', null)
                       .maybeSingle();
                     contentDetails = planData;
+                    break;
+                  case 'article':
+                    const { data: articleData } = await supabase
+                      .from('articles')
+                      .select('*')
+                      .eq('id', item.content_id)
+                      .is('deleted_at', null)
+                      .maybeSingle();
+                    contentDetails = articleData;
                     break;
                   default:
                     console.warn(`Unknown content type: ${item.content_type}`);
@@ -638,6 +648,12 @@ export default function CohortDetail() {
       {selectedViewer === 'news' && selectedContent && (
         <NewsViewer 
           news={selectedContent} 
+          onClose={handleCloseViewer}
+        />
+      )}
+      {selectedViewer === 'article' && selectedContent && (
+        <ArticleViewer 
+          article={selectedContent} 
           onClose={handleCloseViewer}
         />
       )}

@@ -122,7 +122,7 @@ export function AdminCohorts() {
                           .maybeSingle();
                         contentDetails = newsData;
                         break;
-                      case 'articles':
+                      case 'article':
                         const { data: articleData } = await supabase
                           .from('articles')
                           .select('id, title as name, description, image_url, video_url, status')
