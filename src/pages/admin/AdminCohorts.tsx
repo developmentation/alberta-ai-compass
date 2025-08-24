@@ -127,8 +127,6 @@ export function AdminCohorts() {
                           .from('articles')
                           .select('id, title as name, description, image_url, video_url, status')
                           .eq('id', item.content_id)
-                          .eq('is_active', true)
-                          .is('deleted_at', null)
                           .maybeSingle();
                         contentDetails = articleData;
                         console.log('Article data loaded:', { item: item.content_id, data: articleData });
