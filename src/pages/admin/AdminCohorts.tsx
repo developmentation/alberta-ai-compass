@@ -474,6 +474,7 @@ export function AdminCohorts() {
           onSave={handleSaveCohort}
           initialData={getInitialData(editingCohort)}
           isEditing={!!editingCohort}
+          cohortId={editingCohort?.id}
         />
       </div>
     </AdminLayout>

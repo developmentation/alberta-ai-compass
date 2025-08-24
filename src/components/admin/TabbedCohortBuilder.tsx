@@ -8,10 +8,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Settings, Layout, Save, X, Plus, Edit2, Trash2, GripVertical } from 'lucide-react';
+import { Calendar, Settings, Layout, Save, X, Plus, Edit2, Trash2, GripVertical, Users } from 'lucide-react';
 import { UnifiedMediaUpload } from './UnifiedMediaUpload';
 import { EnhancedContentBuilder, type EnhancedContentItem } from './EnhancedContentBuilder';
 import { MediaDisplay } from './MediaDisplay';
+import { CohortMemberManager } from './CohortMemberManager';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 interface CohortDay {
@@ -40,6 +41,7 @@ interface TabbedCohortBuilderProps {
   onSave: (data: CohortFormData) => void;
   initialData?: Partial<CohortFormData>;
   isEditing?: boolean;
+  cohortId?: string;
 }
 
 export function TabbedCohortBuilder({ 
@@ -47,7 +49,8 @@ export function TabbedCohortBuilder({
   onClose, 
   onSave, 
   initialData,
-  isEditing = false 
+  isEditing = false,
+  cohortId 
 }: TabbedCohortBuilderProps) {
   const [formData, setFormData] = useState<CohortFormData>({
     name: "",
@@ -161,7 +164,7 @@ export function TabbedCohortBuilder({
         </DialogHeader>
         
         <Tabs defaultValue="basic" className="flex-1 flex flex-col overflow-hidden">
-          <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
+          <TabsList className="grid w-full grid-cols-4 flex-shrink-0">
             <TabsTrigger value="basic" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
               Basic Details
@@ -170,6 +173,10 @@ export function TabbedCohortBuilder({
               <Layout className="h-4 w-4" />
               Schedule Builder
               <Badge className="ml-1 text-xs">{formData.days.length}</Badge>
+            </TabsTrigger>
+            <TabsTrigger value="members" className="flex items-center gap-2" disabled={!isEditing}>
+              <Users className="h-4 w-4" />
+              Members
             </TabsTrigger>
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
@@ -370,6 +377,27 @@ export function TabbedCohortBuilder({
                         )}
                       </Droppable>
                     </DragDropContext>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="members" className="space-y-4 p-1">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Cohort Members</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Manage who can access this cohort
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  {isEditing && cohortId ? (
+                    <CohortMemberManager cohortId={cohortId} />
+                  ) : (
+                    <div className="text-center py-8">
+                      <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground mb-4">Save the cohort first to manage members</p>
+                    </div>
                   )}
                 </CardContent>
               </Card>

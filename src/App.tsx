@@ -16,6 +16,7 @@ import AIMentor from "./pages/AIMentor";
 import MyLearning from "./pages/MyLearning";
 import Cohorts from "./pages/Cohorts";
 import Plan from "./pages/Plan";
+import CohortDetail from "./pages/CohortDetail";
 import Privacy from "./pages/Privacy";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
@@ -52,6 +53,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/my-learning" element={<MyLearning />} />
             <Route path="/cohorts" element={<Cohorts />} />
+            <Route path="/cohort/:id" element={<CohortDetail />} />
             <Route path="/admin" element={<ProtectedRoute requireFacilitator><Admin /></ProtectedRoute>} />
             <Route path="/admin/news" element={<ProtectedRoute requireFacilitator><AdminNews /></ProtectedRoute>} />
             <Route path="/admin/users" element={<ProtectedRoute requireAdmin><AdminUsers /></ProtectedRoute>} />
