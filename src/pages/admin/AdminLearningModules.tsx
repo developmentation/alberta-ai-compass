@@ -121,6 +121,8 @@ export default function AdminLearningModules() {
   const handleSaveModule = async (updatedData: any) => {
     if (!editingModule) return;
 
+    console.log('handleSaveModule called with:', updatedData);
+
     try {
       const { error } = await supabase
         .from('modules')

@@ -236,10 +236,13 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
             <label className="text-sm font-medium mb-2 block">Module Media</label>
             <UnifiedMediaUpload
               onMediaUpload={(url, type) => {
+                console.log('UnifiedMediaUpload callback:', { url, type });
                 if (type === 'image') {
+                  console.log('Setting imageUrl to:', url);
                   setImageUrl(url);
                   if (url) setVideoUrl('');
                 } else {
+                  console.log('Setting videoUrl to:', url);
                   setVideoUrl(url);
                   if (url) setImageUrl('');
                 }
@@ -624,6 +627,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
         imageUrl,
         videoUrl
       };
+      console.log('Saving module with data:', { updatedData, imageUrl, videoUrl, editingData });
       onSave(updatedData);
       toast({
         title: "Success",
