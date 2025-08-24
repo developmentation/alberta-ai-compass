@@ -40,6 +40,10 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 238 91% 65%;
     
+    /* Popover/Dropdown backgrounds */
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    
     /* Glass effects */
     --glass-bg: 0 0% 100% / 0.6;
     --glass-border: 0 0% 0% / 0.1;
@@ -93,6 +97,10 @@
     --border: 240 3.7% 15.9%;
     --input: 240 6% 8%;
     --ring: 238 91% 65%;
+    
+    /* Popover/Dropdown backgrounds */
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
     
     /* Glass effects */
     --glass-bg: 240 10% 3.9% / 0.6;
