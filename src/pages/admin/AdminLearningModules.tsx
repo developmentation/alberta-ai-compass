@@ -92,15 +92,22 @@ export default function AdminLearningModules() {
   };
 
   const convertModuleToViewerData = (module: Module) => {
+    // Ensure json_data is parsed if it's a string
+    const jsonData = typeof module.json_data === 'string' 
+      ? JSON.parse(module.json_data) 
+      : module.json_data;
+      
+    console.log('Converting module data:', { module, jsonData });
+    
     return {
       id: module.id,
-      title: module.name || 'Untitled Module',
-      description: module.description || '',
+      title: module.name || jsonData?.title || 'Untitled Module',
+      description: module.description || jsonData?.description || '',
       level: module.level, // Keep the original level value
-      duration: module.json_data?.duration || 30, // Use actual duration from json_data
-      learningOutcomes: module.json_data?.learningOutcomes || [],
-      tags: module.json_data?.tags || [],
-      sections: module.json_data?.sections || [],
+      duration: jsonData?.duration || 30, // Use actual duration from json_data
+      learningOutcomes: jsonData?.learningOutcomes || [],
+      tags: jsonData?.tags || [],
+      sections: jsonData?.sections || [],
       imageUrl: module.image_url || '',
       videoUrl: module.video_url || ''
     };
