@@ -72,6 +72,7 @@ export default function MyLearning() {
               .from('prompt_library')
               .select('*')
               .eq('id', item.id)
+              .is('deleted_at', null)
               .single();
             contentData = promptData;
             break;
@@ -370,19 +371,9 @@ export default function MyLearning() {
       </Dialog>
 
       {/* Prompt Viewer - Uses its own modal */}
-      {selectedContent && viewerType === 'prompt_library' && selectedContent.purpose && (
+      {selectedContent && viewerType === 'prompt_library' && (
         <PromptViewer
-          prompt={{
-            id: selectedContent.id,
-            name: selectedContent.title,
-            description: selectedContent.description,
-            purpose: selectedContent.purpose,
-            sample_output: selectedContent.sample_output,
-            stars: selectedContent.stars || 0,
-            sector_tags: selectedContent.sector_tags,
-            image_url: selectedContent.image_url,
-            status: selectedContent.status
-          }}
+          prompt={selectedContent}
           open={isViewerOpen}
           onOpenChange={(open) => {
             setIsViewerOpen(open);

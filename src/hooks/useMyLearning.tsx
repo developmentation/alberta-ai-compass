@@ -21,12 +21,6 @@ export interface ContentItem {
   rating?: number;
   completed_at?: string;
   bookmarked_at?: string;
-  // Additional fields for prompts
-  purpose?: string;
-  sample_output?: string;
-  stars?: number;
-  sector_tags?: any;
-  status?: string;
 }
 
 export function useMyLearning() {
@@ -187,7 +181,7 @@ export function useMyLearning() {
           case 'prompt_library':
             const promptRes = await supabase
               .from('prompt_library')
-              .select('id, name, description, purpose, sample_output, stars, sector_tags, image_url, status, created_at')
+              .select('id, name, description, image_url, created_at')
               .eq('id', item.content_id)
               .eq('status', 'published')
               .is('deleted_at', null)
@@ -199,7 +193,7 @@ export function useMyLearning() {
         }
 
         if (data) {
-            const result: ContentItem = {
+            return {
               id: data.id,
               title: data.title || data.name || '',
               description: data.description || '',
@@ -210,17 +204,6 @@ export function useMyLearning() {
               completed_at: item.completed_at || undefined,
               bookmarked_at: item.created_at || undefined
             };
-            
-            // Add prompt-specific fields if this is a prompt
-            if (item.content_type === 'prompt_library') {
-              result.purpose = data.purpose;
-              result.sample_output = data.sample_output;
-              result.stars = data.stars;
-              result.sector_tags = data.sector_tags;
-              result.status = data.status;
-            }
-            
-            return result;
         }
       } catch (error) {
         console.error(`Error fetching ${item.content_type}:`, error);
