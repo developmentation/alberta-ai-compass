@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 
 interface ContentItem {
   id: string;
-  type: 'modules' | 'news' | 'tools' | 'prompts' | 'learning_plans';
+  type: string; // Allow any string to handle different type formats
   name?: string;
   title?: string;
 }
@@ -29,11 +29,22 @@ export function UniversalContentOpener({ isOpen, onClose, content }: UniversalCo
   const fetchContentData = async (content: ContentItem) => {
     if (!content) return null;
 
+    console.log('📋 UniversalContentOpener: Fetching content data for:', content);
     setLoading(true);
     
     try {
-      switch (content.type) {
+      // Normalize content type to match database table patterns
+      const normalizedType = content.type === 'tools' ? 'tools' : 
+                           content.type === 'modules' ? 'modules' :
+                           content.type === 'news' ? 'news' :
+                           content.type === 'prompts' ? 'prompts' :
+                           content.type === 'learning_plans' ? 'learning_plans' : content.type;
+      
+      console.log('📋 UniversalContentOpener: Normalized type:', normalizedType);
+      
+      switch (normalizedType) {
         case 'modules':
+          console.log('📋 Fetching module data for ID:', content.id);
           const { data: moduleData } = await supabase
             .from('modules')
             .select('*')
@@ -87,6 +98,7 @@ export function UniversalContentOpener({ isOpen, onClose, content }: UniversalCo
           break;
           
         case 'tools':
+          console.log('📋 Fetching tool data for ID:', content.id);
           const { data: toolData } = await supabase
             .from('tools')
             .select('*')
@@ -94,10 +106,13 @@ export function UniversalContentOpener({ isOpen, onClose, content }: UniversalCo
             .maybeSingle();
           
           if (toolData) {
+            console.log('📋 Tool data fetched successfully:', toolData);
             return {
               type: 'tool',
               data: toolData
             };
+          } else {
+            console.log('❌ No tool data found for ID:', content.id);
           }
           break;
           
@@ -221,8 +236,11 @@ export function UniversalContentOpener({ isOpen, onClose, content }: UniversalCo
   };
 
   const handleOpenChange = async (open: boolean) => {
+    console.log('📋 UniversalContentOpener: Modal open change:', open, 'content:', content);
     if (open && content && !viewerData) {
+      console.log('📋 UniversalContentOpener: Fetching data for content:', content);
       const data = await fetchContentData(content);
+      console.log('📋 UniversalContentOpener: Fetched data:', data);
       setViewerData(data);
     } else if (!open) {
       onClose();
@@ -250,6 +268,9 @@ export function UniversalContentOpener({ isOpen, onClose, content }: UniversalCo
   };
 
   const renderViewer = () => {
+    console.log('📺 UniversalContentOpener: Rendering viewer with data:', viewerData);
+    console.log('📺 UniversalContentOpener: Loading state:', loading);
+    
     if (loading) {
       return (
         <div className="flex items-center justify-center py-16">
@@ -259,16 +280,29 @@ export function UniversalContentOpener({ isOpen, onClose, content }: UniversalCo
       );
     }
 
-    if (!viewerData) return null;
+    if (!viewerData) {
+      console.log('❌ UniversalContentOpener: No viewer data available');
+      return (
+        <div className="flex items-center justify-center py-16">
+          <span className="text-muted-foreground">No content data available</span>
+        </div>
+      );
+    }
+
+    console.log('🎬 UniversalContentOpener: Rendering viewer for type:', viewerData.type);
 
     switch (viewerData.type) {
       case 'news':
+        console.log('📰 Rendering NewsViewer with data:', viewerData.data);
         return <NewsViewer news={viewerData.data} onClose={onClose} />;
       case 'tool':
+        console.log('🔧 Rendering ToolViewer with data:', viewerData.data);
         return <ToolViewer tool={viewerData.data} onClose={onClose} />;
       case 'module':
+        console.log('📚 Rendering ModuleViewer with data:', viewerData.data);
         return <ModuleViewer {...viewerData.data} onClose={onClose} />;
       case 'prompt':
+        console.log('📝 Rendering PromptViewer with data:', viewerData.data);
         return (
           <PromptViewer 
             prompt={viewerData.data} 
@@ -279,6 +313,7 @@ export function UniversalContentOpener({ isOpen, onClose, content }: UniversalCo
           </PromptViewer>
         );
       case 'learning_plan':
+        console.log('🎓 Rendering LearningPlanViewer with data:', viewerData.data);
         return (
           <div className="p-6">
             <h2 className="text-2xl font-bold mb-4">{viewerData.data.planName}</h2>
@@ -290,7 +325,16 @@ export function UniversalContentOpener({ isOpen, onClose, content }: UniversalCo
           </div>
         );
       default:
-        return <div className="p-6">Unknown content type</div>;
+        console.log('❓ Unknown content type:', viewerData.type);
+        return (
+          <div className="p-6">
+            <h3 className="text-lg font-semibold mb-2">Unknown Content Type</h3>
+            <p className="text-muted-foreground">Content type "{viewerData.type}" is not supported.</p>
+            <pre className="mt-4 p-4 bg-muted rounded text-xs overflow-auto">
+              {JSON.stringify(viewerData, null, 2)}
+            </pre>
+          </div>
+        );
     }
   };
 
