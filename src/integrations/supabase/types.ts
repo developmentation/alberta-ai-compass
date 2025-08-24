@@ -195,6 +195,47 @@ export type Database = {
           },
         ]
       }
+      cohort_discussions: {
+        Row: {
+          cohort_id: string
+          created_at: string
+          deleted_at: string | null
+          id: string
+          message: string
+          parent_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cohort_id: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          message: string
+          parent_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cohort_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          message?: string
+          parent_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohort_discussions_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "cohort_discussions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cohort_members: {
         Row: {
           cohort_id: string
