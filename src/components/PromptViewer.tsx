@@ -6,8 +6,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Copy, Star, X, Lightbulb, Target, Eye, Play, Loader2 } from 'lucide-react';
+import { Copy, Star, X, Lightbulb, Target, Eye, Play, Loader2, Bookmark, BookmarkCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useBookmarks } from '@/hooks/useBookmarks';
+import { useRatings } from '@/hooks/useRatings';
 import { supabase } from '@/integrations/supabase/client';
 import ReactMarkdown from 'react-markdown';
 
@@ -37,6 +39,8 @@ export function PromptViewer({ prompt, children, open, onOpenChange }: PromptVie
   const [userInput, setUserInput] = useState<string>('');
   const [internalOpen, setInternalOpen] = useState(false);
   const { toast } = useToast();
+  const { isBookmarked, toggleBookmark } = useBookmarks(prompt.id, 'prompt_library');
+  const { userRating, aggregatedRating, submitRating } = useRatings(prompt.id, 'prompt_library');
 
   const isOpen = open !== undefined ? open : internalOpen;
   const setIsOpen = onOpenChange || setInternalOpen;
@@ -87,17 +91,6 @@ export function PromptViewer({ prompt, children, open, onOpenChange }: PromptVie
     }
   };
 
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`w-4 h-4 ${
-          i < rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'
-        }`}
-      />
-    ));
-  };
-
   const sectorTags = Array.isArray(prompt.sector_tags) ? prompt.sector_tags : [];
 
   return (
@@ -108,26 +101,62 @@ export function PromptViewer({ prompt, children, open, onOpenChange }: PromptVie
       <DialogContent className="w-[90vw] h-[90vh] max-w-none max-h-none p-0 overflow-hidden">
         <div className="flex flex-col h-full overflow-hidden">
           <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
-            <DialogTitle className="flex items-center gap-3 text-2xl">
-              {prompt.name}
-              {prompt.stars && prompt.stars > 0 && (
-                <div className="flex items-center gap-1">
-                  <div className="flex">{renderStars(prompt.stars)}</div>
-                  <span className="text-sm text-muted-foreground">
-                    {prompt.stars}/5
-                  </span>
+            <div className="space-y-4">
+              <DialogTitle className="text-2xl">
+                {prompt.name}
+              </DialogTitle>
+              
+              {sectorTags.length > 0 && (
+                <div className="flex gap-2 flex-wrap">
+                  {sectorTags.map((tag: string, index: number) => (
+                    <Badge key={index} variant="outline" className="text-xs">
+                      {tag}
+                    </Badge>
+                  ))}
                 </div>
               )}
-            </DialogTitle>
-            {sectorTags.length > 0 && (
-              <div className="flex gap-2 flex-wrap mt-2">
-                {sectorTags.map((tag: string, index: number) => (
-                  <Badge key={index} variant="outline" className="text-xs">
-                    {tag}
-                  </Badge>
-                ))}
+
+              {/* Rating and bookmark section */}
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        onClick={() => submitRating(star)}
+                        className="p-1 hover:scale-110 transition-transform"
+                      >
+                        <Star 
+                          className={`w-4 h-4 ${
+                            star <= (userRating || 0)
+                              ? 'fill-yellow-400 text-yellow-400' 
+                              : 'text-muted-foreground'
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    {aggregatedRating?.average_rating?.toFixed(1) || '0.0'} 
+                    ({aggregatedRating?.total_votes || 0} votes)
+                  </span>
+                </div>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => toggleBookmark(prompt.id, 'prompt_library')}
+                  className="flex items-center gap-2"
+                >
+                  {isBookmarked ? (
+                    <BookmarkCheck className="w-4 h-4 fill-primary text-primary" />
+                  ) : (
+                    <Bookmark className="w-4 h-4" />
+                  )}
+                  {isBookmarked ? 'Bookmarked' : 'Bookmark'}
+                </Button>
               </div>
-            )}
+            </div>
           </DialogHeader>
 
           <div className="flex-1 min-h-0 overflow-hidden">
