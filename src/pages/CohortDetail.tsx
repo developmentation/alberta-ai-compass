@@ -314,7 +314,7 @@ export default function CohortDetail() {
             description: moduleData.description || jsonData?.description || '',
             level: moduleData.level || 'beginner',
             duration: jsonData?.duration || 30,
-            learningOutcomes: jsonData?.learningOutcomes || [],
+            learningOutcomes: jsonData?.learningOutcomes || jsonData?.learning_outcomes || [],
             tags: jsonData?.tags || [],
             sections: jsonData?.sections || [],
             imageUrl: moduleData.image_url || '',
@@ -322,8 +322,19 @@ export default function CohortDetail() {
           };
           
           console.log('Setting module viewer data:', moduleViewerData);
+          console.log('Before setting states - selectedViewer:', selectedViewer);
+          console.log('Before setting states - selectedContent:', selectedContent);
+          
           setSelectedContent(moduleViewerData);
           setSelectedViewer(content.type);
+          
+          console.log('After setting states - selectedViewer should be:', content.type);
+          
+          // Add a small delay and check the states
+          setTimeout(() => {
+            console.log('States after delay - selectedViewer:', selectedViewer);
+            console.log('States after delay - selectedContent:', selectedContent);
+          }, 100);
         }
       } catch (error) {
         console.error('Error loading module data:', error);
