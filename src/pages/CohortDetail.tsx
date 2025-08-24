@@ -283,10 +283,48 @@ export default function CohortDetail() {
     }
   };
 
-  const handleContentClick = (content: ContentItem) => {
+  const handleContentClick = async (content: ContentItem) => {
     if (content.type === 'learning_plan') {
       // Navigate to the learning plan
       window.location.href = `/plan/${content.id}`;
+    } else if (content.type === 'module' || content.type === 'learning_module') {
+      try {
+        // Fetch full module data including json_data for ModuleViewer
+        const { data: moduleData } = await supabase
+          .from('modules')
+          .select('*')
+          .eq('id', content.id)
+          .maybeSingle();
+        
+        if (moduleData) {
+          // Parse json_data if it's a string
+          const jsonData = typeof moduleData.json_data === 'string' 
+            ? JSON.parse(moduleData.json_data) 
+            : moduleData.json_data;
+            
+          const viewerData = {
+            moduleData: {
+              id: moduleData.id,
+              title: moduleData.name || jsonData?.title || 'Untitled Module',
+              description: moduleData.description || jsonData?.description || '',
+              level: moduleData.level,
+              duration: jsonData?.duration || 30,
+              learningOutcomes: jsonData?.learningOutcomes || [],
+              tags: jsonData?.tags || [],
+              sections: jsonData?.sections || [],
+              imageUrl: moduleData.image_url || '',
+              videoUrl: moduleData.video_url || ''
+            },
+            isAdminMode: false,
+            isEditable: false
+          };
+          
+          setSelectedContent(viewerData);
+          setSelectedViewer(content.type);
+        }
+      } catch (error) {
+        console.error('Error loading module data:', error);
+      }
     } else {
       setSelectedContent(content.content_data);
       setSelectedViewer(content.type);
