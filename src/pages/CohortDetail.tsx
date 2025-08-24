@@ -657,10 +657,18 @@ export default function CohortDetail() {
         />
       )}
       {selectedViewer === 'article' && selectedContent && (
-        <ArticleViewer 
-          article={selectedContent} 
-          onClose={handleCloseViewer}
-        />
+        <Dialog open={!!selectedContent && selectedViewer === 'article'} onOpenChange={(open) => {
+          if (!open) {
+            handleCloseViewer();
+          }
+        }}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <ArticleViewer 
+              article={selectedContent} 
+              onClose={handleCloseViewer}
+            />
+          </DialogContent>
+        </Dialog>
       )}
       {selectedViewer === 'tool' && selectedContent && (
         <ToolViewer 
