@@ -133,11 +133,11 @@ export function PromptViewer({ prompt, children, open, onOpenChange }: PromptVie
           <div className="flex-1 overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
               {/* Left Column - Split into Purpose (top) and Description (bottom) */}
-              <div className="flex flex-col h-full border-r border-border">
+              <div className="flex flex-col border-r border-border" style={{ height: '100%' }}>
                 {/* Top Half - Purpose and Image */}
-                <div className="h-1/2 flex flex-col border-b border-border">
-                  <ScrollArea className="flex-1 p-6">
-                    <div className="space-y-4">
+                <div className="border-b border-border" style={{ height: '50%', minHeight: 0 }}>
+                  <ScrollArea className="h-full">
+                    <div className="p-6 space-y-4">
                       {/* Image */}
                       {prompt.image_url && (
                         <div className="aspect-video rounded-lg overflow-hidden bg-muted max-h-32">
@@ -178,9 +178,9 @@ export function PromptViewer({ prompt, children, open, onOpenChange }: PromptVie
                 </div>
 
                 {/* Bottom Half - Description and Controls */}
-                <div className="h-1/2 flex flex-col">
-                  <ScrollArea className="flex-1 p-6">
-                    <div className="space-y-4">
+                <div style={{ height: '50%', minHeight: 0 }}>
+                  <ScrollArea className="h-full">
+                    <div className="p-6 space-y-4">
                       {/* Description */}
                       <Card>
                         <CardHeader className="pb-3">
@@ -270,10 +270,10 @@ export function PromptViewer({ prompt, children, open, onOpenChange }: PromptVie
               </div>
 
               {/* Right Column - AI Response */}
-              <div className="flex flex-col h-full">
+              <div className="flex flex-col" style={{ height: '100%' }}>
                 {executionResult ? (
                   <div className="flex flex-col h-full p-6">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center justify-between mb-4 flex-shrink-0">
                       <div className="flex items-center gap-2">
                         <Play className="w-5 h-5" />
                         <h3 className="text-lg font-semibold">AI Response</h3>
@@ -287,7 +287,7 @@ export function PromptViewer({ prompt, children, open, onOpenChange }: PromptVie
                         {copiedField === 'AI Response' ? 'Copied!' : 'Copy Response'}
                       </Button>
                     </div>
-                    <div className="flex-1 bg-gradient-to-br from-primary/5 to-accent/5 p-4 rounded-lg border overflow-hidden">
+                    <div className="flex-1 bg-gradient-to-br from-primary/5 to-accent/5 p-4 rounded-lg border min-h-0">
                       <ScrollArea className="h-full w-full">
                         <div className="prose prose-sm max-w-none dark:prose-invert pr-4">
                           <ReactMarkdown>{executionResult}</ReactMarkdown>
