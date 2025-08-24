@@ -42,35 +42,33 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-8">
+            <nav className="hidden lg:flex items-center gap-8">
               <Link to="/news" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 News
-              </Link>
-              <Link to="/learning-hub" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Learning Hub
               </Link>
               <Link to="/tools" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Tools
               </Link>
+              <Link to="/learning-hub" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Plans
+              </Link>
+              {user && (
+                <Link to="/my-learning" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  My Learning
+                </Link>
+              )}
+              {user && isInAnyCohort && (
+                <Link to="/cohorts" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Cohorts
+                </Link>
+              )}
               <Link to="/ai-mentor" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 AI Mentor
               </Link>
-              {user && (
-                <>
-                  <Link to="/my-learning" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    My Learning
-                  </Link>
-                  {isInAnyCohort && (
-                    <Link to="/cohorts" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                      Cohorts
-                    </Link>
-                  )}
-                </>
-              )}
             </nav>
 
             {/* Desktop Actions */}
-            <div className="hidden md:flex items-center gap-3">
+            <div className="hidden lg:flex items-center gap-3">
               <ThemeToggle />
               {user ? (
                 <>
@@ -116,7 +114,7 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
             </div>
 
             {/* Mobile Actions */}
-            <div className="flex md:hidden items-center gap-3">
+            <div className="flex lg:hidden items-center gap-3">
               <ThemeToggle />
               <Button
                 variant="ghost"
@@ -133,7 +131,7 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-40 md:hidden">
+        <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-black/50" onClick={() => setIsMobileMenuOpen(false)} />
           <div className="absolute top-16 left-0 right-0 bg-background border-b border-border shadow-lg">
             <nav className="px-4 py-6 space-y-4">
@@ -145,13 +143,6 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
                 News
               </Link>
               <Link 
-                to="/learning-hub" 
-                className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Learning Hub
-              </Link>
-              <Link 
                 to="/tools" 
                 className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -159,11 +150,11 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
                 Tools
               </Link>
               <Link 
-                to="/ai-mentor" 
+                to="/learning-hub" 
                 className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                AI Mentor
+                Plans
               </Link>
               
               {user && (
@@ -186,6 +177,14 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
                   )}
                 </>
               )}
+              
+              <Link 
+                to="/ai-mentor" 
+                className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                AI Mentor
+              </Link>
               
               <div className="pt-4 border-t border-border space-y-3">
                 {user ? (
