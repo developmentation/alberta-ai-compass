@@ -27,6 +27,54 @@ export function useCohortDiscussions(cohortId?: string) {
   useEffect(() => {
     if (cohortId) {
       fetchDiscussions();
+      
+      // Set up real-time subscription for new messages
+      const channel = supabase
+        .channel('cohort-discussions-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'cohort_discussions',
+            filter: `cohort_id=eq.${cohortId}`
+          },
+          (payload) => {
+            console.log('New discussion message:', payload);
+            fetchDiscussions(); // Refetch to get complete data with user profiles
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'cohort_discussions',
+            filter: `cohort_id=eq.${cohortId}`
+          },
+          (payload) => {
+            console.log('Updated discussion message:', payload);
+            fetchDiscussions(); // Refetch to get updated data
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'DELETE',
+            schema: 'public',
+            table: 'cohort_discussions',
+            filter: `cohort_id=eq.${cohortId}`
+          },
+          (payload) => {
+            console.log('Deleted discussion message:', payload);
+            fetchDiscussions(); // Refetch to remove deleted items
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [cohortId]);
 
