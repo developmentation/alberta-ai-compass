@@ -37,17 +37,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Fetch profile data for authenticated user
   const fetchProfile = async (userId: string): Promise<Profile | null> => {
     try {
+      console.log('Fetching profile for user:', userId);
+      
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .maybeSingle();
+        .single();
       
       if (error) {
         console.error('Error fetching profile:', error);
         return null;
       }
 
+      console.log('Profile fetched successfully:', profile?.role);
       return profile;
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -75,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       async (event, session) => {
         if (!mounted) return;
         
-        console.log('Auth state changed:', event, !!session);
+        console.log('Auth state changed:', event, !!session?.user);
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -86,17 +89,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        // Handle authenticated user - fetch profile
+        // Handle authenticated user - fetch profile with timeout
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+        );
+        
         try {
           setLoading(true);
-          const profile = await fetchProfile(session.user.id);
+          console.log('Fetching profile for authenticated user...');
+          
+          const profile = await Promise.race([
+            fetchProfile(session.user.id),
+            timeoutPromise
+          ]) as Profile | null;
           
           if (mounted) {
             setProfile(profile);
+            console.log('Profile set:', profile?.role);
             
             // Update last login on sign in
             if (event === 'SIGNED_IN' && profile) {
-              await updateLastLogin(session.user.id);
+              updateLastLogin(session.user.id).catch(console.error);
             }
           }
         } catch (error) {
@@ -106,6 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         } finally {
           if (mounted) {
+            console.log('Setting loading to false');
             setLoading(false);
           }
         }
