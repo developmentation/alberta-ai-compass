@@ -114,6 +114,11 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
   const [hasStartedModule, setHasStartedModule] = useState(false);
   const [hasBegunModule, setHasBegunModule] = useState(false); // New state for tracking if user clicked Begin
   const [activeTab, setActiveTab] = useState("info"); // State for tab management
+  
+  // Separate state variables for media URLs - exactly like ModuleCreator
+  const [imageUrl, setImageUrl] = useState(moduleData.imageUrl || '');
+  const [videoUrl, setVideoUrl] = useState(moduleData.videoUrl || '');
+  
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -130,6 +135,10 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
       })) || []
     };
     setEditingData(normalizedData);
+    
+    // Update media URLs when moduleData changes
+    setImageUrl(moduleData.imageUrl || '');
+    setVideoUrl(moduleData.videoUrl || '');
   }, [moduleData]);
 
   // Track module start when component mounts and user is logged in
@@ -228,13 +237,15 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
             <UnifiedMediaUpload
               onMediaUpload={(url, type) => {
                 if (type === 'image') {
-                  setEditingData({ ...editingData, imageUrl: url, videoUrl: url ? '' : editingData.videoUrl });
+                  setImageUrl(url);
+                  if (url) setVideoUrl('');
                 } else {
-                  setEditingData({ ...editingData, videoUrl: url, imageUrl: url ? '' : editingData.imageUrl });
+                  setVideoUrl(url);
+                  if (url) setImageUrl('');
                 }
               }}
-              currentImageUrl={editingData.imageUrl || ''}
-              currentVideoUrl={editingData.videoUrl || ''}
+              currentImageUrl={imageUrl}
+              currentVideoUrl={videoUrl}
               bucketName="module-assets"
               allowAiGeneration={true}
             />
@@ -336,18 +347,18 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
         <>
           {/* Hero Section with Media */}
           <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-primary/5 to-muted border border-border">
-            {editingData.videoUrl || editingData.imageUrl ? (
+            {editingData.videoUrl || editingData.imageUrl || videoUrl || imageUrl ? (
               <div className="relative h-64 sm:h-80">
-                {editingData.videoUrl ? (
+                {editingData.videoUrl || videoUrl ? (
                   <video
-                    src={editingData.videoUrl}
+                    src={editingData.videoUrl || videoUrl}
                     className="w-full h-full object-cover"
                     controls
-                    poster={editingData.imageUrl}
+                    poster={editingData.imageUrl || imageUrl}
                   />
                 ) : (
                   <img
-                    src={editingData.imageUrl}
+                    src={editingData.imageUrl || imageUrl}
                     alt={editingData.title}
                     className="w-full h-full object-cover"
                   />
@@ -607,7 +618,13 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
 
   const handleSaveChanges = () => {
     if (onSave) {
-      onSave(editingData);
+      // Include the separate media URLs in the saved data
+      const updatedData = {
+        ...editingData,
+        imageUrl,
+        videoUrl
+      };
+      onSave(updatedData);
       toast({
         title: "Success",
         description: "Module updated successfully",
