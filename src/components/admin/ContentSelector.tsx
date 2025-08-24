@@ -46,11 +46,13 @@ export function ContentSelector({ isOpen, onClose, onSelect, selectedIds = [] }:
 
       // Fetch modules
       if (contentType === 'all' || contentType === 'module') {
-        const { data: modules } = await supabase
+        const { data: modules, error: modulesError } = await supabase
           .from('modules')
           .select('id, name, description, status, image_url, video_url')
           .in('status', ['published', 'draft', 'review'])
           .is('deleted_at', null);
+        
+        console.log('Modules fetch result:', { modules, modulesError });
         
         if (modules) {
           items.push(...modules.map((m: any) => ({ ...m, type: 'module' as const })));
@@ -59,12 +61,14 @@ export function ContentSelector({ isOpen, onClose, onSelect, selectedIds = [] }:
 
       // Fetch news
       if (contentType === 'all' || contentType === 'news') {
-        const { data: news } = await supabase
+        const { data: news, error: newsError } = await supabase
           .from('news')
           .select('id, title as name, description, status, image_url, video_url')
           .in('status', ['published', 'draft', 'review'])
           .eq('is_active', true)
           .is('deleted_at', null);
+        
+        console.log('News fetch result:', { news, newsError });
         
         if (news) {
           items.push(...news.map((n: any) => ({ ...n, type: 'news' as const })));
@@ -73,11 +77,13 @@ export function ContentSelector({ isOpen, onClose, onSelect, selectedIds = [] }:
 
       // Fetch tools
       if (contentType === 'all' || contentType === 'tool') {
-        const { data: tools } = await supabase
+        const { data: tools, error: toolsError } = await supabase
           .from('tools')
           .select('id, name, description, status, image_url, video_url')
           .in('status', ['published', 'draft', 'review'])
           .is('deleted_at', null);
+        
+        console.log('Tools fetch result:', { tools, toolsError });
         
         if (tools) {
           items.push(...tools.map((t: any) => ({ ...t, type: 'tool' as const })));
@@ -86,11 +92,13 @@ export function ContentSelector({ isOpen, onClose, onSelect, selectedIds = [] }:
 
       // Fetch prompts
       if (contentType === 'all' || contentType === 'prompt') {
-        const { data: prompts } = await supabase
+        const { data: prompts, error: promptsError } = await supabase
           .from('prompt_library')
           .select('id, name, description, status, image_url')
           .in('status', ['published', 'draft', 'review'])
           .is('deleted_at', null);
+        
+        console.log('Prompts fetch result:', { prompts, promptsError });
         
         if (prompts) {
           items.push(...prompts.map((p: any) => ({ ...p, type: 'prompt' as const })));
@@ -99,17 +107,25 @@ export function ContentSelector({ isOpen, onClose, onSelect, selectedIds = [] }:
 
       // Fetch learning plans
       if (contentType === 'all' || contentType === 'learning_plan') {
-        const { data: plans } = await supabase
+        const { data: plans, error: plansError } = await supabase
           .from('learning_plans')
           .select('id, name, description, status, image_url, video_url')
           .in('status', ['published', 'draft', 'review'])
           .is('deleted_at', null);
+        
+        console.log('Learning plans fetch result:', { plans, plansError });
         
         if (plans) {
           items.push(...plans.map((p: any) => ({ ...p, type: 'learning_plan' as const })));
         }
       }
 
+      console.log('Final items array:', items);
+      console.log('Items by type:', items.reduce((acc, item) => {
+        acc[item.type] = (acc[item.type] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>));
+      
       setContentItems(items);
     } catch (error) {
       console.error('Error fetching content:', error);
