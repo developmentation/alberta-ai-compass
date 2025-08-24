@@ -136,10 +136,10 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
     };
     setEditingData(normalizedData);
     
-    // Update media URLs when moduleData changes
+    // Only update media URLs when switching to a different module (not on re-renders)
     setImageUrl(moduleData.imageUrl || '');
     setVideoUrl(moduleData.videoUrl || '');
-  }, [moduleData]);
+  }, [moduleData?.id]); // Only trigger when module ID changes
 
   // Track module start when component mounts and user is logged in
   useEffect(() => {
