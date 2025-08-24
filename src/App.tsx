@@ -13,6 +13,9 @@ import News from "./pages/News";
 import LearningHub from "./pages/LearningHub";
 import Tools from "./pages/Tools";
 import AIMentor from "./pages/AIMentor";
+import MyLearning from "./pages/MyLearning";
+import Cohorts from "./pages/Cohorts";
+import Plan from "./pages/Plan";
 import Privacy from "./pages/Privacy";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
@@ -25,7 +28,6 @@ import AdminLearningModules from "./pages/admin/AdminLearningModules";
 import { AdminCohorts } from "./pages/admin/AdminCohorts";
 import AdminSystemSetup from "./pages/admin/AdminSystemSetup";
 import { AdminProfile } from "./pages/admin/AdminProfile";
-import Plan from "./pages/Plan";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
@@ -48,6 +50,8 @@ const App = () => (
             <Route path="/ai-mentor" element={<AIMentor />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/my-learning" element={<MyLearning />} />
+            <Route path="/cohorts" element={<Cohorts />} />
             <Route path="/admin" element={<ProtectedRoute requireFacilitator><Admin /></ProtectedRoute>} />
             <Route path="/admin/news" element={<ProtectedRoute requireFacilitator><AdminNews /></ProtectedRoute>} />
             <Route path="/admin/users" element={<ProtectedRoute requireAdmin><AdminUsers /></ProtectedRoute>} />

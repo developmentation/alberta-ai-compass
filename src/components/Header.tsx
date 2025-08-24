@@ -1,9 +1,10 @@
+import { useAuth } from '@/hooks/useAuth';
+import { useCohortMembership } from '@/hooks/useCohortMembership';
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Sparkles, LogIn, Menu, X, Settings, LogOut, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +21,7 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, profile, signOut, isAdmin, isFacilitator } = useAuth();
+  const { isInAnyCohort } = useCohortMembership();
 
   return (
     <>
@@ -53,6 +55,18 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
               <Link to="/ai-mentor" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 AI Mentor
               </Link>
+              {user && (
+                <>
+                  <Link to="/my-learning" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    My Learning
+                  </Link>
+                  {isInAnyCohort && (
+                    <Link to="/cohorts" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                      Cohorts
+                    </Link>
+                  )}
+                </>
+              )}
             </nav>
 
             {/* Desktop Actions */}
@@ -151,6 +165,27 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
               >
                 AI Mentor
               </Link>
+              
+              {user && (
+                <>
+                  <Link 
+                    to="/my-learning" 
+                    className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    My Learning
+                  </Link>
+                  {isInAnyCohort && (
+                    <Link 
+                      to="/cohorts" 
+                      className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Cohorts
+                    </Link>
+                  )}
+                </>
+              )}
               
               <div className="pt-4 border-t border-border space-y-3">
                 {user ? (

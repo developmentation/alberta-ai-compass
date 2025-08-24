@@ -195,6 +195,50 @@ export type Database = {
           },
         ]
       }
+      cohort_members: {
+        Row: {
+          cohort_id: string
+          created_at: string
+          email: string
+          enrolled_at: string
+          enrolled_by: string
+          id: string
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          cohort_id: string
+          created_at?: string
+          email: string
+          enrolled_at?: string
+          enrolled_by: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          cohort_id?: string
+          created_at?: string
+          email?: string
+          enrolled_at?: string
+          enrolled_by?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohort_members_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "cohorts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cohorts: {
         Row: {
           created_at: string | null
