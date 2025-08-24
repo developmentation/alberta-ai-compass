@@ -1,6 +1,6 @@
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -10,8 +10,18 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children, requireAdmin, requireFacilitator }: ProtectedRouteProps) {
   const { user, profile, loading } = useAuth();
+  const [timeoutReached, setTimeoutReached] = useState(false);
 
-  if (loading) {
+  // Set a timeout to prevent infinite loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setTimeoutReached(true);
+    }, 10000); // 10 second timeout
+
+    return () => clearTimeout(timeout);
+  }, []);
+
+  if (loading && !timeoutReached) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
@@ -22,7 +32,7 @@ export function ProtectedRoute({ children, requireAdmin, requireFacilitator }: P
     );
   }
 
-  if (!user) {
+  if (!user || timeoutReached) {
     return <Navigate to="/auth" replace />;
   }
 
