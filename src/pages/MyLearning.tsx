@@ -81,7 +81,11 @@ export default function MyLearning() {
         if (contentData) {
           setSelectedContent(contentData);
           setViewerType(item.type as 'news' | 'tool' | 'module' | 'prompt_library');
-          setIsViewerOpen(true);
+          // Only open the main dialog for non-prompt content
+          // Prompts handle their own modal
+          if (item.type !== 'prompt_library') {
+            setIsViewerOpen(true);
+          }
         }
       } catch (error) {
         console.error('Error fetching content details:', error);
@@ -374,9 +378,8 @@ export default function MyLearning() {
       {selectedContent && viewerType === 'prompt_library' && (
         <PromptViewer
           prompt={selectedContent}
-          open={isViewerOpen}
+          open={true}
           onOpenChange={(open) => {
-            setIsViewerOpen(open);
             if (!open) {
               handleCloseViewer();
             }
