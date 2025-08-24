@@ -192,6 +192,7 @@ export function AdminCohorts() {
   };
 
   const handleSaveCohort = async (formData: any) => {
+    console.log('AdminCohorts - handleSaveCohort formData:', formData);
     try {
       const cohortData = {
         name: formData.name,

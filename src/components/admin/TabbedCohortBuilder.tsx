@@ -74,6 +74,7 @@ export function TabbedCohortBuilder({
   }, [initialData]);
 
   const handleSubmit = () => {
+    console.log('TabbedCohortBuilder - handleSubmit formData:', formData);
     onSave(formData);
   };
 
