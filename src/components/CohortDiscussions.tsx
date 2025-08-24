@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +15,214 @@ interface CohortDiscussionsProps {
   cohortId: string;
   isActive?: boolean;
 }
+
+interface DiscussionItemProps {
+  discussion: CohortDiscussion;
+  isReply?: boolean;
+  user: any;
+  editingId: string | null;
+  editingMessage: string;
+  replyingTo: string | null;
+  replyMessage: string;
+  submitting: boolean;
+  onStartEditing: (discussion: CohortDiscussion) => void;
+  onCancelEditing: () => void;
+  onUpdateMessage: (discussionId: string) => void;
+  onDeleteMessage: (discussionId: string) => void;
+  onSetReplyingTo: (id: string | null) => void;
+  onSubmitReply: (parentId: string) => void;
+  onSetEditingMessage: (message: string) => void;
+  onSetReplyMessage: (message: string) => void;
+}
+
+const DiscussionItem = memo(({ 
+  discussion, 
+  isReply = false, 
+  user,
+  editingId,
+  editingMessage,
+  replyingTo,
+  replyMessage,
+  submitting,
+  onStartEditing,
+  onCancelEditing,
+  onUpdateMessage,
+  onDeleteMessage,
+  onSetReplyingTo,
+  onSubmitReply,
+  onSetEditingMessage,
+  onSetReplyMessage
+}: DiscussionItemProps) => {
+  const getUserDisplayName = (discussion: CohortDiscussion) => {
+    if (discussion.user?.full_name) {
+      return discussion.user.full_name;
+    }
+    if (discussion.user?.email) {
+      return discussion.user.email.split('@')[0];
+    }
+    return 'Unknown User';
+  };
+
+  const getUserInitials = (discussion: CohortDiscussion) => {
+    const displayName = getUserDisplayName(discussion);
+    return displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  const isOwner = (discussion: CohortDiscussion) => {
+    return user?.id === discussion.user_id;
+  };
+
+  return (
+    <div className={`space-y-3 ${isReply ? 'ml-8 pl-4 border-l-2 border-muted' : ''}`}>
+      <div className="flex gap-3">
+        <Avatar className="w-8 h-8">
+          <AvatarFallback className="text-xs">
+            {getUserInitials(discussion)}
+          </AvatarFallback>
+        </Avatar>
+        
+        <div className="flex-1 space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-sm">{getUserDisplayName(discussion)}</span>
+            <span className="text-xs text-muted-foreground">
+              {formatDistanceToNow(new Date(discussion.created_at), { addSuffix: true })}
+            </span>
+            {discussion.updated_at !== discussion.created_at && (
+              <Badge variant="outline" className="text-xs">edited</Badge>
+            )}
+          </div>
+          
+          {editingId === discussion.id ? (
+            <div className="space-y-2">
+              <Textarea
+                value={editingMessage}
+                onChange={(e) => onSetEditingMessage(e.target.value)}
+                placeholder="Edit your message..."
+                rows={3}
+                autoFocus
+              />
+              <div className="flex gap-2">
+                <Button 
+                  size="sm" 
+                  onClick={() => onUpdateMessage(discussion.id)}
+                  disabled={!editingMessage.trim()}
+                >
+                  Save
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={onCancelEditing}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <p className="text-sm whitespace-pre-wrap">{discussion.message}</p>
+              
+              <div className="flex gap-2">
+                {!isReply && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => onSetReplyingTo(replyingTo === discussion.id ? null : discussion.id)}
+                    className="h-6 px-2 text-xs"
+                  >
+                    <Reply className="w-3 h-3 mr-1" />
+                    Reply
+                  </Button>
+                )}
+                
+                {isOwner(discussion) && (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => onStartEditing(discussion)}
+                      className="h-6 px-2 text-xs"
+                    >
+                      <Edit3 className="w-3 h-3 mr-1" />
+                      Edit
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => onDeleteMessage(discussion.id)}
+                      className="h-6 px-2 text-xs text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="w-3 h-3 mr-1" />
+                      Delete
+                    </Button>
+                  </>
+                )}
+              </div>
+            </>
+          )}
+          
+          {replyingTo === discussion.id && !isReply && (
+            <div className="space-y-2 pt-2 border-t">
+              <Textarea
+                value={replyMessage}
+                onChange={(e) => onSetReplyMessage(e.target.value)}
+                placeholder={`Reply to ${getUserDisplayName(discussion)}...`}
+                rows={3}
+                autoFocus
+              />
+              <div className="flex gap-2">
+                <Button 
+                  size="sm"
+                  onClick={() => onSubmitReply(discussion.id)}
+                  disabled={submitting || !replyMessage.trim()}
+                >
+                  <Send className="w-3 h-3 mr-1" />
+                  {submitting ? 'Posting...' : 'Post Reply'}
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => {
+                    onSetReplyingTo(null);
+                    onSetReplyMessage('');
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {discussion.replies && discussion.replies.length > 0 && (
+            <div className="space-y-3 pt-3">
+              {discussion.replies.map((reply) => (
+                <DiscussionItem 
+                  key={reply.id} 
+                  discussion={reply} 
+                  isReply={true}
+                  user={user}
+                  editingId={editingId}
+                  editingMessage={editingMessage}
+                  replyingTo={replyingTo}
+                  replyMessage={replyMessage}
+                  submitting={submitting}
+                  onStartEditing={onStartEditing}
+                  onCancelEditing={onCancelEditing}
+                  onUpdateMessage={onUpdateMessage}
+                  onDeleteMessage={onDeleteMessage}
+                  onSetReplyingTo={onSetReplyingTo}
+                  onSubmitReply={onSubmitReply}
+                  onSetEditingMessage={onSetEditingMessage}
+                  onSetReplyMessage={onSetReplyMessage}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
 
 export function CohortDiscussions({ cohortId, isActive = false }: CohortDiscussionsProps) {
   const { user } = useAuth();
@@ -78,155 +286,6 @@ export function CohortDiscussions({ cohortId, isActive = false }: CohortDiscussi
     setEditingMessage('');
   };
 
-  const getUserDisplayName = (discussion: CohortDiscussion) => {
-    if (discussion.user?.full_name) {
-      return discussion.user.full_name;
-    }
-    if (discussion.user?.email) {
-      return discussion.user.email.split('@')[0];
-    }
-    return 'Unknown User';
-  };
-
-  const getUserInitials = (discussion: CohortDiscussion) => {
-    const displayName = getUserDisplayName(discussion);
-    return displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-  };
-
-  const isOwner = (discussion: CohortDiscussion) => {
-    return user?.id === discussion.user_id;
-  };
-
-  const DiscussionItem = ({ discussion, isReply = false }: { discussion: CohortDiscussion; isReply?: boolean }) => (
-    <div className={`space-y-3 ${isReply ? 'ml-8 pl-4 border-l-2 border-muted' : ''}`}>
-      <div className="flex gap-3">
-        <Avatar className="w-8 h-8">
-          <AvatarFallback className="text-xs">
-            {getUserInitials(discussion)}
-          </AvatarFallback>
-        </Avatar>
-        
-        <div className="flex-1 space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-sm">{getUserDisplayName(discussion)}</span>
-            <span className="text-xs text-muted-foreground">
-              {formatDistanceToNow(new Date(discussion.created_at), { addSuffix: true })}
-            </span>
-            {discussion.updated_at !== discussion.created_at && (
-              <Badge variant="outline" className="text-xs">edited</Badge>
-            )}
-          </div>
-          
-          {editingId === discussion.id ? (
-            <div className="space-y-2">
-              <Textarea
-                value={editingMessage}
-                onChange={(e) => setEditingMessage(e.target.value)}
-                placeholder="Edit your message..."
-                rows={3}
-              />
-              <div className="flex gap-2">
-                <Button 
-                  size="sm" 
-                  onClick={() => handleUpdateMessage(discussion.id)}
-                  disabled={!editingMessage.trim()}
-                >
-                  Save
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={cancelEditing}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <>
-              <p className="text-sm whitespace-pre-wrap">{discussion.message}</p>
-              
-              <div className="flex gap-2">
-                {!isReply && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setReplyingTo(replyingTo === discussion.id ? null : discussion.id)}
-                    className="h-6 px-2 text-xs"
-                  >
-                    <Reply className="w-3 h-3 mr-1" />
-                    Reply
-                  </Button>
-                )}
-                
-                {isOwner(discussion) && (
-                  <>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => startEditing(discussion)}
-                      className="h-6 px-2 text-xs"
-                    >
-                      <Edit3 className="w-3 h-3 mr-1" />
-                      Edit
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleDeleteMessage(discussion.id)}
-                      className="h-6 px-2 text-xs text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="w-3 h-3 mr-1" />
-                      Delete
-                    </Button>
-                  </>
-                )}
-              </div>
-            </>
-          )}
-          
-          {replyingTo === discussion.id && !isReply && (
-            <div className="space-y-2 pt-2 border-t">
-              <Textarea
-                value={replyMessage}
-                onChange={(e) => setReplyMessage(e.target.value)}
-                placeholder={`Reply to ${getUserDisplayName(discussion)}...`}
-                rows={3}
-              />
-              <div className="flex gap-2">
-                <Button 
-                  size="sm"
-                  onClick={() => handleSubmitReply(discussion.id)}
-                  disabled={submitting || !replyMessage.trim()}
-                >
-                  <Send className="w-3 h-3 mr-1" />
-                  {submitting ? 'Posting...' : 'Post Reply'}
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => {
-                    setReplyingTo(null);
-                    setReplyMessage('');
-                  }}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          )}
-          
-          {discussion.replies && discussion.replies.length > 0 && (
-            <div className="space-y-3 pt-3">
-              {discussion.replies.map((reply) => (
-                <DiscussionItem key={reply.id} discussion={reply} isReply={true} />
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
 
   if (!user) {
     return (
@@ -291,7 +350,24 @@ export function CohortDiscussions({ cohortId, isActive = false }: CohortDiscussi
         ) : (
           <div className="space-y-6">
             {discussions.map((discussion) => (
-              <DiscussionItem key={discussion.id} discussion={discussion} />
+              <DiscussionItem 
+                key={discussion.id} 
+                discussion={discussion}
+                user={user}
+                editingId={editingId}
+                editingMessage={editingMessage}
+                replyingTo={replyingTo}
+                replyMessage={replyMessage}
+                submitting={submitting}
+                onStartEditing={startEditing}
+                onCancelEditing={cancelEditing}
+                onUpdateMessage={handleUpdateMessage}
+                onDeleteMessage={handleDeleteMessage}
+                onSetReplyingTo={setReplyingTo}
+                onSubmitReply={handleSubmitReply}
+                onSetEditingMessage={setEditingMessage}
+                onSetReplyMessage={setReplyMessage}
+              />
             ))}
           </div>
         )}
