@@ -242,15 +242,45 @@ export default function CohortDetail() {
     try {
       const { data, error } = await supabase
         .from('cohort_members')
-        .select('id')
+        .select('id, first_visit, last_visit')
         .eq('cohort_id', cohort.id)
         .or(`user_id.eq.${user.id},email.eq.${user.email}`)
         .maybeSingle();
 
       if (error) throw error;
-      setIsMember(!!data);
+      
+      if (data) {
+        setIsMember(true);
+        // Update visit tracking
+        await updateVisitTracking(data.id, data.first_visit, data.last_visit);
+      } else {
+        setIsMember(false);
+      }
     } catch (error) {
       console.error('Error checking membership:', error);
+    }
+  };
+
+  const updateVisitTracking = async (memberId: string, firstVisit: string | null, lastVisit: string | null) => {
+    try {
+      const now = new Date().toISOString();
+      const updates: any = {
+        last_visit: now
+      };
+
+      // Set first_visit only if it hasn't been set before
+      if (!firstVisit) {
+        updates.first_visit = now;
+      }
+
+      const { error } = await supabase
+        .from('cohort_members')
+        .update(updates)
+        .eq('id', memberId);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error updating visit tracking:', error);
     }
   };
 

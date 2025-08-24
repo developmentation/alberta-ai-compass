@@ -243,7 +243,9 @@ export type Database = {
           email: string
           enrolled_at: string
           enrolled_by: string
+          first_visit: string | null
           id: string
+          last_visit: string | null
           status: string
           updated_at: string
           user_id: string | null
@@ -254,7 +256,9 @@ export type Database = {
           email: string
           enrolled_at?: string
           enrolled_by: string
+          first_visit?: string | null
           id?: string
+          last_visit?: string | null
           status?: string
           updated_at?: string
           user_id?: string | null
@@ -265,7 +269,9 @@ export type Database = {
           email?: string
           enrolled_at?: string
           enrolled_by?: string
+          first_visit?: string | null
           id?: string
+          last_visit?: string | null
           status?: string
           updated_at?: string
           user_id?: string | null
