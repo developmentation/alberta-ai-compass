@@ -133,6 +133,60 @@ export type Database = {
           },
         ]
       }
+      articles: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          deleted_at: string | null
+          description: string
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          json_data: Json
+          language: string | null
+          level: Database["public"]["Enums"]["difficulty_level"]
+          status: Database["public"]["Enums"]["content_status"]
+          title: string
+          updated_at: string | null
+          updated_by: string | null
+          video_url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          deleted_at?: string | null
+          description: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          json_data?: Json
+          language?: string | null
+          level: Database["public"]["Enums"]["difficulty_level"]
+          status?: Database["public"]["Enums"]["content_status"]
+          title: string
+          updated_at?: string | null
+          updated_by?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          deleted_at?: string | null
+          description?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          json_data?: Json
+          language?: string | null
+          level?: Database["public"]["Enums"]["difficulty_level"]
+          status?: Database["public"]["Enums"]["content_status"]
+          title?: string
+          updated_at?: string | null
+          updated_by?: string | null
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string

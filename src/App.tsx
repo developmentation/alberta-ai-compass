@@ -21,6 +21,7 @@ import Privacy from "./pages/Privacy";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import { AdminNews } from "./pages/admin/AdminNews";
+import { AdminArticles } from "./pages/admin/AdminArticles";
 import { AdminUsers } from "./pages/admin/AdminUsers";
 import { AdminTools } from "./pages/admin/AdminTools";
 import { AdminPrompts } from "./pages/admin/AdminPrompts";
@@ -56,6 +57,7 @@ const App = () => (
             <Route path="/cohort/:id" element={<CohortDetail />} />
             <Route path="/admin" element={<ProtectedRoute requireFacilitator><Admin /></ProtectedRoute>} />
             <Route path="/admin/news" element={<ProtectedRoute requireFacilitator><AdminNews /></ProtectedRoute>} />
+            <Route path="/admin/articles" element={<ProtectedRoute requireFacilitator><AdminArticles /></ProtectedRoute>} />
             <Route path="/admin/users" element={<ProtectedRoute requireAdmin><AdminUsers /></ProtectedRoute>} />
             <Route path="/admin/tools" element={<ProtectedRoute requireFacilitator><AdminTools /></ProtectedRoute>} />
             <Route path="/admin/prompts" element={<ProtectedRoute requireFacilitator><AdminPrompts /></ProtectedRoute>} />

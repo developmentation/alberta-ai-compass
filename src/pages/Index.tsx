@@ -5,6 +5,7 @@ import { LearningPlanCard } from "@/components/LearningPlanCard";
 import { ArticleCard } from "@/components/ArticleCard";
 import { NewsCard } from "@/components/NewsCard";
 import { NewsViewer } from "@/components/NewsViewer";
+import { ArticleViewer } from "@/components/ArticleViewer";
 import { LoginModal } from "@/components/LoginModal";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Footer } from "@/components/Footer";
@@ -12,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useNews } from "@/hooks/useNews";
+import { useArticles } from "@/hooks/useArticles";
 import { useLearningPlans } from "@/hooks/useLearningPlans";
 import { useContentRatings } from "@/hooks/useContentRatings";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,16 +25,20 @@ const Index = () => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedNews, setSelectedNews] = useState<any>(null);
   const [isNewsViewerOpen, setIsNewsViewerOpen] = useState(false);
+  const [selectedArticle, setSelectedArticle] = useState<any>(null);
+  const [isArticleViewerOpen, setIsArticleViewerOpen] = useState(false);
 
   // Fetch data from database
   const { news, loading: newsLoading } = useNews();
+  const { articles, loading: articlesLoading } = useArticles();
   const { learningPlans, loading: plansLoading } = useLearningPlans();
 
   // Prepare content items for ratings
   const contentItems = useMemo(() => [
     ...learningPlans.map(plan => ({ id: plan.id, type: 'learning_plan' })),
-    ...news.map(item => ({ id: item.id, type: 'news' }))
-  ], [learningPlans, news]);
+    ...news.map(item => ({ id: item.id, type: 'news' })),
+    ...articles.map(item => ({ id: item.id, type: 'articles' }))
+  ], [learningPlans, news, articles]);
 
   const { ratingsData } = useContentRatings(contentItems);
 
@@ -111,37 +117,42 @@ const Index = () => {
     setSelectedNews(null);
   };
 
-  const articles = [
-    {
-      id: 1,
-      title: "Chain-of-Thought: When to use it and why",
-      description: "A compact guide to reasoning strategies and evaluation.",
-      readTime: "12 min read",
-      level: "Advanced",
-      image: "https://images.unsplash.com/photo-1557683311-eac922347aa1?q=80&w=1400&auto=format&fit=crop"
-    },
-    {
-      id: 2,
-      title: "Evaluation 101: Beyond accuracy",
-      description: "Coverage, robustness, and preference-informed evals.",
-      readTime: "8 min read",
-      level: "Intermediate",
-      image: "https://images.unsplash.com/photo-1635151227785-429f420c6b9d?w=1080&q=80"
-    },
-    {
-      id: 3,
-      title: "From zero to first AI project",
-      description: "Scoping, data sourcing, and a minimal viable workflow.",
-      readTime: "10 min read",
-      level: "Beginner",
-      image: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=1400&auto=format&fit=crop"
-    }
-  ];
+  const handleArticleClick = (article: any) => {
+    setSelectedArticle(article);
+    setIsArticleViewerOpen(true);
+  };
 
-  const featuredArticles = articles.slice(0, 3);
+  const handleCloseArticleViewer = () => {
+    setIsArticleViewerOpen(false);
+    setSelectedArticle(null);
+  };
+
+  // Featured Articles - 3 most recent from database
+  const featuredArticles = useMemo(() => {
+    const sortedArticles = [...articles].sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+
+    return sortedArticles.slice(0, 3).map(article => {
+      const rating = ratingsData[article.id];
+      return {
+        id: article.id,
+        title: article.title,
+        description: article.description,
+        readTime: `${Math.max(1, Math.ceil(article.description.length / 200))} min read`,
+        level: article.level?.charAt(0).toUpperCase() + article.level?.slice(1) || 'Beginner',
+        image: article.image_url || "https://images.unsplash.com/photo-1557683311-eac922347aa1?q=80&w=1400&auto=format&fit=crop",
+        video: article.video_url,
+        averageRating: rating?.averageRating || 0,
+        totalVotes: rating?.totalVotes || 0,
+        isBookmarked: rating?.isBookmarked || false,
+        onClick: () => handleArticleClick(article)
+      };
+    });
+  }, [articles, ratingsData]);
 
   // Show loading state
-  if (plansLoading || newsLoading) {
+  if (plansLoading || newsLoading || articlesLoading) {
     return (
       <div className="min-h-screen bg-background text-foreground font-['Inter'] antialiased flex items-center justify-center">
         <div className="text-center">
@@ -371,6 +382,17 @@ const Index = () => {
             <NewsViewer
               news={selectedNews}
               onClose={handleCloseNewsViewer}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+      {/* Article Viewer Dialog */}
+      <Dialog open={isArticleViewerOpen} onOpenChange={setIsArticleViewerOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          {selectedArticle && (
+            <ArticleViewer
+              article={selectedArticle}
+              onClose={handleCloseArticleViewer}
             />
           )}
         </DialogContent>

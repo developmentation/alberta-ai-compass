@@ -4,6 +4,7 @@ import {
   Users, 
   GraduationCap, 
   Newspaper, 
+  FileText,
   Wrench, 
   MessageSquare, 
   Settings, 
@@ -62,6 +63,11 @@ const adminMenuItems: AdminMenuItem[] = [
     title: "News",
     url: "/admin/news",
     icon: Newspaper,
+  },
+  {
+    title: "Articles",
+    url: "/admin/articles",
+    icon: FileText,
   },
   {
     title: "Tools",
