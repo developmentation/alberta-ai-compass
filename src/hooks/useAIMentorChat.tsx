@@ -191,9 +191,20 @@ export function useAIMentorChat() {
         // Parse recommended content IDs
         let recommendedIds: any[] = [];
         try {
-          recommendedIds = JSON.parse(analysisResult.trim());
+          // Clean the response - remove markdown code block markers
+          const cleanedResult = analysisResult.trim()
+            .replace(/^```json\s*/, '')  // Remove opening ```json
+            .replace(/^```\s*/, '')      // Remove opening ```
+            .replace(/\s*```$/, '')      // Remove closing ```
+            .trim();
+          
+          console.log('🧹 Cleaned analysis result:', cleanedResult);
+          recommendedIds = JSON.parse(cleanedResult);
+          console.log('✅ Parsed recommended IDs:', recommendedIds);
         } catch (e) {
-          console.error('Failed to parse recommended content:', e);
+          console.error('💥 Failed to parse recommended content:', e);
+          console.error('💥 Raw analysis result:', analysisResult);
+          console.error('💥 Cleaned result attempt:', analysisResult.trim().replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, '').trim());
         }
 
         // Fetch full details of recommended content
