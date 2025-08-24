@@ -47,6 +47,7 @@ export const NewsCard = ({
 
   const toggleVideoPlayback = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click
+    e.preventDefault(); // Prevent default action
     if (videoRef.current) {
       if (videoPlaying) {
         videoRef.current.pause();
@@ -59,6 +60,7 @@ export const NewsCard = ({
 
   const toggleVideoMute = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click
+    e.preventDefault(); // Prevent default action
     if (videoRef.current) {
       videoRef.current.muted = !videoMuted;
       setVideoMuted(!videoMuted);
