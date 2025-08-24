@@ -226,31 +226,16 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
           <div>
             <label className="text-sm font-medium mb-2 block">Module Media</label>
             <UnifiedMediaUpload
-              key={`media-${editingData.id}-${editingData.imageUrl}-${editingData.videoUrl}`}
               onMediaUpload={(url, type) => {
-                console.log('Media upload callback:', { url, type, editingDataBefore: editingData });
+                console.log('Media upload callback:', { url, type, current: { imageUrl: editingData.imageUrl, videoUrl: editingData.videoUrl } });
                 if (type === 'image') {
-                  setEditingData(prev => {
-                    const newData = { 
-                      ...prev, 
-                      imageUrl: url || undefined
-                    };
-                    console.log('Updated image state:', { newData, url });
-                    return newData;
-                  });
+                  setEditingData({ ...editingData, imageUrl: url, videoUrl: url ? '' : editingData.videoUrl });
                 } else {
-                  setEditingData(prev => {
-                    const newData = { 
-                      ...prev, 
-                      videoUrl: url || undefined
-                    };
-                    console.log('Updated video state:', { newData, url });
-                    return newData;
-                  });
+                  setEditingData({ ...editingData, videoUrl: url, imageUrl: url ? '' : editingData.imageUrl });
                 }
               }}
-              currentImageUrl={typeof editingData.imageUrl === 'string' ? editingData.imageUrl : undefined}
-              currentVideoUrl={typeof editingData.videoUrl === 'string' ? editingData.videoUrl : undefined}
+              currentImageUrl={editingData.imageUrl}
+              currentVideoUrl={editingData.videoUrl}
               bucketName="module-assets"
               allowAiGeneration={true}
             />
