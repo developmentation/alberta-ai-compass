@@ -61,17 +61,17 @@ const getTypeIcon = (type: string) => {
 const getTypeBadgeColor = (type: string) => {
   switch (type) {
     case 'module':
-      return 'bg-indigo-100 text-indigo-700';
+      return 'bg-primary/10 text-primary border-primary/20';
     case 'news':
-      return 'bg-cyan-100 text-cyan-700';
+      return 'bg-primary/10 text-primary border-primary/20';
     case 'tool':
-      return 'bg-emerald-100 text-emerald-700';
+      return 'bg-primary/10 text-primary border-primary/20';
     case 'prompt':
-      return 'bg-amber-100 text-amber-700';
+      return 'bg-primary/10 text-primary border-primary/20';
     case 'learning_plan':
-      return 'bg-purple-100 text-purple-700';
+      return 'bg-primary/10 text-primary border-primary/20';
     default:
-      return 'bg-neutral-100 text-neutral-700';
+      return 'bg-muted text-muted-foreground';
   }
 };
 
@@ -109,7 +109,7 @@ export function ContentCard({ content, className = "", onView }: ContentCardProp
 
   return (
     <article 
-      className={`relative overflow-hidden group bg-white border border-neutral-100 rounded-2xl hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer ${className}`}
+      className={`relative overflow-hidden group bg-card border border-border rounded-2xl hover:shadow-elegant transition-all duration-300 hover:-translate-y-1 cursor-pointer ${className}`}
       onClick={handleCardClick}
     >
       {/* Media Content */}
@@ -132,7 +132,7 @@ export function ContentCard({ content, className = "", onView }: ContentCardProp
               <Button
                 size="sm"
                 variant="secondary"
-                className="w-8 h-8 p-0 bg-white/90 hover:bg-white"
+                className="w-8 h-8 p-0"
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleVideoPlayback();
@@ -143,7 +143,7 @@ export function ContentCard({ content, className = "", onView }: ContentCardProp
               <Button
                 size="sm"
                 variant="secondary"
-                className="w-8 h-8 p-0 bg-white/90 hover:bg-white"
+                className="w-8 h-8 p-0"
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleVideoMute();
@@ -164,22 +164,22 @@ export function ContentCard({ content, className = "", onView }: ContentCardProp
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/5 to-black/20" />
         </div>
       ) : (
-        <div className="h-48 bg-gradient-to-br from-neutral-100 to-neutral-200 flex items-center justify-center">
-          <Icon className="w-12 h-12 text-neutral-400" />
+        <div className="h-48 bg-muted flex items-center justify-center">
+          <Icon className="w-12 h-12 text-muted-foreground" />
         </div>
       )}
 
       {/* Content */}
       <div className="relative h-full flex flex-col justify-between p-6">
         <div className="flex items-center justify-between mb-4">
-          <Badge className={`text-xs font-medium ${getTypeBadgeColor(content.type)}`}>
+          <Badge variant="secondary" className={`text-xs font-medium ${getTypeBadgeColor(content.type)}`}>
             {content.type}
           </Badge>
           {content.url && (
             <Button
               size="sm"
               variant="ghost"
-              className="w-8 h-8 p-0 hover:bg-neutral-100"
+              className="w-8 h-8 p-0 hover:bg-muted"
               onClick={(e) => e.stopPropagation()}
             >
               <ArrowUpRight className="w-4 h-4" />
@@ -193,15 +193,15 @@ export function ContentCard({ content, className = "", onView }: ContentCardProp
           </h3>
           
           {content.description && (
-            <p className="text-sm text-neutral-600 mb-4 line-clamp-3">
+            <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
               {content.description}
             </p>
           )}
 
           {/* Type-specific metadata */}
-          <div className="flex items-center gap-3 text-xs text-neutral-500 mt-auto">
+          <div className="flex items-center gap-3 text-xs text-muted-foreground mt-auto">
             {content.type === 'tool' && content.cost_indicator && (
-              <span className="px-2 py-0.5 rounded-full bg-neutral-100 border border-neutral-200">
+              <span className="px-2 py-0.5 rounded-full bg-muted border border-border">
                 {content.cost_indicator}
               </span>
             )}
@@ -212,7 +212,7 @@ export function ContentCard({ content, className = "", onView }: ContentCardProp
               </div>
             )}
             {content.level && (
-              <span className="px-2 py-0.5 rounded-full bg-neutral-100 border border-neutral-200">
+              <span className="px-2 py-0.5 rounded-full bg-muted border border-border">
                 {content.level}
               </span>
             )}
