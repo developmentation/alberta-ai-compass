@@ -21,8 +21,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="h-16 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  {/* Mobile Sidebar Trigger - Only visible on mobile */}
-                  <SidebarTrigger className="lg:hidden border border-border hover:border-primary/50 rounded-md p-2">
+                  {/* Mobile Sidebar Trigger - Always visible, but styled for mobile */}
+                  <SidebarTrigger className="border border-border hover:border-primary/50 rounded-md p-2">
                     <Menu className="h-4 w-4" />
                   </SidebarTrigger>
                   

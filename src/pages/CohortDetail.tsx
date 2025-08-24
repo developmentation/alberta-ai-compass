@@ -143,6 +143,7 @@ export default function CohortDetail() {
               try {
                 switch (item.content_type) {
                   case 'module':
+                  case 'learning_module':
                     const { data: moduleData } = await supabase
                       .from('modules')
                       .select('*')
@@ -192,6 +193,9 @@ export default function CohortDetail() {
                       .maybeSingle();
                     contentDetails = planData;
                     break;
+                  default:
+                    console.warn(`Unknown content type: ${item.content_type}`);
+                    break;
                 }
               } catch (error) {
                 console.error(`Error fetching ${item.content_type} content:`, error);
@@ -203,7 +207,7 @@ export default function CohortDetail() {
                 id: item.content_id,
                 type: item.content_type,
                 name: contentDetails.title || contentDetails.name || `${item.content_type} item`,
-                description: contentDetails.description || '',
+                description: contentDetails.description || contentDetails.purpose || '',
                 image_url: contentDetails.image_url || '',
                 video_url: contentDetails.video_url || '',
                 order_index: item.order_index,
@@ -612,7 +616,7 @@ export default function CohortDetail() {
           onClose={handleCloseViewer}
         />
       )}
-      {selectedViewer === 'module' && selectedContent && (
+      {(selectedViewer === 'module' || selectedViewer === 'learning_module') && selectedContent && (
         <ModuleViewer 
           moduleData={selectedContent}
           onClose={handleCloseViewer}
