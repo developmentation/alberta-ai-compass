@@ -1392,8 +1392,8 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              {/* Show menu button only when module has begun */}
-              {hasBegunModule && (
+              {/* Show menu button when module has begun or in content tab */}
+              {(hasBegunModule || activeTab === "content") && (
                 <Sheet open={isTableOfContentsOpen} onOpenChange={setIsTableOfContentsOpen}>
                   <SheetTrigger asChild>
                     <Button variant="outline" size="sm">
@@ -1468,7 +1468,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
             </div>
 
             <div className="flex items-center gap-4">
-              {hasBegunModule && (
+              {(hasBegunModule || activeTab === "content") && (
                 <div className="text-sm text-muted-foreground">
                   Section {currentSectionIndex + 1} of {editingData.sections.length}
                 </div>
@@ -1515,8 +1515,8 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
             </div>
           </div>
 
-          {/* Progress bar - only show when module has begun */}
-          {hasBegunModule && (
+          {/* Progress bar - show when module has begun or in content tab */}
+          {(hasBegunModule || activeTab === "content") && (
             <div className="mt-4">
               <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
                 <span>Progress</span>
