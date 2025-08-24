@@ -370,15 +370,15 @@ export default function MyLearning() {
       </Dialog>
 
       {/* Prompt Viewer - Uses its own modal */}
-      {selectedContent && viewerType === 'prompt_library' && (
+      {selectedContent && viewerType === 'prompt_library' && selectedContent.purpose && (
         <PromptViewer
           prompt={{
             id: selectedContent.id,
-            name: selectedContent.name,
+            name: selectedContent.title,
             description: selectedContent.description,
-            purpose: selectedContent.purpose || '',
+            purpose: selectedContent.purpose,
             sample_output: selectedContent.sample_output,
-            stars: selectedContent.stars,
+            stars: selectedContent.stars || 0,
             sector_tags: selectedContent.sector_tags,
             image_url: selectedContent.image_url,
             status: selectedContent.status
