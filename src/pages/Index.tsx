@@ -23,8 +23,8 @@ const Index = () => {
   const [isViewerOpen, setIsViewerOpen] = useState(false);
 
   // Fetch data from database
-  const { news, loading: newsLoading } = useNews();
-  const { learningPlans, loading: plansLoading } = useLearningPlans();
+  const { news, loading: newsLoading, error: newsError } = useNews();
+  const { learningPlans, loading: plansLoading, error: plansError } = useLearningPlans();
 
   // Prepare content items for ratings
   const contentItems = useMemo(() => [
@@ -32,7 +32,18 @@ const Index = () => {
     ...news.map(item => ({ id: item.id, type: 'news' }))
   ], [learningPlans, news]);
 
-  const { ratingsData } = useContentRatings(contentItems, user?.id);
+  const { ratingsData, loading: ratingsLoading } = useContentRatings(contentItems, user?.id);
+
+  // Debug logging to track loading states
+  console.log('Loading states:', { 
+    newsLoading, 
+    plansLoading, 
+    ratingsLoading,
+    newsError,
+    plansError,
+    newsCount: news.length,
+    plansCount: learningPlans.length 
+  });
 
   // Featured Learning Plans - highest rated (or 3 newest if no ratings)
   const featuredPlans = useMemo(() => {
@@ -136,13 +147,29 @@ const Index = () => {
 
   const featuredArticles = articles.slice(0, 3);
 
-  // Show loading state
+  // Show loading state - only show spinner for initial data loading, not ratings
   if (plansLoading || newsLoading) {
     return (
       <div className="min-h-screen bg-background text-foreground font-['Inter'] antialiased flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading content...</p>
+          <p className="text-xs text-muted-foreground mt-2">
+            {plansLoading && 'Loading learning plans... '}
+            {newsLoading && 'Loading news... '}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if both data sources failed
+  if (newsError && plansError) {
+    return (
+      <div className="min-h-screen bg-background text-foreground font-['Inter'] antialiased flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-destructive text-lg">Failed to load content</p>
+          <p className="text-muted-foreground mt-2">Please try refreshing the page</p>
         </div>
       </div>
     );
