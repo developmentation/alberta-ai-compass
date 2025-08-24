@@ -10,6 +10,7 @@ interface ArticleCardProps {
   level: string;
   image: string;
   video?: string;
+  onClick?: () => void;
 }
 
 export const ArticleCard = ({
@@ -18,7 +19,8 @@ export const ArticleCard = ({
   readTime,
   level,
   image,
-  video
+  video,
+  onClick
 }: ArticleCardProps) => {
   // Helper function to check if URL is a YouTube URL  
   const isYouTubeUrl = (url: string): boolean => {
@@ -57,6 +59,7 @@ export const ArticleCard = ({
           <Button
             variant="ghost"
             className="border border-border hover:border-primary/50 hover:bg-primary/10 transition-all"
+            onClick={onClick}
           >
             Read Article
             <ArrowRight className="w-4 h-4 ml-2" />
