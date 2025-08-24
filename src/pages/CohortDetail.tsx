@@ -148,7 +148,6 @@ export default function CohortDetail() {
                       .from('modules')
                       .select('*')
                       .eq('id', item.content_id)
-                      .eq('status', 'published')
                       .is('deleted_at', null)
                       .maybeSingle();
                     contentDetails = moduleData;
@@ -158,7 +157,6 @@ export default function CohortDetail() {
                       .from('news')
                       .select('*')
                       .eq('id', item.content_id)
-                      .eq('status', 'published')
                       .is('deleted_at', null)
                       .maybeSingle();
                     contentDetails = newsData;
@@ -168,7 +166,6 @@ export default function CohortDetail() {
                       .from('tools')
                       .select('*')
                       .eq('id', item.content_id)
-                      .eq('status', 'published')
                       .is('deleted_at', null)
                       .maybeSingle();
                     contentDetails = toolData;
@@ -178,7 +175,6 @@ export default function CohortDetail() {
                       .from('prompt_library')
                       .select('*')
                       .eq('id', item.content_id)
-                      .eq('status', 'published')
                       .is('deleted_at', null)
                       .maybeSingle();
                     contentDetails = promptData;
@@ -188,7 +184,6 @@ export default function CohortDetail() {
                       .from('learning_plans')
                       .select('*')
                       .eq('id', item.content_id)
-                      .eq('status', 'published')
                       .is('deleted_at', null)
                       .maybeSingle();
                     contentDetails = planData;
