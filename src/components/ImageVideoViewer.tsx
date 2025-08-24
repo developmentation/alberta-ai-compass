@@ -89,7 +89,8 @@ export function ImageVideoViewer({
       return (
         <div 
           className={`relative ${baseClasses}`}
-          onClick={(e) => e.stopPropagation()}
+          onClickCapture={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
         >
           <iframe
             src={convertToEmbedUrl(videoUrl)}
@@ -108,7 +109,8 @@ export function ImageVideoViewer({
       return (
         <div 
           className={`relative ${baseClasses}`}
-          onClick={(e) => e.stopPropagation()}
+          onClickCapture={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
         >
           <video
             ref={videoRef}
@@ -120,12 +122,14 @@ export function ImageVideoViewer({
             onPause={() => setVideoPlaying(false)}
             onEnded={() => setVideoPlaying(false)}
             title={title}
+            onClick={(e) => e.stopPropagation()}
           />
           {showControls && (
             <Button
               variant="outline"
               size="sm"
-              className="absolute bottom-2 left-2 bg-black/50 hover:bg-black/70 text-white border-white/20"
+              className="absolute bottom-2 left-2 bg-black/50 hover:bg-black/70 text-white border-white/20 z-10"
+              onMouseDown={(e) => e.stopPropagation()}
               onClick={handlePlayPause}
             >
               {videoPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
