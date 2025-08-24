@@ -209,12 +209,12 @@ export function AdminPrompts() {
 
   const getStatusBadge = (status: string) => {
     const colors = {
-      draft: "bg-muted text-muted-foreground",
-      review: "bg-orange-500 text-primary-foreground",
-      published: "bg-green-600 text-primary-foreground",
-      archived: "bg-destructive text-destructive-foreground",
+      draft: "bg-gray-500",
+      review: "bg-yellow-500",
+      published: "bg-green-500",
+      archived: "bg-red-500",
     };
-    return colors[status as keyof typeof colors] || "bg-muted text-muted-foreground";
+    return colors[status as keyof typeof colors] || "bg-gray-500";
   };
 
   if (loading) {
@@ -363,7 +363,7 @@ export function AdminPrompts() {
                   <div className="space-y-1 flex-1">
                     <CardTitle className="text-lg">{prompt.name}</CardTitle>
                     <div className="flex gap-2">
-                      <Badge className={getStatusBadge(prompt.status)}>
+                      <Badge className={`text-white ${getStatusBadge(prompt.status)}`}>
                         {prompt.status}
                       </Badge>
                       {prompt.sector_tags?.tags?.map((tag: string, index: number) => (

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ContentRatingData {
   contentId: string;
@@ -8,49 +9,36 @@ interface ContentRatingData {
   isBookmarked: boolean;
 }
 
-export function useContentRatings(contentItems: Array<{id: string, type: string}>, userId?: string | null) {
+export function useContentRatings(contentItems: Array<{id: string, type: string}>) {
+  const { user } = useAuth();
   const [ratingsData, setRatingsData] = useState<Record<string, ContentRatingData>>({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Always fetch ratings, fetch bookmarks only if userId provided
-    if (contentItems.length > 0) {
-      console.log('Fetching ratings for', contentItems.length, 'items');
+    if (user && contentItems.length > 0) {
       fetchRatingsAndBookmarks();
-    } else {
-      // If no content items, set loading to false immediately
-      setLoading(false);
-      setRatingsData({});
     }
-  }, [userId, JSON.stringify(contentItems)]);
+  }, [user, contentItems]);
 
   const fetchRatingsAndBookmarks = async () => {
-    if (contentItems.length === 0) {
-      setLoading(false);
-      return;
-    }
+    if (!user || contentItems.length === 0) return;
 
     setLoading(true);
-    console.log('Starting to fetch ratings and bookmarks...');
     try {
       const contentIds = contentItems.map(item => item.id);
       
-      // Always fetch star ratings (public data)
+      // Fetch star ratings
       const { data: starRatings } = await supabase
         .from('star_ratings')
         .select('content_id, average_rating, total_votes')
         .in('content_id', contentIds);
 
-      // Only fetch user bookmarks if userId provided
-      let bookmarks = null;
-      if (userId) {
-        const { data } = await supabase
-          .from('user_bookmarks')
-          .select('content_id')
-          .eq('user_id', userId)
-          .in('content_id', contentIds);
-        bookmarks = data;
-      }
+      // Fetch user bookmarks
+      const { data: bookmarks } = await supabase
+        .from('user_bookmarks')
+        .select('content_id')
+        .eq('user_id', user.id)
+        .in('content_id', contentIds);
 
       const bookmarkSet = new Set(bookmarks?.map(b => b.content_id) || []);
       
@@ -62,28 +50,15 @@ export function useContentRatings(contentItems: Array<{id: string, type: string}
           contentId: item.id,
           averageRating: rating?.average_rating || 0,
           totalVotes: rating?.total_votes || 0,
-          isBookmarked: userId ? bookmarkSet.has(item.id) : false
+          isBookmarked: bookmarkSet.has(item.id)
         };
       });
       
       setRatingsData(ratingsMap);
-      console.log('Successfully loaded ratings for', Object.keys(ratingsMap).length, 'items');
     } catch (error) {
       console.error('Error fetching ratings and bookmarks:', error);
-      // Set empty ratings data on error to prevent infinite loading
-      const emptyRatingsMap: Record<string, ContentRatingData> = {};
-      contentItems.forEach(item => {
-        emptyRatingsMap[item.id] = {
-          contentId: item.id,
-          averageRating: 0,
-          totalVotes: 0,
-          isBookmarked: false
-        };
-      });
-      setRatingsData(emptyRatingsMap);
     } finally {
       setLoading(false);
-      console.log('Ratings loading complete');
     }
   };
 
