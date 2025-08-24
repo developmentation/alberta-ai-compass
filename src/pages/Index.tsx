@@ -66,6 +66,7 @@ const Index = () => {
         duration: 'Self-paced', // Simplified for now
         level: plan.level?.charAt(0).toUpperCase() + plan.level?.slice(1) || 'Beginner',
         image: plan.image_url || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1400&auto=format&fit=crop",
+        video: plan.video_url,
         tags: plan.learning_outcomes?.slice(0, 2) || ['AI Learning'],
         averageRating: rating?.averageRating || 0,
         totalVotes: rating?.totalVotes || 0,
