@@ -34,6 +34,7 @@ export function useLearningPlans() {
         .from('learning_plans')
         .select('*')
         .eq('status', 'published')
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
