@@ -27,16 +27,20 @@ export default function Auth() {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [signupLoading, setSignupLoading] = useState(false);
 
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, user, profile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Auto-redirect to admin when user signs in
+  // Auto-redirect based on user role when user signs in
   useEffect(() => {
-    if (user) {
-      navigate('/admin');
+    if (user && profile) {
+      if (profile.role === 'admin' || profile.role === 'facilitator') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
     }
-  }, [user, navigate]);
+  }, [user, profile, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -16,16 +16,20 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, user } = useAuth();
+  const { signIn, user, profile } = useAuth();
   const navigate = useNavigate();
 
-  // Auto-close modal and redirect when user signs in
+  // Auto-close modal and redirect based on user role when user signs in
   useEffect(() => {
-    if (user && isOpen) {
+    if (user && profile && isOpen) {
       onClose();
-      navigate('/admin');
+      if (profile.role === 'admin' || profile.role === 'facilitator') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
     }
-  }, [user, isOpen, onClose, navigate]);
+  }, [user, profile, isOpen, onClose, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
