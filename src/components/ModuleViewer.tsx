@@ -246,7 +246,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
               }}
               currentImageUrl={imageUrl}
               currentVideoUrl={videoUrl}
-              bucketName="module-assets"
+              bucketName="media-assets"
               allowAiGeneration={true}
             />
           </div>
@@ -1680,7 +1680,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                 onMediaUpload={(url, type) => handleMediaUpload(url, type, uploadContentIndex)}
                 currentImageUrl={editingData.sections?.[currentSectionIndex]?.content[uploadContentIndex]?.type === 'image' ? editingData.sections[currentSectionIndex].content[uploadContentIndex].url : undefined}
                 currentVideoUrl={editingData.sections?.[currentSectionIndex]?.content[uploadContentIndex]?.type === 'video' ? editingData.sections[currentSectionIndex].content[uploadContentIndex].url : undefined}
-                bucketName="module-assets"
+                bucketName="media-assets"
                 allowAiGeneration={true}
               />
             )}
