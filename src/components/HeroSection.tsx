@@ -37,15 +37,16 @@ export const HeroSection = ({ onSearch, searchResults }: HeroSectionProps) => {
           {/* Right Column - Video Player (Desktop only) */}
           <div className="hidden lg:block animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
             <div className="relative">
-              <div className="aspect-video bg-card/60 backdrop-blur-sm border-2 border-dashed border-border rounded-2xl flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                    <svg className="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z"/>
-                    </svg>
-                  </div>
-                  <p className="text-sm text-muted-foreground">Video Player Placeholder</p>
-                </div>
+              <div className="aspect-square bg-card/60 backdrop-blur-sm border border-border rounded-2xl overflow-hidden">
+                <video 
+                  className="w-full h-full object-cover rounded-2xl"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                >
+                  <source src="/src/hero.mp4" type="video/mp4" />
+                </video>
               </div>
             </div>
           </div>
