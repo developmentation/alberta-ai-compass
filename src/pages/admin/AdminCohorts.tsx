@@ -86,7 +86,8 @@ export function AdminCohorts() {
                 content_items: []
               };
             }
-            if (content.content_id) {
+            // Only add to content_items if there's actual content (not just day placeholder)
+            if (content.content_id && content.content_type !== 'day') {
               acc[dayKey].content_items.push({
                 content_id: content.content_id,
                 content_type: content.content_type,
@@ -241,9 +242,25 @@ export function AdminCohorts() {
           .delete()
           .eq("cohort_id", cohortId);
           
-        // Insert new cohort content
-        const contentToInsert = formData.days.flatMap((day: any) => 
-          day.content_items?.map((item: any) => ({
+        // Insert cohort days and content
+        const contentToInsert = formData.days.flatMap((day: any) => {
+          // Always create at least one record for the day, even if no content
+          if (!day.content_items || day.content_items.length === 0) {
+            return [{
+              cohort_id: cohortId,
+              day_number: day.day_number,
+              day_name: day.day_name,
+              day_description: day.day_description,
+              day_image_url: day.day_image_url,
+              content_type: 'day', // Use 'day' as a placeholder content type
+              content_id: null, // No actual content
+              order_index: 0,
+              created_by: user?.id
+            }];
+          }
+          
+          // Create records for each content item in the day
+          return day.content_items.map((item: any) => ({
             cohort_id: cohortId,
             day_number: day.day_number,
             day_name: day.day_name,
@@ -253,8 +270,8 @@ export function AdminCohorts() {
             content_id: item.original_id || item.id,
             order_index: item.order_index,
             created_by: user?.id
-          })) || []
-        );
+          }));
+        });
         
         if (contentToInsert.length > 0) {
           await supabase
