@@ -209,57 +209,43 @@ const LearningHub = () => {
               <p className="text-muted-foreground">Structured pathways with timelines, milestones, and outcomes.</p>
             </div>
 
-            {loading && (
-              <div className="flex items-center justify-center py-16">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                <span className="ml-2 text-muted-foreground">Loading learning plans...</span>
-                <div className="text-xs text-muted-foreground mt-2">
-                  Debug: Loading={loading.toString()}, Plans={learningPlans.length}, Error={error || 'none'}
-                </div>
-              </div>
-            )}
-            
-            {error && (
-              <div className="text-center py-16">
-                <p className="text-destructive text-lg">
-                  Error loading learning plans: {error}
-                </p>
-                <button 
-                  onClick={() => window.location.reload()} 
-                  className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary/80"
-                >
-                  Retry
-                </button>
-              </div>
-            )}
-
-            {!loading && !error && (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {filteredPlans.map((plan, index) => (
-                    <div key={plan.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
-                      <LearningPlanCard {...plan} />
-                    </div>
-                  ))}
-                </div>
-
-                {filteredPlans.length === 0 && learningPlans.length > 0 && (
-                  <div className="text-center py-16">
-                    <p className="text-muted-foreground text-lg">
-                      No learning plans found matching your criteria. Try adjusting your search or filters.
-                    </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {loading ? (
+                // Show skeleton loading cards while data loads
+                [...Array(6)].map((_, i) => (
+                  <div key={i} className="bg-card rounded-xl border border-border p-6 animate-pulse">
+                    <div className="h-32 bg-muted rounded mb-4"></div>
+                    <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                    <div className="h-3 bg-muted rounded w-1/2"></div>
                   </div>
-                )}
-                
-                {learningPlans.length === 0 && !loading && (
-                  <div className="text-center py-16">
-                    <p className="text-muted-foreground text-lg">
-                      No learning plans available at this time.
-                    </p>
+                ))
+              ) : error ? (
+                <div className="col-span-full text-center py-16">
+                  <p className="text-destructive text-lg">Error loading learning plans: {error}</p>
+                  <button 
+                    onClick={() => window.location.reload()} 
+                    className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary/80"
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : filteredPlans.length > 0 ? (
+                filteredPlans.map((plan, index) => (
+                  <div key={plan.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
+                    <LearningPlanCard {...plan} />
                   </div>
-                )}
-              </>
-            )}
+                ))
+              ) : (
+                <div className="col-span-full text-center py-16">
+                  <p className="text-muted-foreground text-lg">
+                    {learningPlans.length === 0 ? 
+                      'No learning plans available at this time.' :
+                      'No learning plans found matching your criteria. Try adjusting your search or filters.'
+                    }
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </section>
 

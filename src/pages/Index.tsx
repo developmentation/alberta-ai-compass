@@ -147,29 +147,19 @@ const Index = () => {
 
   const featuredArticles = articles.slice(0, 3);
 
-  // Show loading state - only show spinner for initial data loading, not ratings
-  if (plansLoading || newsLoading) {
-    return (
-      <div className="min-h-screen bg-background text-foreground font-['Inter'] antialiased flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading content...</p>
-          <p className="text-xs text-muted-foreground mt-2">
-            {plansLoading && 'Loading learning plans... '}
-            {newsLoading && 'Loading news... '}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show error state if both data sources failed
+  // Show error state only if both data sources failed completely
   if (newsError && plansError) {
     return (
       <div className="min-h-screen bg-background text-foreground font-['Inter'] antialiased flex items-center justify-center">
         <div className="text-center">
           <p className="text-destructive text-lg">Failed to load content</p>
           <p className="text-muted-foreground mt-2">Please try refreshing the page</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary/80"
+          >
+            Refresh
+          </button>
         </div>
       </div>
     );
@@ -210,11 +200,26 @@ const Index = () => {
                 </Link>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {featuredPlans.map((plan, index) => (
-                  <div key={plan.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
-                    <LearningPlanCard {...plan} />
+                {plansLoading ? (
+                  // Show skeleton loading cards while data loads
+                  [...Array(3)].map((_, i) => (
+                    <div key={i} className="bg-card rounded-xl border border-border p-6 animate-pulse">
+                      <div className="h-32 bg-muted rounded mb-4"></div>
+                      <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                      <div className="h-3 bg-muted rounded w-1/2"></div>
+                    </div>
+                  ))
+                ) : featuredPlans.length > 0 ? (
+                  featuredPlans.map((plan, index) => (
+                    <div key={plan.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
+                      <LearningPlanCard {...plan} />
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-8">
+                    <p className="text-muted-foreground">No learning plans available at this time.</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
             <div className="border-t border-border/50 mt-16" />
@@ -236,11 +241,26 @@ const Index = () => {
                 </Link>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {featuredNews.map((item, index) => (
-                  <div key={item.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
-                    <NewsCard {...item} />
+                {newsLoading ? (
+                  // Show skeleton loading cards while data loads
+                  [...Array(3)].map((_, i) => (
+                    <div key={i} className="bg-card rounded-xl border border-border p-6 animate-pulse">
+                      <div className="h-32 bg-muted rounded mb-4"></div>
+                      <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                      <div className="h-3 bg-muted rounded w-1/2"></div>
+                    </div>
+                  ))
+                ) : featuredNews.length > 0 ? (
+                  featuredNews.map((item, index) => (
+                    <div key={item.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
+                      <NewsCard {...item} />
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-8">
+                    <p className="text-muted-foreground">No news available at this time.</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
             <div className="border-t border-border/50 mt-16" />
