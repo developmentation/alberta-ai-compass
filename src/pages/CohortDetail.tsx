@@ -302,24 +302,20 @@ export default function CohortDetail() {
             ? JSON.parse(moduleData.json_data) 
             : moduleData.json_data;
             
-          const viewerData = {
-            moduleData: {
-              id: moduleData.id,
-              title: moduleData.name || jsonData?.title || 'Untitled Module',
-              description: moduleData.description || jsonData?.description || '',
-              level: moduleData.level,
-              duration: jsonData?.duration || 30,
-              learningOutcomes: jsonData?.learningOutcomes || [],
-              tags: jsonData?.tags || [],
-              sections: jsonData?.sections || [],
-              imageUrl: moduleData.image_url || '',
-              videoUrl: moduleData.video_url || ''
-            },
-            isAdminMode: false,
-            isEditable: false
+          const moduleViewerData = {
+            id: moduleData.id,
+            title: moduleData.name || jsonData?.title || 'Untitled Module',
+            description: moduleData.description || jsonData?.description || '',
+            level: moduleData.level || 'beginner',
+            duration: jsonData?.duration || 30,
+            learningOutcomes: jsonData?.learningOutcomes || [],
+            tags: jsonData?.tags || [],
+            sections: jsonData?.sections || [],
+            imageUrl: moduleData.image_url || '',
+            videoUrl: moduleData.video_url || ''
           };
           
-          setSelectedContent(viewerData);
+          setSelectedContent(moduleViewerData);
           setSelectedViewer(content.type);
         }
       } catch (error) {
