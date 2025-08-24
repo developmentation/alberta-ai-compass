@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -30,7 +31,12 @@ import {
   Play,
   Pause,
   Volume2,
-  Globe
+  Globe,
+  BookOpen,
+  Clock,
+  Target,
+  Users,
+  Calendar
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -106,6 +112,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
   const [translations, setTranslations] = useState<Record<string, ModuleData>>({});
   const [isLoadingTranslation, setIsLoadingTranslation] = useState(false);
   const [hasStartedModule, setHasStartedModule] = useState(false);
+  const [hasBegunModule, setHasBegunModule] = useState(false); // New state for tracking if user clicked Begin
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -126,13 +133,165 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
 
   // Track module start when component mounts and user is logged in
   useEffect(() => {
-    if (user && moduleId && !hasStartedModule) {
+    if (user && moduleId && !hasStartedModule && hasBegunModule) {
       trackProgress('started', 0);
       setHasStartedModule(true);
     }
-  }, [user, moduleId, hasStartedModule]);
+  }, [user, moduleId, hasStartedModule, hasBegunModule]);
 
   const trackProgress = async (status: 'started' | 'completed', completion: number) => {
+    if (!user || !moduleId) return;
+
+    try {
+      const { error } = await supabase.functions.invoke('track-progress', {
+        body: {
+          moduleId,
+          completion,
+          status
+        }
+      });
+
+      if (error) throw error;
+    } catch (error: any) {
+      console.error('Error tracking progress:', error);
+    }
+  };
+
+  const handleBeginModule = () => {
+    setHasBegunModule(true);
+    if (user && moduleId) {
+      trackProgress('started', 0);
+      setHasStartedModule(true);
+    }
+  };
+
+  // Module Info Tab Content
+  const renderModuleInfo = () => (
+    <div className="space-y-8">
+      {/* Hero Section with Media */}
+      <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-primary/5 to-muted border border-border">
+        {editingData.videoUrl || editingData.imageUrl ? (
+          <div className="relative h-64 sm:h-80">
+            {editingData.videoUrl ? (
+              <video
+                src={editingData.videoUrl}
+                className="w-full h-full object-cover"
+                controls
+                poster={editingData.imageUrl}
+              />
+            ) : (
+              <img
+                src={editingData.imageUrl}
+                alt={editingData.title}
+                className="w-full h-full object-cover"
+              />
+            )}
+            <div className="absolute inset-0 bg-black/20" />
+          </div>
+        ) : (
+          <div className="h-64 sm:h-80 flex items-center justify-center">
+            <BookOpen className="w-16 h-16 text-muted-foreground" />
+          </div>
+        )}
+        
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6 text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">{editingData.title}</h1>
+          <p className="text-white/90 text-sm sm:text-base">{editingData.description}</p>
+        </div>
+      </div>
+
+      {/* Module Details */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-6 text-center">
+            <Target className="w-8 h-8 text-primary mx-auto mb-3" />
+            <div className="text-2xl font-bold text-primary mb-1">{editingData.difficulty}</div>
+            <div className="text-sm text-muted-foreground">Difficulty Level</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6 text-center">
+            <Clock className="w-8 h-8 text-primary mx-auto mb-3" />
+            <div className="text-2xl font-bold text-primary mb-1">{editingData.duration}</div>
+            <div className="text-sm text-muted-foreground">Minutes</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6 text-center">
+            <BookOpen className="w-8 h-8 text-primary mx-auto mb-3" />
+            <div className="text-2xl font-bold text-primary mb-1">{editingData.sections?.length || 0}</div>
+            <div className="text-sm text-muted-foreground">Sections</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6 text-center">
+            <Globe className="w-8 h-8 text-primary mx-auto mb-3" />
+            <div className="text-2xl font-bold text-primary mb-1">
+              {SUPPORTED_LANGUAGES.find(lang => lang.code === currentLanguage)?.flag || '🌐'}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {SUPPORTED_LANGUAGES.find(lang => lang.code === currentLanguage)?.name || currentLanguage}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Learning Outcomes */}
+      {editingData.learningOutcomes && editingData.learningOutcomes.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="w-5 h-5 text-primary" />
+              Learning Outcomes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-3">
+              {editingData.learningOutcomes.map((outcome, index) => (
+                <li key={index} className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <span className="text-muted-foreground">{outcome}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Tags */}
+      {editingData.tags && editingData.tags.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Tags</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {editingData.tags.map((tag, index) => (
+                <Badge key={index} variant="secondary">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Begin Button */}
+      <div className="flex justify-center pt-8">
+        <Button 
+          onClick={handleBeginModule} 
+          size="lg" 
+          className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow px-8 py-6 text-lg"
+        >
+          <Play className="w-5 h-5 mr-2" />
+          Begin Module
+        </Button>
+      </div>
+    </div>
+  );
     if (!user || !moduleId) return;
 
     try {
@@ -1052,69 +1211,73 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Sheet open={isTableOfContentsOpen} onOpenChange={setIsTableOfContentsOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Menu className="h-4 w-4" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="left">
-                  <SheetHeader>
-                    <SheetTitle>Table of Contents</SheetTitle>
-                    {isAdminMode && isEditable && (
-                      <Button onClick={handleAddSection} size="sm" className="mt-2">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Section
-                      </Button>
-                    )}
-                  </SheetHeader>
-                  <ScrollArea className="h-full mt-6">
-                    <div className="space-y-2">
-                      {editingData.sections.map((section, index) => (
-                        <div key={section.id} className="space-y-2">
-                          <Button
-                            variant={index === currentSectionIndex ? "default" : "ghost"}
-                            className="w-full justify-start h-auto p-3"
-                            onClick={() => {
-                              setCurrentSectionIndex(index);
-                              setIsTableOfContentsOpen(false);
-                            }}
-                          >
-                            <div className="flex items-center gap-2">
-                              {completedSections.has(index) ? (
-                                <CheckCircle className="h-4 w-4 text-green-500" />
-                              ) : (
-                                <Circle className="h-4 w-4" />
-                              )}
-                              <span className="text-left">{section.title}</span>
-                            </div>
-                          </Button>
-                          {isAdminMode && isEditable && (
-                            <div className="flex gap-1 px-3">
-                              <Input
-                                value={section.title}
-                                onChange={(e) => handleEditSectionTitle(index, e.target.value)}
-                                className="h-8 text-xs"
-                                placeholder="Section title"
-                              />
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleDeleteSection(index)}
-                                className="h-8 w-8 p-0"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </SheetContent>
-              </Sheet>
+              {/* Show menu button only when module has begun */}
+              {hasBegunModule && (
+                <Sheet open={isTableOfContentsOpen} onOpenChange={setIsTableOfContentsOpen}>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Menu className="h-4 w-4" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="left">
+                    <SheetHeader>
+                      <SheetTitle>Table of Contents</SheetTitle>
+                      {isAdminMode && isEditable && (
+                        <Button onClick={handleAddSection} size="sm" className="mt-2">
+                          <Plus className="mr-2 h-4 w-4" />
+                          Add Section
+                        </Button>
+                      )}
+                    </SheetHeader>
+                    <ScrollArea className="h-full mt-6">
+                      <div className="space-y-2">
+                        {editingData.sections.map((section, index) => (
+                          <div key={section.id} className="space-y-2">
+                            <Button
+                              variant={index === currentSectionIndex ? "default" : "ghost"}
+                              className="w-full justify-start h-auto p-3"
+                              onClick={() => {
+                                setCurrentSectionIndex(index);
+                                setIsTableOfContentsOpen(false);
+                              }}
+                            >
+                              <div className="flex items-center gap-2">
+                                {completedSections.has(index) ? (
+                                  <CheckCircle className="h-4 w-4 text-green-500" />
+                                ) : (
+                                  <Circle className="h-4 w-4" />
+                                )}
+                                <span className="text-left">{section.title}</span>
+                              </div>
+                            </Button>
+                            {isAdminMode && isEditable && (
+                              <div className="flex gap-1 px-3">
+                                <Input
+                                  value={section.title}
+                                  onChange={(e) => handleEditSectionTitle(index, e.target.value)}
+                                  className="h-8 text-xs"
+                                  placeholder="Section title"
+                                />
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleDeleteSection(index)}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </SheetContent>
+                </Sheet>
+              )}
               
               <div className="flex-1">
+                {/* Show admin editing form in admin mode */}
                 {isAdminMode && isEditable ? (
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1178,11 +1341,9 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                 ) : (
                   <div>
                     <h1 className="text-xl font-bold">{editingData.title}</h1>
-                    <p className="text-muted-foreground mt-1">{editingData.description}</p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <Badge variant="outline">{editingData.difficulty}</Badge>
-                      <Badge variant="outline">{editingData.duration} min</Badge>
-                    </div>
+                    <p className="text-muted-foreground text-sm">
+                      {hasBegunModule ? `Section ${currentSectionIndex + 1} of ${editingData.sections.length}` : 'Module Overview'}
+                    </p>
                   </div>
                 )}
               </div>
@@ -1199,9 +1360,11 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                   Save Changes
                 </Button>
               )}
-              <div className="text-sm text-muted-foreground">
-                Section {currentSectionIndex + 1} of {editingData.sections.length}
-              </div>
+              {hasBegunModule && (
+                <div className="text-sm text-muted-foreground">
+                  Section {currentSectionIndex + 1} of {editingData.sections.length}
+                </div>
+              )}
               {moduleId && availableLanguages.length > 1 && !isAdminMode && (
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">Language:</span>
@@ -1244,140 +1407,160 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
             </div>
           </div>
 
-          <div className="mt-4">
-            <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
-              <span>Progress</span>
-              <span>{Math.round(progress)}%</span>
+          {/* Progress bar - only show when module has begun */}
+          {hasBegunModule && (
+            <div className="mt-4">
+              <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
+                <span>Progress</span>
+                <span>{Math.round(progress)}%</span>
+              </div>
+              <Progress value={progress} className="h-2" />
             </div>
-            <Progress value={progress} className="h-2" />
-          </div>
+          )}
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* Main Content with Tabs */}
       <main className="flex-1 overflow-y-auto">
         <div className="container mx-auto px-4 py-8">
-          {showResults ? (
-            <Card className="max-w-4xl mx-auto">
-              <CardHeader className="text-center">
-                <CardTitle className="text-3xl flex items-center justify-center gap-2">
-                  <Trophy className="h-8 w-8 text-yellow-500" />
-                  Module Complete!
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6 text-center">
-                <div className="text-6xl font-bold text-primary">
-                  {calculateScore()}%
-                </div>
-                <div className="text-xl">
-                  {calculateScore() >= 70 ? (
-                    <div className="text-green-600">
-                      🎉 Congratulations! You've passed the module!
+          <Tabs value={hasBegunModule ? "content" : "info"} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="info">Module Info</TabsTrigger>
+              <TabsTrigger value="content" disabled={!hasBegunModule}>Content</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="info" className="mt-6">
+              <Card className="max-w-4xl mx-auto">
+                <CardContent className="p-8">
+                  {renderModuleInfo()}
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="content" className="mt-6">
+              {showResults ? (
+                <Card className="max-w-4xl mx-auto">
+                  <CardHeader className="text-center">
+                    <CardTitle className="text-3xl flex items-center justify-center gap-2">
+                      <Trophy className="h-8 w-8 text-yellow-500" />
+                      Module Complete!
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6 text-center">
+                    <div className="text-6xl font-bold text-primary">
+                      {calculateScore()}%
                     </div>
-                  ) : (
-                    <div className="text-orange-600">
-                      Good attempt! Would you like to try again?
+                    <div className="text-xl">
+                      {calculateScore() >= 70 ? (
+                        <div className="text-green-600">
+                          🎉 Congratulations! You've passed the module!
+                        </div>
+                      ) : (
+                        <div className="text-orange-600">
+                          Good attempt! Would you like to try again?
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-                <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground max-w-md mx-auto">
-                  <div>
-                    <div className="font-medium">Correct Answers</div>
-                    <div>{Object.values(quizResults).filter(Boolean).length}</div>
-                  </div>
-                  <div>
-                    <div className="font-medium">Total Questions</div>
-                    <div>{Object.keys(quizResults).length}</div>
-                  </div>
-                </div>
-                <div className="flex gap-4 justify-center">
-                  <Button onClick={handleRetakeModule} variant="outline">
-                    <RotateCcw className="mr-2 h-4 w-4" />
-                    Retake Module
-                  </Button>
-                  {calculateScore() >= 70 && !isAdminMode && (
-                    <Button onClick={onClose || (() => window.location.href = '/modules')}>
-                      Continue Learning
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="max-w-4xl mx-auto">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-2xl">{currentSection?.title}</CardTitle>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsAskAIOpen(true)}
-                    >
-                      <Bot className="mr-2 h-4 w-4" />
-                      Ask AI
-                    </Button>
-                    {isAdminMode && isEditable && (
+                    <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground max-w-md mx-auto">
+                      <div>
+                        <div className="font-medium">Correct Answers</div>
+                        <div>{Object.values(quizResults).filter(Boolean).length}</div>
+                      </div>
+                      <div>
+                        <div className="font-medium">Total Questions</div>
+                        <div>{Object.keys(quizResults).length}</div>
+                      </div>
+                    </div>
+                    <div className="flex gap-4 justify-center">
+                      <Button onClick={handleRetakeModule} variant="outline">
+                        <RotateCcw className="mr-2 h-4 w-4" />
+                        Retake Module
+                      </Button>
+                      {calculateScore() >= 70 && !isAdminMode && (
+                        <Button onClick={onClose || (() => window.location.href = '/modules')}>
+                          Continue Learning
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="max-w-4xl mx-auto">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-2xl">{currentSection?.title}</CardTitle>
                       <div className="flex gap-2">
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={handleAddContent}
+                          onClick={() => setIsAskAIOpen(true)}
                         >
-                          <Plus className="mr-2 h-4 w-4" />
-                          Add Content
+                          <Bot className="mr-2 h-4 w-4" />
+                          Ask AI
                         </Button>
-                        <Select onValueChange={handleAddContentByType}>
-                          <SelectTrigger className="w-[140px]">
-                            <SelectValue placeholder="Content type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="text">Text</SelectItem>
-                            <SelectItem value="list">List</SelectItem>
-                            <SelectItem value="quiz">Quiz</SelectItem>
-                            <SelectItem value="image">Image</SelectItem>
-                            <SelectItem value="video">Video</SelectItem>
-                            <SelectItem value="audio">Audio</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        {isAdminMode && isEditable && (
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleAddContent}
+                            >
+                              <Plus className="mr-2 h-4 w-4" />
+                              Add Content
+                            </Button>
+                            <Select onValueChange={handleAddContentByType}>
+                              <SelectTrigger className="w-[140px]">
+                                <SelectValue placeholder="Content type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="text">Text</SelectItem>
+                                <SelectItem value="list">List</SelectItem>
+                                <SelectItem value="quiz">Quiz</SelectItem>
+                                <SelectItem value="image">Image</SelectItem>
+                                <SelectItem value="video">Video</SelectItem>
+                                <SelectItem value="audio">Audio</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {Array.isArray(currentSection?.content) && currentSection.content.map((content, index) => renderContent(content, index))}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Navigation - only show in content tab */}
+              <div className="flex items-center justify-between mt-8 max-w-4xl mx-auto">
+                <Button
+                  variant="outline"
+                  onClick={handlePreviousSection}
+                  disabled={currentSectionIndex === 0 && !showResults}
+                >
+                  <ChevronLeft className="mr-2 h-4 w-4" />
+                  Previous
+                </Button>
+
+                <div className="text-sm text-muted-foreground">
+                  {showResults ? "Results" : `${currentSectionIndex + 1} / ${editingData.sections.length}`}
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {Array.isArray(currentSection?.content) && currentSection.content.map((content, index) => renderContent(content, index))}
-              </CardContent>
-            </Card>
-          )}
 
-        {/* Navigation */}
-        <div className="flex items-center justify-between mt-8 max-w-4xl mx-auto">
-          <Button
-            variant="outline"
-            onClick={handlePreviousSection}
-            disabled={currentSectionIndex === 0 && !showResults}
-          >
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Previous
-          </Button>
-
-          <div className="text-sm text-muted-foreground">
-            {showResults ? "Results" : `${currentSectionIndex + 1} / ${editingData.sections.length}`}
-          </div>
-
-          {!showResults ? (
-            <Button
-              onClick={handleNextSection}
-              disabled={false}
-            >
-              {currentSectionIndex === editingData.sections.length - 1 ? 'Finish' : 'Next'}
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
-          ) : (
-            <div></div>
-          )}
-        </div>
+                {!showResults ? (
+                  <Button
+                    onClick={handleNextSection}
+                    disabled={false}
+                  >
+                    {currentSectionIndex === editingData.sections.length - 1 ? 'Finish' : 'Next'}
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  </Button>
+                ) : (
+                  <div></div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
 
