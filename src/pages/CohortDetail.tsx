@@ -284,6 +284,10 @@ export default function CohortDetail() {
   };
 
   const handleContentClick = async (content: ContentItem) => {
+    console.log('Content clicked:', content);
+    console.log('Content type:', content.type);
+    console.log('Content data:', content.content_data);
+    
     if (content.type === 'learning_plan') {
       // Navigate to the learning plan
       window.location.href = `/plan/${content.id}`;
@@ -295,6 +299,8 @@ export default function CohortDetail() {
           .select('*')
           .eq('id', content.id)
           .maybeSingle();
+        
+        console.log('Module data fetched:', moduleData);
         
         if (moduleData) {
           // Parse json_data if it's a string
@@ -315,6 +321,7 @@ export default function CohortDetail() {
             videoUrl: moduleData.video_url || ''
           };
           
+          console.log('Setting module viewer data:', moduleViewerData);
           setSelectedContent(moduleViewerData);
           setSelectedViewer(content.type);
         }
@@ -323,9 +330,12 @@ export default function CohortDetail() {
       }
     } else {
       // For other content types, use the content_data which contains the full details
+      console.log('Setting content for viewer:', content.content_data || content);
       setSelectedContent(content.content_data || content);
       setSelectedViewer(content.type);
     }
+    
+    console.log('Selected viewer set to:', content.type);
   };
 
   const handleCloseViewer = () => {
