@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { NewsViewer } from '@/components/NewsViewer';
@@ -25,6 +25,19 @@ interface UniversalContentOpenerProps {
 export function UniversalContentOpener({ isOpen, onClose, content }: UniversalContentOpenerProps) {
   const [loading, setLoading] = useState(false);
   const [viewerData, setViewerData] = useState<any>(null);
+
+  // Fetch content data whenever content changes and modal should be open
+  useEffect(() => {
+    if (isOpen && content && !loading) {
+      fetchContentData(content).then(data => {
+        console.log('📋 UniversalContentOpener: Effect fetched data:', data);
+        setViewerData(data);
+      });
+    } else if (!isOpen) {
+      // Reset when modal closes
+      setViewerData(null);
+    }
+  }, [isOpen, content]);
 
   const fetchContentData = async (content: ContentItem) => {
     if (!content) return null;
@@ -235,19 +248,10 @@ export function UniversalContentOpener({ isOpen, onClose, content }: UniversalCo
     return null;
   };
 
-  const handleOpenChange = async (open: boolean) => {
-    console.log('📋 UniversalContentOpener: Modal open change:', open, 'content:', content);
-    if (open && content && !viewerData) {
-      console.log('📋 UniversalContentOpener: Fetching data for content:', content);
-      const data = await fetchContentData(content);
-      console.log('📋 UniversalContentOpener: Fetched data:', data);
-      setViewerData(data);
-    } else if (!open) {
+  const handleOpenChange = (open: boolean) => {
+    console.log('📋 UniversalContentOpener: Dialog open change:', open);
+    if (!open) {
       onClose();
-      // Reset viewer data after modal closes to prevent stale data
-      setTimeout(() => {
-        setViewerData(null);
-      }, 200);
     }
   };
 
