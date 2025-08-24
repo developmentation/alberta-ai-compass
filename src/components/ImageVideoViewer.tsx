@@ -89,19 +89,27 @@ export function ImageVideoViewer({
       return (
         <div 
           className={`relative ${baseClasses}`}
-          onClickCapture={(e) => e.stopPropagation()}
-          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          style={{ pointerEvents: 'auto' }}
         >
           <iframe
             src={convertToEmbedUrl(videoUrl)}
             title={title || "YouTube video player"}
             width="100%"
             height="100%"
-            className="absolute inset-0 w-full h-full rounded-lg"
+            className="absolute inset-0 w-full h-full rounded-lg pointer-events-auto"
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             referrerPolicy="strict-origin-when-cross-origin"
             allowFullScreen
+            style={{ pointerEvents: 'auto' }}
           />
         </div>
       );
@@ -109,8 +117,14 @@ export function ImageVideoViewer({
       return (
         <div 
           className={`relative ${baseClasses}`}
-          onClickCapture={(e) => e.stopPropagation()}
-          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
         >
           <video
             ref={videoRef}
@@ -122,15 +136,32 @@ export function ImageVideoViewer({
             onPause={() => setVideoPlaying(false)}
             onEnded={() => setVideoPlaying(false)}
             title={title}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
           />
           {showControls && (
             <Button
               variant="outline"
               size="sm"
-              className="absolute bottom-2 left-2 bg-black/50 hover:bg-black/70 text-white border-white/20 z-10"
-              onMouseDown={(e) => e.stopPropagation()}
-              onClick={handlePlayPause}
+              className="absolute bottom-2 left-2 bg-black/50 hover:bg-black/70 text-white border-white/20 z-50"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                if (videoRef.current) {
+                  if (videoPlaying) {
+                    videoRef.current.pause();
+                  } else {
+                    videoRef.current.play().catch(console.error);
+                  }
+                }
+              }}
             >
               {videoPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
             </Button>
