@@ -38,9 +38,21 @@ export const NewsCard = ({
     ? description.substring(0, 100) + '...' 
     : description;
 
-  // Determine what to show - prioritize real images, then videos, then fallback
-  const hasRealImage = image && image !== "/placeholder.svg" && !image.includes('/videos/');
-  const hasVideo = videoUrl && videoUrl.includes('/videos/');
+  // Helper function to check if URL is a YouTube URL  
+  const isYouTubeUrl = (url: string): boolean => {
+    if (!url) return false;
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)/,
+      /youtube\.com\/v\//,
+      /youtube\.com\/user\/.*#p\/.*\/.*\//,
+      /youtube\.com\/.*[?&]v=/
+    ];
+    return patterns.some(pattern => pattern.test(url));
+  };
+
+  // Determine what to show - prioritize real images, then videos (including YouTube), then fallback
+  const hasRealImage = image && image !== "/placeholder.svg" && !image.includes('/videos/') && !isYouTubeUrl(image);
+  const hasVideo = videoUrl && (videoUrl.includes('/videos/') || isYouTubeUrl(videoUrl));
   
   const showImage = hasRealImage;
   const showVideo = !hasRealImage && hasVideo;
