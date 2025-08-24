@@ -175,8 +175,8 @@ export default function AdminLearningModules() {
         description: "Module updated successfully",
       });
 
-      // Don't refetch all modules, just update the local state
-      // fetchModules(); // Removed to prevent modal close/reopen
+      // Close the modal after successful save
+      handleCloseViewer();
     } catch (error: any) {
       toast({
         title: "Error", 
