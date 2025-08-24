@@ -1,7 +1,5 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search, ArrowRight } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Newspaper, Wrench, BookOpen, Users } from "lucide-react";
 
 interface HeroSectionProps {
   onSearch: (results: any[]) => void;
@@ -9,44 +7,28 @@ interface HeroSectionProps {
 }
 
 export const HeroSection = ({ onSearch, searchResults }: HeroSectionProps) => {
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const suggestions = [
-    "Prompt engineering",
-    "LLMs for beginners", 
-    "AI ethics",
-    "RAG systems"
+  const keyFeatures = [
+    {
+      icon: Newspaper,
+      title: "News",
+      description: "Stay updated with the latest AI developments, industry insights, and breakthrough technologies."
+    },
+    {
+      icon: Wrench,
+      title: "Tools", 
+      description: "Access curated AI tools and platforms to enhance your productivity and learning experience."
+    },
+    {
+      icon: BookOpen,
+      title: "Learning Plans",
+      description: "Follow structured learning paths designed to take you from beginner to advanced AI practitioner."
+    },
+    {
+      icon: Users,
+      title: "Cohorts",
+      description: "Join collaborative learning groups and connect with peers on your AI learning journey."
+    }
   ];
-
-  const handleSearch = () => {
-    if (!searchQuery.trim()) return;
-    
-    // Mock search results
-    const mockResults = [
-      {
-        id: 1,
-        type: "article",
-        title: `Understanding ${searchQuery}`,
-        description: "Comprehensive guide to getting started",
-        readTime: "8 min read"
-      },
-      {
-        id: 2,
-        type: "course",
-        title: `${searchQuery} Fundamentals`,
-        description: "Step-by-step learning path",
-        duration: "3 weeks"
-      }
-    ];
-    
-    onSearch(mockResults);
-  };
-
-  const handleSuggestionClick = (suggestion: string) => {
-    setSearchQuery(suggestion);
-    // Auto-search when suggestion is clicked
-    setTimeout(() => handleSearch(), 100);
-  };
 
   return (
     <section className="relative overflow-hidden py-20">
@@ -57,90 +39,51 @@ export const HeroSection = ({ onSearch, searchResults }: HeroSectionProps) => {
           </div>
           
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6">
-            Search anything.{" "}
             <span className="bg-gradient-primary bg-clip-text text-transparent">
               Learn faster
             </span>{" "}
-            with Alberta AI Academy.
+            with the Alberta AI Academy.
           </h1>
           
-          <p className="text-lg text-muted-foreground leading-relaxed mb-10 max-w-2xl">
-            Type a goal, topic, or tool. We surface curated articles, learning plans, and hands-on tools—then help you create a step-by-step plan with outcomes.
+          <p className="text-lg text-muted-foreground leading-relaxed mb-6 max-w-2xl">
+            Learn, join community, and collaborate to expand your AI skills.
           </p>
 
-          {/* Search Bar */}
-          <div className="max-w-3xl mb-8">
-            <div className="group flex items-center gap-3 bg-card/60 backdrop-blur-sm border border-border rounded-2xl p-3 focus-within:border-primary/50 focus-within:shadow-glow transition-all">
-              <div className="px-3 py-2">
-                <Search className="w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-              </div>
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="Search topics, goals, or tools…"
-                className="flex-1 bg-transparent border-0 text-base placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:outline-none"
-              />
-              <Button 
-                onClick={handleSearch}
-                className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow"
-              >
-                Find materials
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-
-            {/* Suggestions */}
-            <div className="mt-4 flex flex-wrap items-center gap-3">
-              <span className="text-sm text-muted-foreground">Try:</span>
-              {suggestions.map((suggestion) => (
-                <button
-                  key={suggestion}
-                  onClick={() => handleSuggestionClick(suggestion)}
-                  className="text-sm px-4 py-2 rounded-lg border border-border hover:border-primary/50 hover:bg-card/60 transition-all"
-                >
-                  {suggestion}
-                </button>
-              ))}
-            </div>
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-card/60 backdrop-blur-sm border border-border rounded-lg mb-12">
+            <span className="text-sm font-medium text-primary">🍁</span>
+            <span className="text-sm text-muted-foreground">
+              A free service provided by the Government of Alberta
+            </span>
           </div>
 
-          {/* Search Results */}
-          {searchResults.length > 0 && (
-            <div className="animate-scale-in">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold">Search Results</h3>
-                <button 
-                  onClick={() => onSearch([])}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Clear
-                </button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {searchResults.map((result) => (
-                  <div
-                    key={result.id}
-                    className="p-4 rounded-lg border border-border bg-card/40 backdrop-blur-sm hover:bg-card-hover transition-colors"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-xs px-2 py-1 rounded bg-primary/10 text-primary">
-                        {result.type}
-                      </span>
-                      {result.readTime && (
-                        <span className="text-xs text-muted-foreground">{result.readTime}</span>
-                      )}
-                      {result.duration && (
-                        <span className="text-xs text-muted-foreground">{result.duration}</span>
-                      )}
-                    </div>
-                    <h4 className="font-semibold mb-1">{result.title}</h4>
-                    <p className="text-sm text-muted-foreground">{result.description}</p>
-                  </div>
-                ))}
-              </div>
+          {/* Key Features */}
+          <div className="mb-16">
+            <h2 className="text-3xl font-bold text-center mb-4">Key Features</h2>
+            <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Discover everything you need to advance your AI knowledge and skills
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {keyFeatures.map((feature) => {
+                const Icon = feature.icon;
+                return (
+                  <Card key={feature.title} className="group hover:shadow-lg transition-all duration-300 hover:border-primary/50">
+                    <CardHeader className="text-center pb-4">
+                      <div className="w-12 h-12 mx-auto mb-4 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                        <Icon className="w-6 h-6 text-primary" />
+                      </div>
+                      <CardTitle className="text-lg">{feature.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <CardDescription className="text-center text-sm leading-relaxed">
+                        {feature.description}
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </section>
