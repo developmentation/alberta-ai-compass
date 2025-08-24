@@ -1067,13 +1067,14 @@ export type Database = {
       }
     }
     Views: {
-      api_keys_decrypted: {
+      api_keys_admin: {
         Row: {
           added_by: string | null
-          api_key: string | null
+          api_key_display: string | null
           created_at: string | null
           deleted_at: string | null
           description: string | null
+          encrypted_api_key: string | null
           id: string | null
           is_active: boolean | null
           model_names: string[] | null
@@ -1083,10 +1084,11 @@ export type Database = {
         }
         Insert: {
           added_by?: string | null
-          api_key?: never
+          api_key_display?: never
           created_at?: string | null
           deleted_at?: string | null
           description?: string | null
+          encrypted_api_key?: string | null
           id?: string | null
           is_active?: boolean | null
           model_names?: string[] | null
@@ -1096,10 +1098,11 @@ export type Database = {
         }
         Update: {
           added_by?: string | null
-          api_key?: never
+          api_key_display?: never
           created_at?: string | null
           deleted_at?: string | null
           description?: string | null
+          encrypted_api_key?: string | null
           id?: string | null
           is_active?: boolean | null
           model_names?: string[] | null
