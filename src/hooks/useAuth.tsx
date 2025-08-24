@@ -39,78 +39,83 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
     
-    // Check for existing session first
+    // Set up auth state listener FIRST - but without async operations
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (!mounted) return;
+        
+        console.log('Auth state changed:', event, !!session);
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (!session) {
+          setProfile(null);
+          setLoading(false);
+          return;
+        }
+        
+        // Defer profile fetching to avoid auth deadlocks
+        if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+          setTimeout(async () => {
+            if (!mounted) return;
+            
+            try {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .maybeSingle();
+              
+              if (!mounted) return;
+              
+              setProfile(profile);
+              setLoading(false);
+              
+              // Update last login only on actual sign in
+              if (profile && event === 'SIGNED_IN') {
+                await supabase
+                  .from('profiles')
+                  .update({ last_login: new Date().toISOString() })
+                  .eq('id', session.user.id);
+              }
+            } catch (error) {
+              console.error('Error fetching profile:', error);
+              if (mounted) {
+                setLoading(false);
+              }
+            }
+          }, 0);
+        } else {
+          setLoading(false);
+        }
+      }
+    );
+    
+    // THEN check for existing session
     const initializeAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!mounted) return;
         
-        setSession(session);
-        setUser(session?.user ?? null);
+        console.log('Initial session check:', !!session);
         
-        if (session?.user) {
-          // Fetch profile for existing session
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (!mounted) return;
-          setProfile(profile);
-          
-          if (profile) {
-            await supabase
-              .from('profiles')
-              .update({ last_login: new Date().toISOString() })
-              .eq('id', session.user.id);
-          }
+        // Don't update state here if we already have a session from the listener
+        if (!session) {
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          setLoading(false);
         }
-        
-        setLoading(false);
+        // If we have a session, let the auth state listener handle it
       } catch (error) {
         console.error('Error initializing auth:', error);
-        if (mounted) setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
-    
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
-        
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user && event === 'SIGNED_IN') {
-          // Only fetch profile on actual sign in events
-          try {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-            
-            if (!mounted) return;
-            setProfile(profile);
-            
-            if (profile) {
-              await supabase
-                .from('profiles')
-                .update({ last_login: new Date().toISOString() })
-                .eq('id', session.user.id);
-            }
-          } catch (error) {
-            console.error('Error fetching profile:', error);
-          }
-        } else if (!session) {
-          setProfile(null);
-        }
-        
-        setLoading(false);
-      }
-    );
     
     initializeAuth();
 
