@@ -18,7 +18,7 @@ export interface EnhancedContentItem {
   original_id: string;
   name: string;
   description?: string;
-  type: 'module' | 'news' | 'tool' | 'prompt' | 'learning_plan';
+  type: 'module' | 'news' | 'article' | 'tool' | 'prompt' | 'learning_plan';
   status: string;
   image_url?: string;
   video_url?: string;
@@ -47,6 +47,7 @@ export function EnhancedContentBuilder({ title, contentItems, onUpdateContent }:
     switch (type) {
       case 'module': return <BookOpen className="h-4 w-4" />;
       case 'news': return <Newspaper className="h-4 w-4" />;
+      case 'article': return <Newspaper className="h-4 w-4" />;
       case 'tool': return <Wrench className="h-4 w-4" />;
       case 'prompt': return <MessageSquare className="h-4 w-4" />;
       case 'learning_plan': return <BookOpen className="h-4 w-4" />;
@@ -58,6 +59,7 @@ export function EnhancedContentBuilder({ title, contentItems, onUpdateContent }:
     switch (type) {
       case 'module': return 'bg-blue-500';
       case 'news': return 'bg-green-500';
+      case 'article': return 'bg-teal-500';
       case 'tool': return 'bg-purple-500';
       case 'prompt': return 'bg-orange-500';
       case 'learning_plan': return 'bg-indigo-500';
