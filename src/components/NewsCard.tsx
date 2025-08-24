@@ -7,6 +7,7 @@ interface NewsCardProps {
   date: string;
   category: string;
   image: string;
+  videoUrl?: string;
   onClick?: () => void;
   averageRating?: number;
   totalVotes?: number;
@@ -19,6 +20,7 @@ export const NewsCard = ({
   date,
   category,
   image,
+  videoUrl,
   onClick,
   averageRating = 0,
   totalVotes = 0,
@@ -29,18 +31,33 @@ export const NewsCard = ({
     ? description.substring(0, 100) + '...' 
     : description;
 
+  // Determine what to show - prioritize actual images over video URLs
+  const showImage = image && !image.includes('/videos/');
+  const showVideo = !showImage && videoUrl && videoUrl.includes('/videos/');
+  const fallbackImage = "/placeholder.svg";
+
   return (
     <article 
       className="group rounded-2xl border border-border overflow-hidden bg-card/40 backdrop-blur-sm hover:bg-card-hover transition-all duration-500 hover:shadow-elegant hover:scale-[1.02] hover:-translate-y-1 cursor-pointer relative"
       onClick={onClick}
     >
-      {/* Image Section */}
+      {/* Image/Video Section */}
       <div className="relative h-48 overflow-hidden">
-        <img
-          src={image}
-          alt={title}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-        />
+        {showVideo ? (
+          <video
+            src={videoUrl}
+            className="w-full h-full object-cover"
+            muted
+            loop
+            playsInline
+          />
+        ) : (
+          <img
+            src={showImage ? image : fallbackImage}
+            alt={title}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
         <Badge 
           variant="secondary"
