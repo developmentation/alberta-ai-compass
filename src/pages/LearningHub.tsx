@@ -3,11 +3,14 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { LearningPlanCard } from "@/components/LearningPlanCard";
 import { ArticleCard } from "@/components/ArticleCard";
+import { ArticleViewer } from "@/components/ArticleViewer";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Search, Filter, Loader2, Star, Bookmark } from "lucide-react";
 import { useLearningPlans } from "@/hooks/useLearningPlans";
+import { useArticles } from "@/hooks/useArticles";
 import { useAuth } from "@/hooks/useAuth";
 import { useContentRatings } from "@/hooks/useContentRatings";
 
@@ -16,39 +19,69 @@ const LearningHub = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [minStarRating, setMinStarRating] = useState(0);
   const [showBookmarkedOnly, setShowBookmarkedOnly] = useState(false);
-  const { user } = useAuth();
-  const { learningPlans, loading, error } = useLearningPlans();
+  const [selectedArticle, setSelectedArticle] = useState<any>(null);
+  const [isArticleViewerOpen, setIsArticleViewerOpen] = useState(false);
   
-  const planItems = learningPlans.map(item => ({ id: item.id, type: 'learning_plan' }));
-  const { ratingsData } = useContentRatings(planItems);
-
-  // Mock articles for now - these could come from the resources table or a separate articles table
-  const articles = [
-    {
-      id: 1,
-      title: "Chain-of-Thought: When to use it and why",
-      description: "A compact guide to reasoning strategies and evaluation. Learn how to implement effective chain-of-thought prompting techniques.",
-      readTime: "12 min read",
-      level: "Advanced",
-      image: "https://images.unsplash.com/photo-1557683311-eac922347aa1?q=80&w=1400&auto=format&fit=crop"
-    },
-    {
-      id: 2,
-      title: "Evaluation 101: Beyond accuracy",
-      description: "Coverage, robustness, and preference-informed evals. Discover comprehensive methods for evaluating AI model performance.",
-      readTime: "8 min read",
-      level: "Intermediate",
-      image: "https://images.unsplash.com/photo-1635151227785-429f420c6b9d?w=1080&q=80"
-    },
-    {
-      id: 3,
-      title: "From zero to first AI project",
-      description: "Scoping, data sourcing, and a minimal viable workflow. A step-by-step guide to launching your first AI initiative.",
-      readTime: "10 min read",
-      level: "Beginner",
-      image: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=1400&auto=format&fit=crop"
-    }
+  const { user } = useAuth();
+  const { learningPlans, loading: plansLoading, error: plansError } = useLearningPlans();
+  const { articles, loading: articlesLoading, error: articlesError } = useArticles();
+  
+  // Prepare content items for ratings - include both plans and articles
+  const contentItems = [
+    ...learningPlans.map(item => ({ id: item.id, type: 'learning_plan' })),
+    ...articles.map(item => ({ id: item.id, type: 'article' }))
   ];
+  const { ratingsData } = useContentRatings(contentItems);
+
+  const handleArticleClick = (article: any) => {
+    setSelectedArticle(article);
+    setIsArticleViewerOpen(true);
+  };
+
+  const handleCloseArticleViewer = () => {
+    setIsArticleViewerOpen(false);
+    setSelectedArticle(null);
+  };
+
+  // Loading state
+  const loading = plansLoading || articlesLoading;
+  const error = plansError || articlesError;
+
+  // Transform and filter articles from database
+  const filteredArticles = articles
+    .filter(article => {
+      const articleLevel = article.level?.toLowerCase();
+      const matchesFilter = activeFilter === "all" || 
+        (activeFilter === "1" && articleLevel === "1") ||
+        (activeFilter === "2" && articleLevel === "2") ||
+        (activeFilter === "3" && articleLevel === "3") ||
+        (activeFilter === "red" && articleLevel === "red");
+        
+      const matchesSearch = article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           article.description.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const ratingData = ratingsData[article.id];
+      const matchesRating = minStarRating === 0 || (ratingData?.averageRating || 0) >= minStarRating;
+      const matchesBookmark = !showBookmarkedOnly || (ratingData?.isBookmarked || false);
+      
+      return matchesFilter && matchesSearch && matchesRating && matchesBookmark;
+    })
+    .map(article => {
+      const ratingData = ratingsData[article.id];
+      return {
+        id: article.id,
+        title: article.title,
+        description: article.description,
+        readTime: `${Math.max(1, Math.ceil(article.description.length / 200))} min read`,
+        level: article.level?.charAt(0).toUpperCase() + article.level?.slice(1) || 'Beginner',
+        image: article.image_url || "https://images.unsplash.com/photo-1557683311-eac922347aa1?q=80&w=1400&auto=format&fit=crop",
+        video: article.video_url,
+        averageRating: ratingData?.averageRating || 0,
+        totalVotes: ratingData?.totalVotes || 0,
+        isBookmarked: ratingData?.isBookmarked || false,
+        onClick: () => handleArticleClick(article)
+      };
+    });
 
   const filters = [
     { key: "all", label: "All" },
@@ -92,17 +125,6 @@ const LearningHub = () => {
     };
   });
 
-  const filteredArticles = articles.filter(article => {
-    const matchesFilter = activeFilter === "all" || article.level.toLowerCase() === (
-      activeFilter === "1" ? "beginner" :
-      activeFilter === "2" ? "intermediate" : 
-      activeFilter === "3" ? "advanced" :
-      activeFilter
-    );
-    const matchesSearch = article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         article.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -254,17 +276,64 @@ const LearningHub = () => {
               <p className="text-muted-foreground">In-depth tutorials and guides with practical examples.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredArticles.map((article, index) => (
-                <div key={article.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
-                  <ArticleCard {...article} />
+            {articlesLoading && (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <span className="ml-2 text-muted-foreground">Loading articles...</span>
+              </div>
+            )}
+            
+            {articlesError && (
+              <div className="text-center py-16">
+                <p className="text-destructive text-lg">
+                  Error loading articles: {articlesError}
+                </p>
+              </div>
+            )}
+
+            {!articlesLoading && !articlesError && (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {filteredArticles.map((article, index) => (
+                    <div key={article.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
+                      <ArticleCard {...article} />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+
+                {filteredArticles.length === 0 && articles.length > 0 && (
+                  <div className="text-center py-16">
+                    <p className="text-muted-foreground text-lg">
+                      No articles found matching your criteria. Try adjusting your search or filters.
+                    </p>
+                  </div>
+                )}
+                
+                {articles.length === 0 && (
+                  <div className="text-center py-16">
+                    <p className="text-muted-foreground text-lg">
+                      No articles available at this time.
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </section>
       </div>
       <Footer />
+
+      {/* Article Viewer Modal */}
+      <Dialog open={isArticleViewerOpen} onOpenChange={handleCloseArticleViewer}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
+          {selectedArticle && (
+            <ArticleViewer 
+              article={selectedArticle}
+              onClose={handleCloseArticleViewer}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
