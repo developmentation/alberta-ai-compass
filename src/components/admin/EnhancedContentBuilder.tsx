@@ -173,12 +173,21 @@ export function EnhancedContentBuilder({ title, contentItems, onUpdateContent }:
                               </div>
 
                               <div className="flex-shrink-0">
-                                {(item.custom_image_url || item.image_url) ? (
-                                  <img
-                                    src={item.custom_image_url || item.image_url}
-                                    alt={item.custom_title || item.name}
-                                    className="w-12 h-12 rounded object-cover"
-                                  />
+                                {(item.custom_image_url || item.image_url || item.custom_video_url || item.video_url) ? (
+                                  (item.custom_video_url || item.video_url) && !(item.custom_image_url || item.image_url) ? (
+                                    <video
+                                      src={item.custom_video_url || item.video_url}
+                                      className="w-12 h-12 rounded object-cover"
+                                      muted
+                                      playsInline
+                                    />
+                                  ) : (
+                                    <img
+                                      src={item.custom_image_url || item.image_url}
+                                      alt={item.custom_title || item.name}
+                                      className="w-12 h-12 rounded object-cover"
+                                    />
+                                  )
                                 ) : (
                                   <div className={`w-12 h-12 rounded flex items-center justify-center text-white ${getTypeColor(item.type)}`}>
                                     {getTypeIcon(item.type)}

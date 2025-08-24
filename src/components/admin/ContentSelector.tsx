@@ -63,6 +63,7 @@ export function ContentSelector({ isOpen, onClose, onSelect, selectedIds = [] }:
           .from('news')
           .select('id, title as name, description, status, image_url, video_url')
           .in('status', ['published', 'draft', 'review'])
+          .eq('is_active', true)
           .is('deleted_at', null);
         
         if (news) {
@@ -204,12 +205,21 @@ export function ContentSelector({ isOpen, onClose, onSelect, selectedIds = [] }:
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
                         <div className="flex-shrink-0">
-                          {item.image_url ? (
-                            <img
-                              src={item.image_url}
-                              alt={item.name}
-                              className="w-12 h-12 rounded object-cover"
-                            />
+                          {(item.image_url || item.video_url) ? (
+                            item.video_url && !item.image_url ? (
+                              <video
+                                src={item.video_url}
+                                className="w-12 h-12 rounded object-cover"
+                                muted
+                                playsInline
+                              />
+                            ) : (
+                              <img
+                                src={item.image_url}
+                                alt={item.name}
+                                className="w-12 h-12 rounded object-cover"
+                              />
+                            )
                           ) : (
                             <div className={`w-12 h-12 rounded flex items-center justify-center text-white ${getTypeColor(item.type)}`}>
                               {getTypeIcon(item.type)}
