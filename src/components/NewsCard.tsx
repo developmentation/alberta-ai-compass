@@ -94,26 +94,22 @@ export const NewsCard = ({
               className="absolute top-2 right-2 flex gap-1 bg-black/40 rounded p-1 group-hover:opacity-100 opacity-0 transition-opacity z-10"
               onClick={(e) => e.stopPropagation()} // Stop propagation on container too
             >
-              <Button
-                size="sm"
-                variant="secondary"
-                className="w-8 h-8 p-0 bg-white/90 hover:bg-white z-20"
-                onMouseDown={(e) => e.stopPropagation()}
-                onMouseUp={(e) => e.stopPropagation()}
-                onClick={toggleVideoPlayback}
-              >
-                {videoPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                className="w-8 h-8 p-0 bg-white/90 hover:bg-white z-20"
-                onMouseDown={(e) => e.stopPropagation()}
-                onMouseUp={(e) => e.stopPropagation()}
-                onClick={toggleVideoMute}
-              >
-                {videoMuted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
-              </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="w-8 h-8 p-0"
+                  onClick={toggleVideoPlayback}
+                >
+                  {videoPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="w-8 h-8 p-0"
+                  onClick={toggleVideoMute}
+                >
+                  {videoMuted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
+                </Button>
             </div>
           </div>
         ) : (

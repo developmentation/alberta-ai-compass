@@ -225,7 +225,7 @@ const LearningHub = () => {
 
             {user && !loading && !error && (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {filteredPlans.map((plan, index) => (
                     <div key={plan.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
                       <LearningPlanCard {...plan} />
@@ -252,7 +252,7 @@ const LearningHub = () => {
             )}
 
             {!user && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 opacity-50 pointer-events-none">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 opacity-50 pointer-events-none">
                 <div className="bg-card/60 backdrop-blur-sm border border-border rounded-lg p-6">
                   <div className="h-32 bg-muted rounded mb-4"></div>
                   <div className="h-4 bg-muted rounded mb-2"></div>
