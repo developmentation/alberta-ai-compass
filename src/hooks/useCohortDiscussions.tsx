@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -23,11 +23,22 @@ export function useCohortDiscussions(cohortId?: string, isActive: boolean = fals
   const [discussions, setDiscussions] = useState<CohortDiscussion[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const lastFetchTime = useRef<number>(0);
+  const discussionsHash = useRef<string>('');
 
-  const fetchDiscussions = useCallback(async () => {
+  const fetchDiscussions = useCallback(async (force: boolean = false) => {
     if (!cohortId) return;
     
-    setLoading(true);
+    // Prevent too frequent calls (throttle to max once per second unless forced)
+    const now = Date.now();
+    if (!force && now - lastFetchTime.current < 1000) {
+      return;
+    }
+    lastFetchTime.current = now;
+    
+    const wasEmpty = discussions.length === 0;
+    if (wasEmpty) setLoading(true);
+    
     try {
       // Fetch discussions with user profiles
       const { data, error } = await supabase
@@ -51,6 +62,21 @@ export function useCohortDiscussions(cohortId?: string, isActive: boolean = fals
         .order('created_at', { ascending: true });
 
       if (error) throw error;
+
+      // Create a hash of the data to check if anything changed
+      const dataHash = JSON.stringify(data?.map(item => ({
+        id: item.id,
+        message: item.message,
+        updated_at: item.updated_at,
+        deleted_at: item.deleted_at,
+        parent_id: item.parent_id
+      })));
+
+      // Only update if data has actually changed
+      if (dataHash === discussionsHash.current) {
+        return;
+      }
+      discussionsHash.current = dataHash;
 
       // Organize discussions in threaded format
       const discussionsMap = new Map<string, CohortDiscussion>();
@@ -95,13 +121,13 @@ export function useCohortDiscussions(cohortId?: string, isActive: boolean = fals
     } catch (error) {
       console.error('Error fetching discussions:', error);
     } finally {
-      setLoading(false);
+      if (wasEmpty) setLoading(false);
     }
-  }, [cohortId]);
+  }, [cohortId, discussions.length]);
 
   useEffect(() => {
     if (cohortId) {
-      fetchDiscussions();
+      fetchDiscussions(true); // Force initial fetch
       
       // Set up real-time subscription for new messages
       const channel = supabase
@@ -116,7 +142,8 @@ export function useCohortDiscussions(cohortId?: string, isActive: boolean = fals
           },
           (payload) => {
             console.log('New discussion message:', payload);
-            fetchDiscussions(); // Refetch to get complete data with user profiles
+            // Delay slightly to ensure data is available
+            setTimeout(() => fetchDiscussions(), 100);
           }
         )
         .on(
@@ -129,7 +156,7 @@ export function useCohortDiscussions(cohortId?: string, isActive: boolean = fals
           },
           (payload) => {
             console.log('Updated discussion message:', payload);
-            fetchDiscussions(); // Refetch to get updated data
+            setTimeout(() => fetchDiscussions(), 100);
           }
         )
         .on(
@@ -142,7 +169,7 @@ export function useCohortDiscussions(cohortId?: string, isActive: boolean = fals
           },
           (payload) => {
             console.log('Deleted discussion message:', payload);
-            fetchDiscussions(); // Refetch to remove deleted items
+            setTimeout(() => fetchDiscussions(), 100);
           }
         )
         .subscribe();
@@ -151,14 +178,13 @@ export function useCohortDiscussions(cohortId?: string, isActive: boolean = fals
         supabase.removeChannel(channel);
       };
     }
-  }, [cohortId]);
+  }, [cohortId, fetchDiscussions]);
 
   // Add polling when discussion tab is active
   useEffect(() => {
     if (!cohortId || !isActive) return;
 
     const interval = setInterval(() => {
-      console.log('Polling for new discussions...');
       fetchDiscussions();
     }, 5000);
 
@@ -181,7 +207,7 @@ export function useCohortDiscussions(cohortId?: string, isActive: boolean = fals
 
       if (error) throw error;
       
-      await fetchDiscussions();
+      await fetchDiscussions(true);
       return true;
     } catch (error) {
       console.error('Error creating discussion:', error);
@@ -206,7 +232,7 @@ export function useCohortDiscussions(cohortId?: string, isActive: boolean = fals
 
       if (error) throw error;
       
-      await fetchDiscussions();
+      await fetchDiscussions(true);
       return true;
     } catch (error) {
       console.error('Error updating discussion:', error);
@@ -228,7 +254,7 @@ export function useCohortDiscussions(cohortId?: string, isActive: boolean = fals
 
       if (error) throw error;
       
-      await fetchDiscussions();
+      await fetchDiscussions(true);
       return true;
     } catch (error) {
       console.error('Error deleting discussion:', error);
