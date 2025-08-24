@@ -50,7 +50,7 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
                 Tools
               </Link>
               <Link to="/learning-hub" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Plans
+                Learning Hub
               </Link>
               {user && (
                 <Link to="/my-learning" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -154,7 +154,7 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
                 className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Plans
+                Learning Hub
               </Link>
               
               {user && (
