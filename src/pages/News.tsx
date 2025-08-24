@@ -165,7 +165,7 @@ const News = () => {
                           description={item.description}
                           date={new Date(item.created_at).toLocaleDateString()}
                           category={`Level ${item.level}`}
-                          image={item.image_url && !item.image_url.includes('/videos/') ? item.image_url : "/placeholder.svg"}
+                          image={item.image_url || ""}
                           videoUrl={item.video_url}
                           averageRating={ratingData?.averageRating}
                           totalVotes={ratingData?.totalVotes}

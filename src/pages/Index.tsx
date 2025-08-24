@@ -4,7 +4,9 @@ import { HeroSection } from "@/components/HeroSection";
 import { LearningPlanCard } from "@/components/LearningPlanCard";
 import { ArticleCard } from "@/components/ArticleCard";
 import { NewsCard } from "@/components/NewsCard";
+import { NewsViewer } from "@/components/NewsViewer";
 import { LoginModal } from "@/components/LoginModal";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -17,6 +19,8 @@ import { format, parseISO } from "date-fns";
 const Index = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [selectedNews, setSelectedNews] = useState<any>(null);
+  const [isNewsViewerOpen, setIsNewsViewerOpen] = useState(false);
 
   // Fetch data from database
   const { news, loading: newsLoading } = useNews();
@@ -84,15 +88,25 @@ const Index = () => {
         description: item.description,
         date: format(parseISO(item.created_at), 'MMM dd, yyyy'),
         category: item.level?.charAt(0).toUpperCase() + item.level?.slice(1) || 'Update',
-        image: item.image_url && !item.image_url.includes('/videos/') ? item.image_url : "/placeholder.svg",
+        image: item.image_url || "",
         videoUrl: item.video_url,
         averageRating: rating?.averageRating || 0,
         totalVotes: rating?.totalVotes || 0,
         isBookmarked: rating?.isBookmarked || false,
-        onClick: () => {} // Can be enhanced to navigate to detailed view
+        onClick: () => handleNewsClick(item)
       };
     });
   }, [news, ratingsData]);
+
+  const handleNewsClick = (newsItem: any) => {
+    setSelectedNews(newsItem);
+    setIsNewsViewerOpen(true);
+  };
+
+  const handleCloseNewsViewer = () => {
+    setIsNewsViewerOpen(false);
+    setSelectedNews(null);
+  };
 
   const articles = [
     {
@@ -289,6 +303,18 @@ const Index = () => {
         isOpen={isLoginOpen} 
         onClose={() => setIsLoginOpen(false)} 
       />
+
+      {/* News Viewer Dialog */}
+      <Dialog open={isNewsViewerOpen} onOpenChange={setIsNewsViewerOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          {selectedNews && (
+            <NewsViewer
+              news={selectedNews}
+              onClose={handleCloseNewsViewer}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

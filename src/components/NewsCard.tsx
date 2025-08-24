@@ -31,9 +31,12 @@ export const NewsCard = ({
     ? description.substring(0, 100) + '...' 
     : description;
 
-  // Determine what to show - prioritize actual images over video URLs
-  const showImage = image && !image.includes('/videos/');
-  const showVideo = !showImage && videoUrl && videoUrl.includes('/videos/');
+  // Determine what to show - prioritize real images, then videos, then fallback
+  const hasRealImage = image && image !== "/placeholder.svg" && !image.includes('/videos/');
+  const hasVideo = videoUrl && videoUrl.includes('/videos/');
+  
+  const showImage = hasRealImage;
+  const showVideo = !hasRealImage && hasVideo;
   const fallbackImage = "/placeholder.svg";
 
   return (
@@ -56,6 +59,14 @@ export const NewsCard = ({
             src={showImage ? image : fallbackImage}
             alt={title}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            onError={(e) => {
+              // If image fails to load, try to show video or fallback
+              if (hasVideo && !showVideo) {
+                e.currentTarget.style.display = 'none';
+              } else {
+                e.currentTarget.src = fallbackImage;
+              }
+            }}
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
