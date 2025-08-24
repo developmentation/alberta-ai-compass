@@ -14,6 +14,8 @@ import { Link } from "react-router-dom";
 import { useNews } from "@/hooks/useNews";
 import { useLearningPlans } from "@/hooks/useLearningPlans";
 import { useContentRatings } from "@/hooks/useContentRatings";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Newspaper, Wrench, BookOpen, Users } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
 const Index = () => {
@@ -165,6 +167,63 @@ const Index = () => {
             onSearch={setSearchResults}
             searchResults={searchResults}
           />
+
+          {/* Key Features */}
+          <section className="relative py-16">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="animate-fade-in-up text-center mb-12">
+                <h2 className="text-3xl sm:text-4xl font-bold tracking-tight bg-gradient-primary bg-clip-text text-transparent">
+                  Key Features
+                </h2>
+                <p className="text-muted-foreground mt-2">Discover everything you need to advance your AI knowledge and skills</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {[
+                  {
+                    icon: Newspaper,
+                    title: "News",
+                    description: "Stay updated with the latest AI developments, industry insights, and breakthrough technologies."
+                  },
+                  {
+                    icon: Wrench,
+                    title: "Tools", 
+                    description: "Access curated AI tools and platforms to enhance your productivity and learning experience."
+                  },
+                  {
+                    icon: BookOpen,
+                    title: "Learning Plans",
+                    description: "Follow structured learning paths designed to take you from beginner to advanced AI practitioner."
+                  },
+                  {
+                    icon: Users,
+                    title: "Cohorts",
+                    description: "Join collaborative learning groups and connect with peers on your AI learning journey."
+                  }
+                ].map((feature, index) => {
+                  const Icon = feature.icon;
+                  return (
+                    <div key={feature.title} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
+                      <Card className="h-full group hover:shadow-lg transition-all duration-300 hover:border-primary/50 hover:bg-card-hover">
+                        <CardHeader className="text-center pb-4">
+                          <div className="w-12 h-12 mx-auto mb-4 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                            <Icon className="w-6 h-6 text-primary" />
+                          </div>
+                          <CardTitle className="text-lg">{feature.title}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          <CardDescription className="text-center text-sm leading-relaxed">
+                            {feature.description}
+                          </CardDescription>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="border-t border-border/50 mt-16" />
+          </section>
 
           {/* Featured Learning Plans */}
           <section className="relative py-16">
