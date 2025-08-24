@@ -235,7 +235,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
               }}
               currentImageUrl={editingData.imageUrl}
               currentVideoUrl={editingData.videoUrl}
-              bucketName="module-assets"
+              bucketName="media"
               allowAiGeneration={true}
             />
           </div>
@@ -321,6 +321,16 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
               </Button>
             </div>
           </div>
+
+          {/* Save Button for Admin */}
+          {isAdminMode && isEditable && (
+            <div className="pt-6 border-t">
+              <Button onClick={handleSaveChanges} size="default">
+                <Save className="mr-2 h-4 w-4" />
+                Save Changes
+              </Button>
+            </div>
+          )}
         </div>
       ) : (
         <>
@@ -1437,16 +1447,6 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
             </div>
 
             <div className="flex items-center gap-4">
-              {isAdminMode && isEditable && (
-                <Button
-                  onClick={() => onSave?.(editingData)}
-                  variant="default"
-                  size="sm"
-                >
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Changes
-                </Button>
-              )}
               {hasBegunModule && (
                 <div className="text-sm text-muted-foreground">
                   Section {currentSectionIndex + 1} of {editingData.sections.length}
@@ -1663,7 +1663,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                 onMediaUpload={(url, type) => handleMediaUpload(url, type, uploadContentIndex)}
                 currentImageUrl={editingData.sections?.[currentSectionIndex]?.content[uploadContentIndex]?.type === 'image' ? editingData.sections[currentSectionIndex].content[uploadContentIndex].url : undefined}
                 currentVideoUrl={editingData.sections?.[currentSectionIndex]?.content[uploadContentIndex]?.type === 'video' ? editingData.sections[currentSectionIndex].content[uploadContentIndex].url : undefined}
-                bucketName="module-assets"
+                bucketName="media"
                 allowAiGeneration={true}
               />
             )}
