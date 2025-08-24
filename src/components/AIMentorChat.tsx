@@ -40,7 +40,10 @@ const ContentCard = ({ content, onOpen }: ContentCardProps) => {
   };
 
   return (
-    <Card className="p-3 hover:shadow-md transition-shadow cursor-pointer" onClick={() => onOpen(content)}>
+    <Card className="p-3 hover:shadow-md transition-shadow cursor-pointer" onClick={() => {
+      console.log('📱 ContentCard: Clicked on content:', content);
+      onOpen(content);
+    }}>
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0">
           {getIcon(content.type)}
@@ -118,12 +121,18 @@ export function AIMentorChat({ onContentOpen }: AIMentorChatProps) {
   };
 
   const handleContentOpen = (content: any) => {
+    console.log('🔗 AIMentorChat: Opening content:', content);
+    console.log('🔗 AIMentorChat: onContentOpen prop:', onContentOpen);
+    console.log('🔗 AIMentorChat: Current modal state:', isModalOpen);
+    
     if (onContentOpen) {
       onContentOpen(content);
     } else {
       // Use the universal content opener
+      console.log('🔗 AIMentorChat: Setting modal content and opening modal');
       setSelectedContent(content);
       setIsModalOpen(true);
+      console.log('🔗 AIMentorChat: Modal state set to true, selectedContent:', content);
     }
   };
 
