@@ -84,7 +84,7 @@ const Index = () => {
         description: item.description,
         date: format(parseISO(item.created_at), 'MMM dd, yyyy'),
         category: item.level?.charAt(0).toUpperCase() + item.level?.slice(1) || 'Update',
-        image: item.image_url || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1400&auto=format&fit=crop",
+        image: item.image_url || item.video_url || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1400&auto=format&fit=crop",
         averageRating: rating?.averageRating || 0,
         totalVotes: rating?.totalVotes || 0,
         isBookmarked: rating?.isBookmarked || false,
