@@ -145,7 +145,32 @@ export function useAIMentorChat() {
       const isRecommendationRequest = recommendationResult.trim().toLowerCase() === 'true';
       console.log('✅ Recommendation check result:', { recommendationResult, isRecommendationRequest });
 
-      if (isRecommendationRequest) {
+      // Additional keyword check - ensure certain terms always trigger recommendations
+      const learningKeywords = [
+        'tool', 'tools', 
+        'news', 'article', 'articles',
+        'module', 'modules', 'learning module', 'learning modules',
+        'prompt', 'prompts', 'prompt library',
+        'learning plan', 'learning plans', 'plan', 'plans',
+        'resource', 'resources',
+        'recommend', 'recommendation', 'recommendations',
+        'suggest', 'suggestion', 'suggestions',
+        'learn about', 'how to learn', 'want to learn',
+        'course', 'courses', 'tutorial', 'tutorials'
+      ];
+      
+      const messageContainsLearningKeywords = learningKeywords.some(keyword => 
+        message.toLowerCase().includes(keyword)
+      );
+      
+      const shouldUseRecommendations = isRecommendationRequest || messageContainsLearningKeywords;
+      console.log('🔍 Keyword analysis:', { 
+        messageContainsLearningKeywords, 
+        shouldUseRecommendations, 
+        message: message.toLowerCase() 
+      });
+
+      if (shouldUseRecommendations) {
         // Step 2: Get all learning content and analyze
         const contentData = await fetchAllLearningContent();
         
