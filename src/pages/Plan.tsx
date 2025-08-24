@@ -16,6 +16,7 @@ import { ModuleViewer } from '@/components/ModuleViewer';
 import { ToolViewer } from '@/components/ToolViewer';
 import { PromptViewer } from '@/components/PromptViewer';
 import { NewsViewer } from '@/components/NewsViewer';
+import { ArticleViewer } from '@/components/ArticleViewer';
 import { 
   Calendar, 
   Clock, 
@@ -133,6 +134,14 @@ const Plan = () => {
                     .eq('id', item.original_id)
                     .maybeSingle();
                   contentDetails = newsData ? { ...newsData, name: newsData.title } : null;
+                  break;
+                case 'articles':
+                  const { data: articleData } = await supabase
+                    .from('articles')
+                    .select('id, title, description, image_url, video_url, status, level, json_data')
+                    .eq('id', item.original_id)
+                    .maybeSingle();
+                  contentDetails = articleData ? { ...articleData, name: articleData.title } : null;
                   break;
                 case 'tool':
                   const { data: toolData } = await supabase
@@ -257,6 +266,21 @@ const Plan = () => {
             title: content.name,
             metadata: content.metadata
           };
+          break;
+        case 'articles':
+          // Fetch full article data including json_data
+          const { data: articleData } = await supabase
+            .from('articles')
+            .select('*')
+            .eq('id', content.id)
+            .maybeSingle();
+          
+          if (articleData) {
+            viewerData = {
+              ...articleData,
+              json_data: Array.isArray(articleData.json_data) ? articleData.json_data : []
+            };
+          }
           break;
         case 'tool':
           viewerData = {
@@ -632,6 +656,12 @@ const Plan = () => {
           {selectedContent && viewerType === 'news' && (
             <NewsViewer 
               news={selectedContent}
+              onClose={() => setIsViewerOpen(false)}
+            />
+          )}
+          {selectedContent && viewerType === 'articles' && (
+            <ArticleViewer 
+              article={selectedContent}
               onClose={() => setIsViewerOpen(false)}
             />
           )}
