@@ -24,6 +24,17 @@ const News = () => {
   const { ratingsData } = useContentRatings(newsItems);
 
   const categories = ["all", "1", "2", "3", "red"];
+  
+  const getCategoryLabel = (category: string) => {
+    switch(category) {
+      case "all": return "All";
+      case "1": return "Level 1";
+      case "2": return "Level 2"; 
+      case "3": return "Level 3";
+      case "red": return "RED";
+      default: return category.charAt(0).toUpperCase() + category.slice(1);
+    }
+  };
   const starFilters = [0, 1, 2, 3, 4, 5];
 
   const filteredNews = news.filter(item => {
@@ -96,7 +107,8 @@ const News = () => {
 
               <div className="space-y-4">
                 {/* Category filters */}
-                <div className="flex flex-wrap gap-3 justify-center">
+                <div className="flex flex-wrap gap-3 justify-center items-center">
+                  <span className="text-sm text-muted-foreground">Learning Level:</span>
                   {categories.map((category) => (
                     <Badge
                       key={category}
@@ -104,7 +116,7 @@ const News = () => {
                       className="cursor-pointer hover:scale-105 transition-transform"
                       onClick={() => setActiveCategory(category)}
                     >
-                      {category.charAt(0).toUpperCase() + category.slice(1)}
+                      {getCategoryLabel(category)}
                     </Badge>
                   ))}
                 </div>
@@ -195,12 +207,6 @@ const News = () => {
               </>
             )}
 
-            {/* Load More Button */}
-            <div className="text-center mt-12">
-              <button className="px-8 py-3 bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow rounded-lg text-white font-medium">
-                Load More Articles
-              </button>
-            </div>
           </div>
         </section>
       </div>
