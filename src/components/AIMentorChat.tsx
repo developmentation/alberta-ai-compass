@@ -4,7 +4,8 @@ import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
-import { Send, RotateCcw, Download, Loader2, BookOpen, Newspaper, Wrench, FileText, GraduationCap, ExternalLink } from 'lucide-react';
+import { Checkbox } from './ui/checkbox';
+import { Send, RotateCcw, Download, Loader2, BookOpen, Newspaper, Wrench, FileText, GraduationCap, ExternalLink, Search } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { useAIMentorChat } from '@/hooks/useAIMentorChat';
 import { useAuth } from '@/hooks/useAuth';
@@ -78,14 +79,22 @@ export function AIMentorChat({ onContentOpen }: AIMentorChatProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
-  const { messages, loading, isLoadingHistory, sendMessage, resetChat } = useAIMentorChat();
+  const { messages, loading, isLoadingHistory, searchAcademy, setSearchAcademy, sendMessage, resetChat } = useAIMentorChat();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Removed auto-scroll to prevent main window scrolling issues
-  // Users can manually scroll if needed
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Auto scroll when AI responds
+  useEffect(() => {
+    if (messages.length > 0 && messages[messages.length - 1].role === 'assistant') {
+      scrollToBottom();
+    }
+  }, [messages]);
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || loading) return;
@@ -257,23 +266,38 @@ export function AIMentorChat({ onContentOpen }: AIMentorChatProps) {
         </div>
 
         {/* Input */}
-        <div className="border-t p-4">
-          <div className="flex gap-2">
-            <Input
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              placeholder="Ask about learning topics, tools, or resources..."
-              className="flex-1"
-              onKeyPress={(e) => e.key === 'Enter' && !loading && handleSendMessage()}
-              disabled={loading}
-            />
-            <Button
-              onClick={handleSendMessage}
-              disabled={!inputMessage.trim() || loading}
-              size="icon"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
+        <div className="border-t">
+          <div className="p-2 bg-muted/30">
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="search-academy" 
+                checked={searchAcademy}
+                onCheckedChange={(checked) => setSearchAcademy(checked as boolean)}
+              />
+              <label htmlFor="search-academy" className="text-sm font-medium flex items-center gap-2">
+                <Search className="h-4 w-4" />
+                Search Academy
+              </label>
+            </div>
+          </div>
+          <div className="p-4">
+            <div className="flex gap-2">
+              <Input
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                placeholder="Ask about learning topics, tools, or resources..."
+                className="flex-1"
+                onKeyPress={(e) => e.key === 'Enter' && !loading && handleSendMessage()}
+                disabled={loading}
+              />
+              <Button
+                onClick={handleSendMessage}
+                disabled={!inputMessage.trim() || loading}
+                size="icon"
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>

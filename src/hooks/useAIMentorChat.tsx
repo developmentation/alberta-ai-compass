@@ -14,6 +14,7 @@ export function useAIMentorChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+  const [searchAcademy, setSearchAcademy] = useState(true);
   const { user } = useAuth();
 
   // Load chat history on mount
@@ -82,7 +83,7 @@ export function useAIMentorChat() {
   const sendMessage = async (message: string) => {
     if (!user?.email || loading) return;
 
-    console.log('🚀 Starting sendMessage with:', { message, userEmail: user.email });
+    console.log('🚀 Starting sendMessage with:', { message, userEmail: user.email, searchAcademy });
     setLoading(true);
     
     // Add user message to UI immediately
@@ -96,6 +97,12 @@ export function useAIMentorChat() {
     setMessages(prev => [...prev, userMessage]);
 
     try {
+      if (!searchAcademy) {
+        // Simple chat mode - just use general chat with context
+        await streamGeneralResponseWithHistory(message);
+        return;
+      }
+
       console.log('📡 Making request to gemini-stream for recommendation check...');
       // Step 1: Check if this is a learning recommendation request
       const recommendationResponse = await fetch('https://hzttqloyamcivctsfxkk.supabase.co/functions/v1/gemini-stream', {
@@ -364,6 +371,26 @@ export function useAIMentorChat() {
     await processStreamResponse(response);
   };
 
+  const streamGeneralResponseWithHistory = async (message: string) => {
+    // Format chat history for context
+    const conversationHistory = messages.map(msg => `${msg.role}: ${msg.content}`).join('\n');
+    
+    const response = await fetch('https://hzttqloyamcivctsfxkk.supabase.co/functions/v1/gemini-stream', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6dHRxbG95YW1jaXZjdHNmeGtrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5NzE5MDIsImV4cCI6MjA3MTU0NzkwMn0.kOaKsCgwsWYLWbloN1haekp5aJ0Fn2pfaYIgOyv3ENQ`,
+      },
+      body: JSON.stringify({
+        message: conversationHistory ? `Previous conversation:\n${conversationHistory}\n\nCurrent message: ${message}` : message,
+        userEmail: user!.email,
+        stepType: 'general_chat'
+      }),
+    });
+
+    await processStreamResponse(response);
+  };
+
   const streamFinalResponse = async (message: string, recommendedContent: any[]) => {
     const response = await fetch('https://hzttqloyamcivctsfxkk.supabase.co/functions/v1/gemini-stream', {
       method: 'POST',
@@ -430,6 +457,8 @@ export function useAIMentorChat() {
     messages,
     loading,
     isLoadingHistory,
+    searchAcademy,
+    setSearchAcademy,
     sendMessage,
     resetChat,
   };

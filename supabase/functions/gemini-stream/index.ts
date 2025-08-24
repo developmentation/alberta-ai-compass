@@ -108,11 +108,21 @@ Keep the response conversational and motivating. The resources will be displayed
 
       case 'general_chat':
       default:
-        fullPrompt = `You are a helpful AI learning mentor. Provide helpful, accurate information in response to the user's question. Keep responses concise but informative.
+        const includeHistory = stepType === 'general_chat' && message.includes('Previous conversation:');
+        
+        if (includeHistory) {
+          fullPrompt = `You are a helpful AI learning mentor. The user is having an ongoing conversation with you. Consider the conversation history when providing your response.
+
+${message}
+
+Provide a helpful response that addresses their question directly. Keep responses conversational and acknowledge the context from previous messages when relevant.`;
+        } else {
+          fullPrompt = `You are a helpful AI learning mentor. Provide helpful, accurate information in response to the user's question. Keep responses concise but informative.
 
 User message: "${message}"
 
 Provide a helpful response that addresses their question directly.`;
+        }
         break;
     }
 
@@ -120,13 +130,15 @@ Provide a helpful response that addresses their question directly.`;
     console.log(`User email: ${userEmail}`);
 
     // Save user message to database
-    if (stepType === 'general_chat' || stepType === 'recommendation_check') {
+    if ((stepType === 'general_chat' || stepType === 'recommendation_check') && !message.includes('Previous conversation:')) {
       await supabase
         .from('ai_mentor')
         .insert({
           user_email: userEmail,
           role: 'user',
-          content: message
+          content: stepType === 'general_chat' && message.includes('Current message:') 
+            ? message.split('Current message: ')[1] 
+            : message
         });
     }
 
