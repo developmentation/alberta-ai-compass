@@ -44,6 +44,14 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
     
+    /* Sidebar backgrounds */
+    --sidebar: 0 0% 100%;
+    --sidebar-foreground: 222.2 84% 4.9%;
+    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-ring: 238 91% 65%;
+    --sidebar-accent: 210 40% 96.1%;
+    --sidebar-accent-foreground: 222.2 47.4% 11.2%;
+    
     /* Glass effects */
     --glass-bg: 0 0% 100% / 0.6;
     --glass-border: 0 0% 0% / 0.1;
@@ -102,6 +110,14 @@
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
     
+    /* Sidebar backgrounds */
+    --sidebar: 240 10% 3.9%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 238 91% 65%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    
     /* Glass effects */
     --glass-bg: 240 10% 3.9% / 0.6;
     --glass-border: 0 0% 100% / 0.1;
@@ -141,6 +157,21 @@
   .dropdown-content,
   .popover-content {
     background-color: hsl(var(--popover)) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Ensure mobile sidebar has proper opaque background */
+  [data-sidebar="sidebar"][data-mobile="true"] {
+    background-color: hsl(var(--sidebar)) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Force opaque overlay for mobile sidebar */
+  .fixed.inset-0.z-50.bg-black\/80,
+  [data-radix-dialog-overlay] {
+    background-color: rgba(0, 0, 0, 0.8) !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
