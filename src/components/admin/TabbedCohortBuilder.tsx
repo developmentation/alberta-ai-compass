@@ -257,9 +257,9 @@ export function TabbedCohortBuilder({
                   <UnifiedMediaUpload
                     onMediaUpload={(url, type) => {
                       if (type === 'image') {
-                        setFormData({ ...formData, image_url: url, video_url: url ? '' : formData.video_url });
+                        setFormData({ ...formData, image_url: url });
                       } else {
-                        setFormData({ ...formData, video_url: url, image_url: url ? '' : formData.image_url });
+                        setFormData({ ...formData, video_url: url });
                       }
                     }}
                     currentImageUrl={formData.image_url}

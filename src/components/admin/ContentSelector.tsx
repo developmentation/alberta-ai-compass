@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Search, Plus, Eye, BookOpen, Newspaper, Wrench, MessageSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { ImageVideoViewer } from '@/components/ImageVideoViewer';
 
 interface ContentItem {
   id: string;
@@ -222,20 +223,15 @@ export function ContentSelector({ isOpen, onClose, onSelect, selectedIds = [] }:
                       <div className="flex items-start gap-3">
                         <div className="flex-shrink-0">
                           {(item.image_url || item.video_url) ? (
-                            item.video_url && !item.image_url ? (
-                              <video
-                                src={item.video_url}
-                                className="w-12 h-12 rounded object-cover"
-                                muted
-                                playsInline
-                              />
-                            ) : (
-                              <img
-                                src={item.image_url}
-                                alt={item.name}
-                                className="w-12 h-12 rounded object-cover"
-                              />
-                            )
+                            <ImageVideoViewer
+                              imageUrl={item.image_url}
+                              videoUrl={item.video_url}
+                              alt={item.name}
+                              title={item.name}
+                              className="w-12 h-12 rounded object-cover"
+                              aspectRatio="square"
+                              showControls={false}
+                            />
                           ) : (
                             <div className={`w-12 h-12 rounded flex items-center justify-center text-white ${getTypeColor(item.type)}`}>
                               {getTypeIcon(item.type)}
