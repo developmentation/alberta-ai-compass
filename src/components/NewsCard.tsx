@@ -95,7 +95,7 @@ export const NewsCard = ({
           alt={title}
           title={title}
           className="h-full"
-          showControls={false}
+          showControls={true}
         />
         {/* Fallback for when no real media */}
         {!hasRealImage && !hasVideo && (
