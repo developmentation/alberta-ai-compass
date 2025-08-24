@@ -359,6 +359,8 @@ export function UnifiedMediaUpload({
             </div>
           </DialogContent>
         </Dialog>
+
+        {allowAiGeneration && (
           <Dialog open={isAiDialogOpen} onOpenChange={setIsAiDialogOpen}>
             <DialogTrigger asChild>
               <Button
