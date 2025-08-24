@@ -307,6 +307,8 @@ export function AdminCohorts() {
   const getInitialData = (cohort?: Cohort) => {
     if (!cohort) return {};
     
+    console.log('AdminCohorts - getInitialData cohort:', cohort);
+    
     return {
       name: cohort.name,
       description: cohort.description || "",

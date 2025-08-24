@@ -68,6 +68,7 @@ export function TabbedCohortBuilder({
 
   useEffect(() => {
     if (initialData) {
+      console.log('TabbedCohortBuilder - Initial Data:', initialData);
       setFormData(prev => ({ ...prev, ...initialData }));
     }
   }, [initialData]);
