@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Eye, EyeOff, Github } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff, Github } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -69,220 +69,228 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-grid-white/[0.02] bg-grid-pattern" />
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="h-[40rem] w-[40rem] bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-3xl opacity-20" />
+    <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4">
+      {/* Background gradient effects */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-32 -left-32 w-96 h-96 bg-primary/20 blur-3xl rounded-full animate-glow-pulse" />
+        <div className="absolute -bottom-24 -right-24 w-[28rem] h-[28rem] bg-primary-glow/20 blur-3xl rounded-full animate-glow-pulse" style={{ animationDelay: '1s' }} />
       </div>
-      
+
       <div className="relative z-10 w-full max-w-md">
-        <div className="mb-6">
-          <Link 
-            to="/"
-            className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Home
+        {/* Back to Home */}
+        <div className="text-center mb-8 animate-fade-in-up">
+          <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Alberta AI Academy
           </Link>
         </div>
 
-        <Card className="backdrop-blur-sm bg-card/80 border-border/50">
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              <div className="h-12 w-12 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg">
-                AA
+        <Card className="border-border bg-card/60 backdrop-blur-xl shadow-elegant animate-scale-in">
+          <CardHeader className="text-center pb-8">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="h-10 w-10 rounded-lg bg-gradient-primary flex items-center justify-center text-white font-bold text-sm shadow-glow">
+                AAA
+              </div>
+              <div className="text-left">
+                <div className="font-bold tracking-tight">Alberta AI Academy</div>
+                <div className="text-xs text-muted-foreground">Learn. Build. Grow.</div>
               </div>
             </div>
-            <CardTitle className="text-2xl">Alberta AI Academy</CardTitle>
-            <CardDescription>Sign in to your account or create a new one</CardDescription>
+            <CardTitle className="text-2xl font-bold tracking-tight">Welcome back</CardTitle>
+            <CardDescription>
+              Sign in to continue your AI learning journey
+            </CardDescription>
           </CardHeader>
           
           <CardContent>
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsList className="grid w-full grid-cols-2 mb-8">
                 <TabsTrigger value="login">Sign In</TabsTrigger>
                 <TabsTrigger value="signup">Sign Up</TabsTrigger>
               </TabsList>
-              
-              <TabsContent value="login" className="space-y-4">
+
+              <TabsContent value="login" className="space-y-6">
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
-                    <Input
-                      id="login-email"
-                      type="email"
-                      placeholder="name@example.com"
-                      value={loginForm.email}
-                      onChange={(e) => setLoginForm(prev => ({ ...prev, email: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password">Password</Label>
+                    <label className="text-sm font-medium">Email</label>
                     <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
-                        id="login-password"
-                        type={showPassword.login ? "text" : "password"}
-                        value={loginForm.password}
-                        onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
+                        type="email"
+                        placeholder="you@example.com"
+                        value={loginForm.email}
+                        onChange={(e) => setLoginForm(prev => ({ ...prev, email: e.target.value }))}
+                        className="pl-10"
                         required
                       />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowPassword(prev => ({ ...prev, login: !prev.login }))}
-                      >
-                        {showPassword.login ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Password</label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        type={showPassword.login ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={loginForm.password}
+                        onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
+                        className="pl-10 pr-10"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(prev => ({ ...prev, login: !prev.login }))}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {showPassword.login ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm">
+                    <label className="flex items-center gap-2 cursor-pointer">
                       <Checkbox
-                        id="remember"
                         checked={loginForm.rememberMe}
                         onCheckedChange={(checked) => setLoginForm(prev => ({ ...prev, rememberMe: checked as boolean }))}
                       />
-                      <Label htmlFor="remember" className="text-sm">Remember me</Label>
-                    </div>
-                    <Button variant="link" className="px-0 h-auto text-sm">
-                      Forgot password?
-                    </Button>
+                      Remember me
+                    </label>
+                    <a href="#" className="text-primary hover:underline">Forgot password?</a>
                   </div>
-                  
-                  <Button type="submit" className="w-full" disabled={loading}>
+
+                  <Button type="submit" className="w-full bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow" disabled={loading}>
                     {loading ? 'Signing in...' : 'Sign In'}
                   </Button>
                 </form>
-                
+
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
-                    <Separator className="w-full" />
+                    <div className="w-full border-t border-border"></div>
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                    <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
                   </div>
                 </div>
-                
-                <Button variant="outline" className="w-full" disabled>
-                  <Github className="mr-2 h-4 w-4" />
-                  GitHub (Coming Soon)
+
+                <Button variant="outline" className="w-full">
+                  <Github className="w-4 h-4 mr-2" />
+                  GitHub
                 </Button>
               </TabsContent>
               
-              <TabsContent value="signup" className="space-y-4">
+              <TabsContent value="signup" className="space-y-6">
                 <form onSubmit={handleSignup} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-name">Full Name</Label>
-                    <Input
-                      id="signup-name"
-                      type="text"
-                      placeholder="John Doe"
-                      value={signupForm.name}
-                      onChange={(e) => setSignupForm(prev => ({ ...prev, name: e.target.value }))}
-                      required
-                    />
+                    <label className="text-sm font-medium">Full Name</label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        type="text"
+                        placeholder="John Doe"
+                        value={signupForm.name}
+                        onChange={(e) => setSignupForm(prev => ({ ...prev, name: e.target.value }))}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
                   </div>
-                  
+
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="name@example.com"
-                      value={signupForm.email}
-                      onChange={(e) => setSignupForm(prev => ({ ...prev, email: e.target.value }))}
-                      required
-                    />
+                    <label className="text-sm font-medium">Email</label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        type="email"
+                        placeholder="you@example.com"
+                        value={signupForm.email}
+                        onChange={(e) => setSignupForm(prev => ({ ...prev, email: e.target.value }))}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
                     {(signupForm.email.endsWith('@canada.ca') || signupForm.email.endsWith('@gov.ab.ca')) && (
                       <p className="text-xs text-green-600">✓ Government email detected - you'll be automatically verified</p>
                     )}
                   </div>
-                  
+
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password</Label>
+                    <label className="text-sm font-medium">Password</label>
                     <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
-                        id="signup-password"
                         type={showPassword.signup ? "text" : "password"}
+                        placeholder="••••••••"
                         value={signupForm.password}
                         onChange={(e) => setSignupForm(prev => ({ ...prev, password: e.target.value }))}
+                        className="pl-10 pr-10"
                         required
                       />
-                      <Button
+                      <button
                         type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                         onClick={() => setShowPassword(prev => ({ ...prev, signup: !prev.signup }))}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                       >
-                        {showPassword.signup ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
+                        {showPassword.signup ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Confirm Password</Label>
+                    <label className="text-sm font-medium">Confirm Password</label>
                     <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
-                        id="confirm-password"
-                        type={showPassword.confirm ? "text" : "password"}
+                        type="password"
+                        placeholder="••••••••"
                         value={signupForm.confirmPassword}
                         onChange={(e) => setSignupForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                        className="pl-10"
                         required
                       />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowPassword(prev => ({ ...prev, confirm: !prev.confirm }))}
-                      >
-                        {showPassword.confirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-2">
                     <Checkbox
-                      id="terms"
                       checked={signupForm.terms}
                       onCheckedChange={(checked) => setSignupForm(prev => ({ ...prev, terms: checked as boolean }))}
                     />
-                    <Label htmlFor="terms" className="text-sm">
-                      I agree to the{' '}
-                      <Button variant="link" className="p-0 h-auto text-sm underline">
-                        Terms and Conditions
-                      </Button>
-                    </Label>
+                    <label className="text-sm">
+                      By creating an account, you agree to our{" "}
+                      <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+                      {" "}and Terms of Service.
+                    </label>
                   </div>
-                  
-                  <Button type="submit" className="w-full" disabled={loading}>
+
+                  <Button type="submit" className="w-full bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow" disabled={loading}>
                     {loading ? 'Creating account...' : 'Create Account'}
                   </Button>
                 </form>
-                
+
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
-                    <Separator className="w-full" />
+                    <div className="w-full border-t border-border"></div>
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                    <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
                   </div>
                 </div>
-                
-                <Button variant="outline" className="w-full" disabled>
-                  <Github className="mr-2 h-4 w-4" />
-                  GitHub (Coming Soon)
+
+                <Button variant="outline" className="w-full">
+                  <Github className="w-4 h-4 mr-2" />
+                  GitHub
                 </Button>
               </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
+
+        <div className="text-center mt-8 text-xs text-muted-foreground">
+          Need help? <a href="#mentor" className="text-primary hover:underline">Contact Support</a>
+        </div>
       </div>
     </div>
   );
