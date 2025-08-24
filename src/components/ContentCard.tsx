@@ -43,6 +43,9 @@ const getTypeIcon = (type: string) => {
       return GraduationCap;
     case 'news':
       return Newspaper;
+    case 'article':
+    case 'articles':
+      return Newspaper;
     case 'tool':
       return Wrench;
     case 'prompt':
@@ -59,6 +62,9 @@ const getTypeBadgeColor = (type: string) => {
     case 'module':
       return 'bg-primary/10 text-primary border-primary/20';
     case 'news':
+      return 'bg-primary/10 text-primary border-primary/20';
+    case 'article':
+    case 'articles':
       return 'bg-primary/10 text-primary border-primary/20';
     case 'tool':
       return 'bg-primary/10 text-primary border-primary/20';
