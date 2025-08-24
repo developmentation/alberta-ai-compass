@@ -264,9 +264,9 @@ export function PromptViewer({ prompt, children, open, onOpenChange }: PromptVie
               </div>
 
               {/* Right Column - AI Response */}
-              <div className="flex flex-col h-full">
+              <div className="flex flex-col h-full overflow-hidden">
                 {executionResult ? (
-                  <div className="flex flex-col h-full">
+                  <div className="flex flex-col h-full overflow-hidden">
                     <div className="flex items-center justify-between p-6 pb-4 border-b flex-shrink-0">
                       <div className="flex items-center gap-2">
                         <Play className="w-5 h-5" />
@@ -281,11 +281,19 @@ export function PromptViewer({ prompt, children, open, onOpenChange }: PromptVie
                         {copiedField === 'AI Response' ? 'Copied!' : 'Copy Response'}
                       </Button>
                     </div>
-                    <div className="flex-1 min-h-0 p-6">
-                      <div className="h-full bg-gradient-to-br from-primary/5 to-accent/5 p-4 rounded-lg border">
-                        <ScrollArea className="h-full w-full">
-                          <div className="prose prose-sm max-w-none dark:prose-invert pr-4">
-                            <ReactMarkdown>{executionResult}</ReactMarkdown>
+                    <div className="flex-1 min-h-0 p-6 overflow-hidden">
+                      <div className="h-full bg-gradient-to-br from-primary/5 to-accent/5 rounded-lg border overflow-hidden">
+                        <ScrollArea className="h-full w-full p-4">
+                          <div className="prose prose-sm max-w-none dark:prose-invert break-words overflow-wrap-anywhere">
+                            <ReactMarkdown 
+                              components={{
+                                p: ({ children }) => <p className="break-words">{children}</p>,
+                                pre: ({ children }) => <pre className="overflow-x-auto whitespace-pre-wrap break-words">{children}</pre>,
+                                code: ({ children }) => <code className="break-words">{children}</code>
+                              }}
+                            >
+                              {executionResult}
+                            </ReactMarkdown>
                           </div>
                         </ScrollArea>
                       </div>
