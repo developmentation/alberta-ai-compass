@@ -257,7 +257,7 @@ export function AdminPrompts() {
                 Add Prompt
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl">
+            <DialogContent className="w-[90vw] h-[90vh] max-w-none overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
                   {editingPrompt ? "Edit Prompt" : "Create Prompt"}
