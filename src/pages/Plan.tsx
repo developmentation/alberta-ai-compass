@@ -663,6 +663,7 @@ const Plan = () => {
             <ArticleViewer 
               article={selectedContent}
               onClose={() => setIsViewerOpen(false)}
+              className="p-8"
             />
           )}
         </DialogContent>
