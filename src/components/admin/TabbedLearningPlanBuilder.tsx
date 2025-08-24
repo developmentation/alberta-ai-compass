@@ -237,7 +237,7 @@ export function TabbedLearningPlanBuilder({
                     <div>
                       <CardTitle>Learning Plan Content</CardTitle>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Build your learning path by adding modules, news, tools, and prompts in sequence
+                        Build your learning path by adding modules, news, articles, tools, and prompts in sequence
                       </p>
                     </div>
                     <Badge className="text-xs">
