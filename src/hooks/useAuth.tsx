@@ -190,7 +190,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { error } = await supabase.auth.signOut();
       
-      if (error) {
+      // If the error is about missing session, that's actually fine - user is already signed out
+      if (error && !error.message.includes('session')) {
         console.error('Sign out error:', error);
         toast({
           title: "Sign out failed",
@@ -200,7 +201,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       
-      // Clear local state immediately on successful sign out
+      // Clear local state regardless of whether there was a session or not
       setUser(null);
       setProfile(null);
       setSession(null);
@@ -211,11 +212,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: "You have been successfully signed out.",
       });
     } catch (error: any) {
-      console.error('Sign out error:', error);
+      // Even if there's an error, clear local state and navigate
+      console.log('Sign out error (clearing state anyway):', error);
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+      navigate('/');
       toast({
-        title: "Sign out failed",
-        description: "An error occurred while signing out. Please try again.",
-        variant: "destructive",
+        title: "Signed out",
+        description: "You have been signed out.",
       });
     }
   };
