@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Play, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -22,6 +22,7 @@ export function ImageVideoViewer({
   aspectRatio = 'auto'
 }: ImageVideoViewerProps) {
   const [videoPlaying, setVideoPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   // Helper function to extract YouTube video ID from various URL formats
   const extractYouTubeVideoId = (url: string): string | null => {
@@ -54,6 +55,19 @@ export function ImageVideoViewer({
   // Helper function to check if URL is a YouTube URL
   const isYouTubeUrl = (url: string): boolean => {
     return extractYouTubeVideoId(url) !== null;
+  };
+
+  const handlePlayPause = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (videoRef.current) {
+      if (videoPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+    }
   };
 
   const getAspectRatioClass = () => {
@@ -97,6 +111,7 @@ export function ImageVideoViewer({
           onClick={(e) => e.stopPropagation()}
         >
           <video
+            ref={videoRef}
             src={videoUrl}
             className="w-full h-full object-cover rounded-lg"
             poster={imageUrl}
@@ -111,18 +126,7 @@ export function ImageVideoViewer({
               variant="outline"
               size="sm"
               className="absolute bottom-2 left-2 bg-black/50 hover:bg-black/70 text-white border-white/20"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const video = e.currentTarget.parentElement?.querySelector('video');
-                if (video) {
-                  if (videoPlaying) {
-                    video.pause();
-                  } else {
-                    video.play();
-                  }
-                }
-              }}
+              onClick={handlePlayPause}
             >
               {videoPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
             </Button>
