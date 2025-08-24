@@ -33,6 +33,8 @@ export function UnifiedMediaUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  console.log('UnifiedMediaUpload props:', { currentImageUrl, currentVideoUrl, uploading });
+
   const uploadFile = async (file: File) => {
     try {
       setUploading(true);
@@ -250,96 +252,94 @@ export function UnifiedMediaUpload({
       )}
 
       {/* Upload Controls */}
-      {!currentImageUrl && !currentVideoUrl && (
-        <div className="flex gap-2 flex-wrap">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="flex items-center gap-2"
-          >
-            {uploading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Upload className="w-4 h-4" />
-            )}
-            {uploading ? 'Uploading...' : 'Upload Image or Video'}
-          </Button>
-
-          {allowAiGeneration && (
-            <Dialog open={isAiDialogOpen} onOpenChange={setIsAiDialogOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={uploading || generating}
-                  className="flex items-center gap-2"
-                >
-                  <Wand2 className="w-4 h-4" />
-                  AI Generate Image
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Generate AI Image</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Describe the image you want to generate</Label>
-                    <Input
-                      value={aiPrompt}
-                      onChange={(e) => setAiPrompt(e.target.value)}
-                      placeholder="A beautiful sunset over mountains..."
-                      className="w-full"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Aspect Ratio</Label>
-                    <Select value={aspectRatio} onValueChange={setAspectRatio}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1:1">Square (1:1)</SelectItem>
-                        <SelectItem value="16:9">Landscape (16:9)</SelectItem>
-                        <SelectItem value="9:16">Portrait (9:16)</SelectItem>
-                        <SelectItem value="4:3">Classic (4:3)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setIsAiDialogOpen(false)}
-                      disabled={generating}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={generateAiImage}
-                      disabled={generating || !aiPrompt.trim()}
-                    >
-                      {generating ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                          Generating...
-                        </>
-                      ) : (
-                        'Generate Image'
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+      <div className="flex gap-2 flex-wrap">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className="flex items-center gap-2"
+        >
+          {uploading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Upload className="w-4 h-4" />
           )}
-        </div>
-      )}
+          {uploading ? 'Uploading...' : (currentImageUrl || currentVideoUrl ? 'Replace Media' : 'Upload Image or Video')}
+        </Button>
+
+        {allowAiGeneration && (
+          <Dialog open={isAiDialogOpen} onOpenChange={setIsAiDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={uploading || generating}
+                className="flex items-center gap-2"
+              >
+                <Wand2 className="w-4 h-4" />
+                AI Generate Image
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Generate AI Image</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Describe the image you want to generate</Label>
+                  <Input
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    placeholder="A beautiful sunset over mountains..."
+                    className="w-full"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Aspect Ratio</Label>
+                  <Select value={aspectRatio} onValueChange={setAspectRatio}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1:1">Square (1:1)</SelectItem>
+                      <SelectItem value="16:9">Landscape (16:9)</SelectItem>
+                      <SelectItem value="9:16">Portrait (9:16)</SelectItem>
+                      <SelectItem value="4:3">Classic (4:3)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsAiDialogOpen(false)}
+                    disabled={generating}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={generateAiImage}
+                    disabled={generating || !aiPrompt.trim()}
+                  >
+                    {generating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        Generating...
+                      </>
+                    ) : (
+                      'Generate Image'
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
 
       <input
         type="file"
