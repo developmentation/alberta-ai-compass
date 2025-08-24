@@ -13,7 +13,6 @@ import LearningHub from "./pages/LearningHub";
 import Tools from "./pages/Tools";
 import AIMentor from "./pages/AIMentor";
 import Privacy from "./pages/Privacy";
-import Login from "./pages/Login";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import { AdminNews } from "./pages/admin/AdminNews";
@@ -47,7 +46,6 @@ const App = () => (
             <Route path="/tools" element={<Tools />} />
             <Route path="/ai-mentor" element={<AIMentor />} />
             <Route path="/privacy" element={<Privacy />} />
-            <Route path="/login" element={<Login />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={<ProtectedRoute requireFacilitator><Admin /></ProtectedRoute>} />
             <Route path="/admin/news" element={<ProtectedRoute requireFacilitator><AdminNews /></ProtectedRoute>} />
