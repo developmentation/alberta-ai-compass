@@ -218,9 +218,6 @@ const Tools = () => {
                 We're constantly developing new tools and resources to enhance your AI learning experience. 
                 Stay tuned for updates!
               </p>
-              <button className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow px-6 py-3 rounded-lg text-white font-medium">
-                Request a Tool
-              </button>
             </div>
           </div>
         </section>
