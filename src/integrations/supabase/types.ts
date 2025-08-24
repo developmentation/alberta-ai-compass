@@ -52,10 +52,10 @@ export type Database = {
       api_keys: {
         Row: {
           added_by: string
-          api_key: string
           created_at: string | null
           deleted_at: string | null
           description: string | null
+          encrypted_api_key: string | null
           id: string
           is_active: boolean | null
           model_names: string[] | null
@@ -65,10 +65,10 @@ export type Database = {
         }
         Insert: {
           added_by: string
-          api_key: string
           created_at?: string | null
           deleted_at?: string | null
           description?: string | null
+          encrypted_api_key?: string | null
           id?: string
           is_active?: boolean | null
           model_names?: string[] | null
@@ -78,10 +78,10 @@ export type Database = {
         }
         Update: {
           added_by?: string
-          api_key?: string
           created_at?: string | null
           deleted_at?: string | null
           description?: string | null
+          encrypted_api_key?: string | null
           id?: string
           is_active?: boolean | null
           model_names?: string[] | null
@@ -1067,9 +1067,73 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      api_keys_decrypted: {
+        Row: {
+          added_by: string | null
+          api_key: string | null
+          created_at: string | null
+          deleted_at: string | null
+          description: string | null
+          id: string | null
+          is_active: boolean | null
+          model_names: string[] | null
+          provider: string | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          added_by?: string | null
+          api_key?: never
+          created_at?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          model_names?: string[] | null
+          provider?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          added_by?: string | null
+          api_key?: never
+          created_at?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          model_names?: string[] | null
+          provider?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_keys_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "api_keys_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      decrypt_api_key: {
+        Args: { encrypted_key: string }
+        Returns: string
+      }
+      encrypt_api_key: {
+        Args: { api_key_text: string }
+        Returns: string
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
