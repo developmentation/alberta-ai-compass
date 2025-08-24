@@ -1386,8 +1386,9 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
   };
 
   return (
-    <div className="h-full flex flex-col bg-background overflow-hidden">
-      {/* Header */}
+    <div className="fixed inset-0 z-50 bg-background overflow-auto">
+      <div className="h-full flex flex-col">
+        {/* Header */}
       <header className="border-b bg-card shadow-sm sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -1705,6 +1706,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
           return `${c.type} content`;
         }).join('\n') : ''}
       />
+      </div>
     </div>
   );
 }
