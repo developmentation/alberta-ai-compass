@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 
 interface LearningPlan {
   id: string;
@@ -17,7 +16,6 @@ interface LearningPlan {
 }
 
 export function useLearningPlans() {
-  const { user } = useAuth();
   const [learningPlans, setLearningPlans] = useState<LearningPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
