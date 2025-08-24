@@ -77,7 +77,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         console.log('Auth state changed:', event, !!session);
         
-        setLoading(true);
         setSession(session);
         setUser(session?.user ?? null);
 
@@ -89,6 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Handle authenticated user - fetch profile
         try {
+          setLoading(true);
           const profile = await fetchProfile(session.user.id);
           
           if (mounted) {
@@ -115,6 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Get initial session AFTER setting up the listener
     const initializeAuth = async () => {
       try {
+        setLoading(true);
         const { data: { session: initialSession }, error } = await supabase.auth.getSession();
         
         if (!mounted) return;
@@ -124,9 +125,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setLoading(false);
           return;
         }
-
-        // If we already have a session from the listener, don't process it again
-        if (session) return;
 
         console.log('Initial session:', !!initialSession);
         
