@@ -70,8 +70,17 @@ export function useContentRatings(contentItems: Array<{id: string, type: string}
       console.log('Successfully loaded ratings for', Object.keys(ratingsMap).length, 'items');
     } catch (error) {
       console.error('Error fetching ratings and bookmarks:', error);
-      // Set empty ratings data on error
-      setRatingsData({});
+      // Set empty ratings data on error to prevent infinite loading
+      const emptyRatingsMap: Record<string, ContentRatingData> = {};
+      contentItems.forEach(item => {
+        emptyRatingsMap[item.id] = {
+          contentId: item.id,
+          averageRating: 0,
+          totalVotes: 0,
+          isBookmarked: false
+        };
+      });
+      setRatingsData(emptyRatingsMap);
     } finally {
       setLoading(false);
       console.log('Ratings loading complete');

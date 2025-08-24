@@ -231,6 +231,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     try {
+      console.log('Starting sign out process...');
+      
+      // Clear local state first
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+      setLoading(false);
+      
       const { error } = await supabase.auth.signOut();
       
       if (error && !error.message.includes('session')) {
@@ -243,18 +251,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       
-      // State will be cleared by the auth state listener
+      console.log('Sign out successful');
       toast({
         title: "Signed out",
         description: "You have been successfully signed out.",
       });
+
+      // Force redirect to home page
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 500);
+      
     } catch (error: any) {
       console.log('Sign out error (clearing state anyway):', error);
-      // State will be cleared by the auth state listener
+      
+      // Clear state on any error
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+      setLoading(false);
+      
       toast({
         title: "Signed out",
         description: "You have been signed out.",
       });
+
+      // Force redirect on error too
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 500);
     }
   };
 
