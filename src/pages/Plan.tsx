@@ -541,7 +541,7 @@ const Plan = () => {
                     <Star className="w-6 h-6" />
                   </div>
                   <span className="text-sm text-muted-foreground">Rating</span>
-                  <span className="text-lg font-semibold">{plan.star_rating}/5</span>
+                  <span className="text-lg font-semibold">{userRating || 0}/5</span>
                   <span className="text-xs text-muted-foreground mt-1">User rating</span>
                 </div>
               </div>
