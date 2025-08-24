@@ -145,13 +145,29 @@ export default function AdminLearningModules() {
 
       if (error) throw error;
 
+      // Update the editingModule state with the new media URLs
+      setEditingModule({
+        ...editingModule,
+        image_url: updatedData.imageUrl || null,
+        video_url: updatedData.videoUrl || null,
+        name: updatedData.title,
+        description: updatedData.description,
+        level: updatedData.level,
+        updated_at: new Date().toISOString(),
+        json_data: {
+          ...updatedData,
+          sections: updatedData.sections,
+          duration: updatedData.duration,
+          learningOutcomes: updatedData.learningOutcomes,
+          tags: updatedData.tags
+        }
+      });
+
       toast({
         title: "Success",
         description: "Module updated successfully",
       });
 
-      setIsViewerOpen(false);
-      setEditingModule(null);
       fetchModules();
     } catch (error: any) {
       toast({
