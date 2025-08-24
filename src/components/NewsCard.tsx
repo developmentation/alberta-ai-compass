@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Star, Bookmark, BookmarkCheck, Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { useState, useRef } from "react";
+import { ImageVideoViewer } from '@/components/ImageVideoViewer';
 
 interface NewsCardProps {
   title: string;
@@ -76,55 +77,20 @@ export const NewsCard = ({
     >
       {/* Image/Video Section */}
       <div className="relative h-48 overflow-hidden">
-        {showVideo ? (
-          <div className="relative w-full h-full">
-            <video
-              ref={videoRef}
-              src={videoUrl}
-              className="w-full h-full object-cover"
-              muted={videoMuted}
-              loop
-              playsInline
-              onPlay={() => setVideoPlaying(true)}
-              onPause={() => setVideoPlaying(false)}
-              onEnded={() => setVideoPlaying(false)}
-            />
-            {/* Video Controls - positioned in top right like admin */}
-            <div 
-              className="absolute top-2 right-2 flex gap-1 bg-black/40 rounded p-1 group-hover:opacity-100 opacity-0 transition-opacity z-10"
-              onClick={(e) => e.stopPropagation()} // Stop propagation on container too
-            >
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="w-8 h-8 p-0"
-                  onClick={toggleVideoPlayback}
-                >
-                  {videoPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="w-8 h-8 p-0"
-                  onClick={toggleVideoMute}
-                >
-                  {videoMuted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
-                </Button>
-            </div>
-          </div>
-        ) : (
+        <ImageVideoViewer
+          imageUrl={hasRealImage ? image : undefined}
+          videoUrl={hasVideo ? videoUrl : undefined}
+          alt={title}
+          title={title}
+          className="h-full"
+          showControls={false}
+        />
+        {/* Fallback for when no real media */}
+        {!hasRealImage && !hasVideo && (
           <img
-            src={showImage ? image : fallbackImage}
+            src={fallbackImage}
             alt={title}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            onError={(e) => {
-              // If image fails to load, try to show video or fallback
-              if (hasVideo && !showVideo) {
-                e.currentTarget.style.display = 'none';
-              } else {
-                e.currentTarget.src = fallbackImage;
-              }
-            }}
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />

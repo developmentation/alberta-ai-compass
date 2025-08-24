@@ -1,4 +1,3 @@
-import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -8,15 +7,12 @@ import {
   MessageSquare, 
   GraduationCap, 
   Newspaper,
-  Play,
-  Pause,
-  Volume2,
-  VolumeX,
   ArrowUpRight,
   BookOpen,
   Star,
   Eye
 } from 'lucide-react';
+import { ImageVideoViewer } from '@/components/ImageVideoViewer';
 
 interface ContentItem {
   id: string;
@@ -76,28 +72,7 @@ const getTypeBadgeColor = (type: string) => {
 };
 
 export function ContentCard({ content, className = "", onView }: ContentCardProps) {
-  const [videoPlaying, setVideoPlaying] = useState(false);
-  const [videoMuted, setVideoMuted] = useState(true);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const Icon = getTypeIcon(content.type);
-
-  const toggleVideoPlayback = () => {
-    if (videoRef.current) {
-      if (videoPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play();
-      }
-      setVideoPlaying(!videoPlaying);
-    }
-  };
-
-  const toggleVideoMute = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !videoMuted;
-      setVideoMuted(!videoMuted);
-    }
-  };
 
   const handleCardClick = () => {
     if (onView) {
@@ -113,56 +88,15 @@ export function ContentCard({ content, className = "", onView }: ContentCardProp
       onClick={handleCardClick}
     >
       {/* Media Content */}
-      {content.video_url ? (
-        <div className="relative h-48 overflow-hidden">
-          <video
-            ref={videoRef}
-            src={content.video_url}
-            className="w-full h-full object-cover"
-            muted={videoMuted}
-            autoPlay
-            loop
-            onPlay={() => setVideoPlaying(true)}
-            onPause={() => setVideoPlaying(false)}
-            onEnded={() => setVideoPlaying(false)}
-            onClick={(e) => e.stopPropagation()}
-          />
-          <div className="absolute inset-0 bg-black/20 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="secondary"
-                className="w-8 h-8 p-0"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleVideoPlayback();
-                }}
-              >
-                {videoPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                className="w-8 h-8 p-0"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleVideoMute();
-                }}
-              >
-                {videoMuted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : content.image_url ? (
-        <div className="relative h-48 overflow-hidden">
-          <img 
-            src={content.image_url} 
-            alt={content.name}
-            className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/5 to-black/20" />
-        </div>
+      {(content.image_url || content.video_url) ? (
+        <ImageVideoViewer
+          imageUrl={content.image_url}
+          videoUrl={content.video_url}
+          alt={content.name}
+          title={content.name}
+          className="h-48"
+          showControls={false}
+        />
       ) : (
         <div className="h-48 bg-muted flex items-center justify-center">
           <Icon className="w-12 h-12 text-muted-foreground" />

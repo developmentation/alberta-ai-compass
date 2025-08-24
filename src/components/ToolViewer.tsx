@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ExternalLink, Star, X, DollarSign, Bookmark, BookmarkCheck } from 'lucide-react';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { useRatings } from '@/hooks/useRatings';
+import { ImageVideoViewer } from '@/components/ImageVideoViewer';
 
 interface Tool {
   id: string;
@@ -96,25 +97,13 @@ export function ToolViewer({ tool, onClose, className = "" }: ToolViewerProps) {
       {(tool.image_url || tool.video_url) && (
         <Card>
           <CardContent className="p-6">
-            {tool.video_url ? (
-              <div className="aspect-video">
-                <video
-                  src={tool.video_url}
-                  controls
-                  className="w-full h-full rounded-lg"
-                >
-                  Your browser does not support the video tag.
-                </video>
-              </div>
-            ) : tool.image_url ? (
-              <div className="aspect-video">
-                <img
-                  src={tool.image_url}
-                  alt={tool.name}
-                  className="w-full h-full object-cover rounded-lg"
-                />
-              </div>
-            ) : null}
+            <ImageVideoViewer
+              imageUrl={tool.image_url}
+              videoUrl={tool.video_url}
+              alt={tool.name}
+              title={tool.name}
+              aspectRatio="video"
+            />
           </CardContent>
         </Card>
       )}

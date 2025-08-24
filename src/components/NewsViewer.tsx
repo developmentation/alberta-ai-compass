@@ -5,6 +5,7 @@ import { Calendar, X, ExternalLink, Star, Bookmark, BookmarkCheck } from 'lucide
 import { format } from 'date-fns';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { useRatings } from '@/hooks/useRatings';
+import { ImageVideoViewer } from '@/components/ImageVideoViewer';
 
 interface NewsItem {
   id: string;
@@ -126,25 +127,13 @@ export function NewsViewer({ news, onClose, className = "" }: NewsViewerProps) {
       {(news.image_url || news.video_url) && (
         <Card>
           <CardContent className="p-6">
-            {news.video_url ? (
-              <div className="aspect-video">
-                <video
-                  src={news.video_url}
-                  controls
-                  className="w-full h-full rounded-lg"
-                >
-                  Your browser does not support the video tag.
-                </video>
-              </div>
-            ) : news.image_url ? (
-              <div className="aspect-video">
-                <img
-                  src={news.image_url}
-                  alt={news.title}
-                  className="w-full h-full object-cover rounded-lg"
-                />
-              </div>
-            ) : null}
+            <ImageVideoViewer
+              imageUrl={news.image_url}
+              videoUrl={news.video_url}
+              alt={news.title}
+              title={news.title}
+              aspectRatio="video"
+            />
           </CardContent>
         </Card>
       )}
