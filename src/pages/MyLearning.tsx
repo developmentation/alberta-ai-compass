@@ -1,26 +1,98 @@
 import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import ScrollToTop from '@/components/ScrollToTop';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { LoginModal } from '@/components/LoginModal';
+import { NewsViewer } from '@/components/NewsViewer';
+import { ToolViewer } from '@/components/ToolViewer';
+import { ModuleViewer } from '@/components/ModuleViewer';
+import { PromptViewer } from '@/components/PromptViewer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Loader2, Search, BookmarkIcon, CheckCircle, Star, Filter } from 'lucide-react';
 import { useMyLearning } from '@/hooks/useMyLearning';
 import { useAuth } from '@/hooks/useAuth';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 
 export default function MyLearning() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { stats, content, loading, error, filter, setFilter, refetch } = useMyLearning();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedContent, setSelectedContent] = useState<any>(null);
+  const [viewerType, setViewerType] = useState<'news' | 'tool' | 'module' | 'prompt' | null>(null);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
 
   const handleLoginClick = () => setIsLoginModalOpen(true);
   const handleLoginClose = () => setIsLoginModalOpen(false);
+
+  const handleContentClick = async (item: typeof content[0]) => {
+    if (item.type === 'learning_plan') {
+      // Navigate to learning plan page
+      navigate(`/plan/${item.id}`);
+    } else {
+      // Open viewer for other content types
+      try {
+        let contentData = null;
+        
+        switch (item.type) {
+          case 'news':
+            const { data: newsData } = await supabase
+              .from('news')
+              .select('*')
+              .eq('id', item.id)
+              .single();
+            contentData = newsData;
+            break;
+          case 'tool':
+            const { data: toolData } = await supabase
+              .from('tools')
+              .select('*')
+              .eq('id', item.id)
+              .single();
+            contentData = toolData;
+            break;
+          case 'module':
+            const { data: moduleData } = await supabase
+              .from('modules')
+              .select('*')
+              .eq('id', item.id)
+              .single();
+            contentData = moduleData;
+            break;
+          case 'prompt':
+            const { data: promptData } = await supabase
+              .from('prompt_library')
+              .select('*')
+              .eq('id', item.id)
+              .single();
+            contentData = promptData;
+            break;
+        }
+        
+        if (contentData) {
+          setSelectedContent(contentData);
+          setViewerType(item.type as 'news' | 'tool' | 'module' | 'prompt');
+          setIsViewerOpen(true);
+        }
+      } catch (error) {
+        console.error('Error fetching content details:', error);
+      }
+    }
+  };
+
+  const handleCloseViewer = () => {
+    setIsViewerOpen(false);
+    setSelectedContent(null);
+    setViewerType(null);
+  };
 
   const filteredContent = content.filter(item =>
     item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -198,7 +270,11 @@ export default function MyLearning() {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredContent.map((item) => (
-                    <Card key={`${item.type}_${item.id}`} className="hover:shadow-lg transition-shadow">
+                    <Card 
+                      key={`${item.type}_${item.id}`} 
+                      className="hover:shadow-lg transition-shadow cursor-pointer"
+                      onClick={() => handleContentClick(item)}
+                    >
                       <CardHeader>
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <Badge className={getContentTypeColor(item.type)}>
@@ -255,6 +331,52 @@ export default function MyLearning() {
       <Footer />
       <ScrollToTop />
       <LoginModal isOpen={isLoginModalOpen} onClose={handleLoginClose} />
+      
+      {/* Content Viewers */}
+      <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          {selectedContent && viewerType === 'news' && (
+            <NewsViewer
+              news={selectedContent}
+              onClose={handleCloseViewer}
+            />
+          )}
+          {selectedContent && viewerType === 'tool' && (
+            <ToolViewer
+              tool={selectedContent}
+              onClose={handleCloseViewer}
+            />
+          )}
+          {selectedContent && viewerType === 'module' && (
+            <ModuleViewer
+              moduleData={{
+                id: selectedContent.id,
+                title: selectedContent.name || '',
+                description: selectedContent.description || '',
+                level: selectedContent.level || '1',
+                duration: 30, // Default duration
+                learningOutcomes: [],
+                tags: [],
+                sections: selectedContent.json_data?.sections || [],
+                imageUrl: selectedContent.image_url,
+                videoUrl: selectedContent.video_url
+              }}
+              isAdminMode={false}
+              isEditable={false}
+              onClose={handleCloseViewer}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Prompt Viewer - Uses its own modal */}
+      {selectedContent && viewerType === 'prompt' && (
+        <PromptViewer
+          prompt={selectedContent}
+          open={isViewerOpen}
+          onOpenChange={setIsViewerOpen}
+        />
+      )}
     </div>
   );
 }
