@@ -175,7 +175,9 @@ export function useCohortDiscussions(cohortId?: string, isActive: boolean = fals
         .subscribe();
 
       return () => {
-        supabase.removeChannel(channel);
+        if (channel) {
+          supabase.removeChannel(channel);
+        }
       };
     }
   }, [cohortId, fetchDiscussions]);
@@ -188,7 +190,11 @@ export function useCohortDiscussions(cohortId?: string, isActive: boolean = fals
       fetchDiscussions();
     }, 5000);
 
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
   }, [cohortId, isActive, fetchDiscussions]);
 
   const createDiscussion = async (message: string, parentId?: string) => {
