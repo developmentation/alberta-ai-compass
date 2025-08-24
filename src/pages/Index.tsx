@@ -14,9 +14,11 @@ import { Link } from "react-router-dom";
 import { useNews } from "@/hooks/useNews";
 import { useLearningPlans } from "@/hooks/useLearningPlans";
 import { useContentRatings } from "@/hooks/useContentRatings";
+import { useAuth } from "@/hooks/useAuth";
 import { format, parseISO } from "date-fns";
 
 const Index = () => {
+  const { user } = useAuth();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedNews, setSelectedNews] = useState<any>(null);
@@ -32,7 +34,7 @@ const Index = () => {
     ...news.map(item => ({ id: item.id, type: 'news' }))
   ], [learningPlans, news]);
 
-  const { ratingsData } = useContentRatings(contentItems);
+  const { ratingsData } = useContentRatings(contentItems, user?.id);
 
   // Featured Learning Plans - highest rated (or 3 newest if no ratings)
   const featuredPlans = useMemo(() => {

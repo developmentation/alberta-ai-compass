@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 
 interface ContentRatingData {
   contentId: string;
@@ -9,17 +8,16 @@ interface ContentRatingData {
   isBookmarked: boolean;
 }
 
-export function useContentRatings(contentItems: Array<{id: string, type: string}>) {
-  const { user } = useAuth();
+export function useContentRatings(contentItems: Array<{id: string, type: string}>, userId?: string | null) {
   const [ratingsData, setRatingsData] = useState<Record<string, ContentRatingData>>({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Always fetch ratings, fetch bookmarks only if authenticated
+    // Always fetch ratings, fetch bookmarks only if userId provided
     if (contentItems.length > 0) {
       fetchRatingsAndBookmarks();
     }
-  }, [user, contentItems]);
+  }, [userId, contentItems]);
 
   const fetchRatingsAndBookmarks = async () => {
     if (contentItems.length === 0) return;
@@ -34,13 +32,13 @@ export function useContentRatings(contentItems: Array<{id: string, type: string}
         .select('content_id, average_rating, total_votes')
         .in('content_id', contentIds);
 
-      // Only fetch user bookmarks if authenticated
+      // Only fetch user bookmarks if userId provided
       let bookmarks = null;
-      if (user) {
+      if (userId) {
         const { data } = await supabase
           .from('user_bookmarks')
           .select('content_id')
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
           .in('content_id', contentIds);
         bookmarks = data;
       }
@@ -55,7 +53,7 @@ export function useContentRatings(contentItems: Array<{id: string, type: string}
           contentId: item.id,
           averageRating: rating?.average_rating || 0,
           totalVotes: rating?.total_votes || 0,
-          isBookmarked: user ? bookmarkSet.has(item.id) : false
+          isBookmarked: userId ? bookmarkSet.has(item.id) : false
         };
       });
       
