@@ -712,6 +712,7 @@ export type Database = {
           status: Database["public"]["Enums"]["content_status"]
           updated_at: string | null
           updated_by: string | null
+          video_url: string | null
         }
         Insert: {
           created_at?: string | null
@@ -728,6 +729,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["content_status"]
           updated_at?: string | null
           updated_by?: string | null
+          video_url?: string | null
         }
         Update: {
           created_at?: string | null
@@ -744,6 +746,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["content_status"]
           updated_at?: string | null
           updated_by?: string | null
+          video_url?: string | null
         }
         Relationships: [
           {

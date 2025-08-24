@@ -132,7 +132,7 @@ export function AdminCohorts() {
                       case 'prompt':
                         const { data: promptData } = await supabase
                           .from('prompt_library')
-                          .select('id, name, description, image_url, status')
+                          .select('id, name, description, image_url, video_url, status')
                           .eq('id', item.content_id)
                           .maybeSingle();
                         contentDetails = promptData;

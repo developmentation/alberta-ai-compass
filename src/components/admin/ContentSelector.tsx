@@ -95,7 +95,7 @@ export function ContentSelector({ isOpen, onClose, onSelect, selectedIds = [] }:
       if (contentType === 'all' || contentType === 'prompt') {
         const { data: prompts, error: promptsError } = await supabase
           .from('prompt_library')
-          .select('id, name, description, status, image_url')
+          .select('id, name, description, status, image_url, video_url')
           .in('status', ['published', 'draft', 'review'])
           .is('deleted_at', null);
         
