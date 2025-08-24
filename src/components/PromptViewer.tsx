@@ -110,7 +110,7 @@ export function PromptViewer({ prompt, children, open, onOpenChange }: PromptVie
           <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
             <DialogTitle className="flex items-center gap-3 text-2xl">
               {prompt.name}
-              {prompt.stars && (
+              {prompt.stars && prompt.stars > 0 && (
                 <div className="flex items-center gap-1">
                   <div className="flex">{renderStars(prompt.stars)}</div>
                   <span className="text-sm text-muted-foreground">
