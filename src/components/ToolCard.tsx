@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Wrench, Database, Box, ExternalLink, Star, BookmarkCheck } from "lucide-react";
+import { ImageVideoViewer } from '@/components/ImageVideoViewer';
 
 interface ToolCardProps {
   title: string;
@@ -48,6 +49,22 @@ export const ToolCard = ({
     }
   };
 
+  // Helper function to check if URL is a YouTube URL  
+  const isYouTubeUrl = (url: string): boolean => {
+    if (!url) return false;
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)/,
+      /youtube\.com\/v\//,
+      /youtube\.com\/user\/.*#p\/.*\/.*\//,
+      /youtube\.com\/.*[?&]v=/
+    ];
+    return patterns.some(pattern => pattern.test(url));
+  };
+
+  // Determine what to show - prioritize real images, then videos (including YouTube), then fallback
+  const hasRealImage = image && image !== "/placeholder.svg" && !image.includes('/videos/') && !isYouTubeUrl(image);
+  const hasVideo = video && (video.includes('/videos/') || isYouTubeUrl(video));
+
   // Truncate description to 100 characters
   const truncatedDescription = description.length > 100 
     ? description.substring(0, 100) + '...' 
@@ -61,26 +78,29 @@ export const ToolCard = ({
   };
 
   return (
-    <div 
+    <div
       className="group rounded-2xl border border-border bg-card/40 backdrop-blur-sm hover:bg-card-hover transition-all duration-500 hover:shadow-elegant hover:scale-[1.01] cursor-pointer overflow-hidden"
       onClick={onClick}
     >
       {/* Image/Video Section */}
       {(image || video) && (
         <div className="relative h-48 overflow-hidden">
-          {video ? (
-            <video
-              src={video}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-              muted
-            />
-          ) : image ? (
+          <ImageVideoViewer
+            imageUrl={hasRealImage ? image : undefined}
+            videoUrl={hasVideo ? video : undefined}
+            alt={title}
+            title={title}
+            className="h-full"
+            showControls={true}
+          />
+          {/* Fallback for when no real media */}
+          {!hasRealImage && !hasVideo && image && (
             <img
               src={image}
               alt={title}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
-          ) : null}
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           <Badge 
             variant="secondary"
