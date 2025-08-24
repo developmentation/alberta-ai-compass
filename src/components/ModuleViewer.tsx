@@ -1505,7 +1505,6 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
         moduleTitle={editingData.title}
         currentSection={currentSection?.title || ''}
         context={JSON.stringify(currentSection?.content || [])}
-        language={currentLanguage}
       />
     </div>
   );
