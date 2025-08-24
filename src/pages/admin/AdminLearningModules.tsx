@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -192,18 +193,49 @@ export default function AdminLearningModules() {
     setEditingModule(null);
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'published':
-        return <Badge className="bg-green-100 text-green-800">Published</Badge>;
-      case 'draft':
-        return <Badge variant="secondary">Draft</Badge>;
-      case 'archived':
-        return <Badge variant="outline">Archived</Badge>;
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
+  const handleStatusChange = async (moduleId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('modules')
+        .update({ 
+          status: newStatus as 'draft' | 'review' | 'published' | 'archived',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', moduleId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Module status updated to ${newStatus}`,
+      });
+
+      fetchModules();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update module status",
+        variant: "destructive",
+      });
     }
   };
+
+  const getStatusSelect = (module: Module) => (
+    <Select 
+      value={module.status} 
+      onValueChange={(value) => handleStatusChange(module.id, value)}
+    >
+      <SelectTrigger className="w-32 h-7 text-xs bg-background border border-border hover:bg-accent z-50">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent className="bg-background border border-border shadow-lg z-50">
+        <SelectItem value="draft" className="text-xs">Draft</SelectItem>
+        <SelectItem value="review" className="text-xs">Review</SelectItem>
+        <SelectItem value="published" className="text-xs">Published</SelectItem>
+        <SelectItem value="archived" className="text-xs">Archived</SelectItem>
+      </SelectContent>
+    </Select>
+  );
 
   const getLevelBadge = (level: string) => {
     const colors = {
@@ -294,7 +326,7 @@ export default function AdminLearningModules() {
                       <CardTitle className="text-lg line-clamp-2">
                         {module.name || 'Untitled Module'}
                       </CardTitle>
-                      {getStatusBadge(module.status)}
+                      {getStatusSelect(module)}
                     </div>
                     <div className="ml-4 flex-shrink-0">
                       <MediaDisplay
