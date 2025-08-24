@@ -32,18 +32,11 @@ export function useLearningPlans() {
       setError(null);
       console.log('useLearningPlans: Fetching from database...');
       
-      // Create timeout abort controller
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
-      
       const { data, error } = await supabase
         .from('learning_plans')
         .select('*')
         .eq('status', 'published')
-        .order('created_at', { ascending: false })
-        .abortSignal(controller.signal);
-      
-      clearTimeout(timeoutId);
+        .order('created_at', { ascending: false });
 
       console.log('useLearningPlans: Database response:', { data: data?.length, error });
 

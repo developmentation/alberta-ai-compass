@@ -29,19 +29,12 @@ export function useNews() {
       setError(null);
       console.log('useNews: Fetching from database...');
       
-      // Create timeout abort controller
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
-      
       const { data, error } = await supabase
         .from('news')
         .select('*')
         .eq('status', 'published')
         .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .abortSignal(controller.signal);
-
-      clearTimeout(timeoutId);
+        .order('created_at', { ascending: false });
       
       console.log('useNews: Database response:', { data: data?.length, error });
 
