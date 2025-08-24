@@ -69,6 +69,7 @@ export function useAIMentorChat() {
   const sendMessage = async (message: string) => {
     if (!user?.email || loading) return;
 
+    console.log('🚀 Starting sendMessage with:', { message, userEmail: user.email });
     setLoading(true);
     
     // Add user message to UI immediately
@@ -82,6 +83,7 @@ export function useAIMentorChat() {
     setMessages(prev => [...prev, userMessage]);
 
     try {
+      console.log('📡 Making request to gemini-stream for recommendation check...');
       // Step 1: Check if this is a learning recommendation request
       const recommendationResponse = await fetch('https://hzttqloyamcivctsfxkk.supabase.co/functions/v1/gemini-stream', {
         method: 'POST',
@@ -96,8 +98,10 @@ export function useAIMentorChat() {
         }),
       });
 
+      console.log('📡 Recommendation response status:', recommendationResponse.status);
       if (!recommendationResponse.ok) {
-        throw new Error('Failed to check for recommendations');
+        console.error('❌ Recommendation response failed:', recommendationResponse.status, recommendationResponse.statusText);
+        throw new Error(`Failed to check for recommendations: ${recommendationResponse.status}`);
       }
 
       let recommendationResult = '';
@@ -126,7 +130,7 @@ export function useAIMentorChat() {
       }
 
       const isRecommendationRequest = recommendationResult.trim().toLowerCase() === 'true';
-      console.log('Is recommendation request:', isRecommendationRequest);
+      console.log('✅ Recommendation check result:', { recommendationResult, isRecommendationRequest });
 
       if (isRecommendationRequest) {
         // Step 2: Get all learning content and analyze
@@ -190,13 +194,18 @@ export function useAIMentorChat() {
         await streamGeneralResponse(message);
       }
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('💥 Error sending message:', error);
+      console.error('💥 Full error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       
       // Add error message
       const errorMessage: ChatMessage = {
         id: `error-${Date.now()}`,
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.',
+        content: `Sorry, I encountered an error: ${error.message}. Please try again.`,
         timestamp: new Date().toISOString(),
       };
       setMessages(prev => [...prev, errorMessage]);
