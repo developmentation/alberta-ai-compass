@@ -63,7 +63,7 @@ export function ContentSelector({ isOpen, onClose, onSelect, selectedIds = [] }:
       if (contentType === 'all' || contentType === 'news') {
         const { data: news, error: newsError } = await supabase
           .from('news')
-          .select('id, title as name, description, status, image_url, video_url')
+          .select('id, title, description, status, image_url, video_url')
           .in('status', ['published', 'draft', 'review'])
           .eq('is_active', true)
           .is('deleted_at', null);
@@ -71,7 +71,7 @@ export function ContentSelector({ isOpen, onClose, onSelect, selectedIds = [] }:
         console.log('News fetch result:', { news, newsError });
         
         if (news) {
-          items.push(...news.map((n: any) => ({ ...n, type: 'news' as const })));
+          items.push(...news.map((n: any) => ({ ...n, name: n.title, type: 'news' as const })));
         }
       }
 
