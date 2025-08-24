@@ -31,7 +31,11 @@ export default function Auth() {
     e.preventDefault();
     setLoading(true);
     
-    await signIn(loginForm.email, loginForm.password);
+    const { error } = await signIn(loginForm.email, loginForm.password);
+    
+    if (!error) {
+      navigate('/admin');
+    }
     
     setLoading(false);
   };

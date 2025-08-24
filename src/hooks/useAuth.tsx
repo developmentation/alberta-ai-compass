@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
 interface Profile {
@@ -33,15 +32,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
     let mounted = true;
     
-    // Set up auth state listener FIRST
+    // Set up auth state listener FIRST - but without async operations
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         if (!mounted) return;
         
         console.log('Auth state changed:', event, !!session);
@@ -55,33 +53,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
         
-        // Fetch profile immediately for signed in users
+        // Defer profile fetching to avoid auth deadlocks
         if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
-          try {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .maybeSingle();
-            
+          setTimeout(async () => {
             if (!mounted) return;
             
-            setProfile(profile);
-            setLoading(false);
-            
-            // Update last login only on actual sign in
-            if (profile && event === 'SIGNED_IN') {
-              await supabase
+            try {
+              const { data: profile } = await supabase
                 .from('profiles')
-                .update({ last_login: new Date().toISOString() })
-                .eq('id', session.user.id);
-            }
-          } catch (error) {
-            console.error('Error fetching profile:', error);
-            if (mounted) {
+                .select('*')
+                .eq('id', session.user.id)
+                .maybeSingle();
+              
+              if (!mounted) return;
+              
+              setProfile(profile);
               setLoading(false);
+              
+              // Update last login only on actual sign in
+              if (profile && event === 'SIGNED_IN') {
+                await supabase
+                  .from('profiles')
+                  .update({ last_login: new Date().toISOString() })
+                  .eq('id', session.user.id);
+              }
+            } catch (error) {
+              console.error('Error fetching profile:', error);
+              if (mounted) {
+                setLoading(false);
+              }
             }
-          }
+          }, 0);
         } else {
           setLoading(false);
         }
@@ -202,18 +204,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile(null);
       setSession(null);
       
-      navigate('/');
       toast({
         title: "Signed out",
         description: "You have been successfully signed out.",
       });
     } catch (error: any) {
-      // Even if there's an error, clear local state and navigate
+      // Even if there's an error, clear local state
       console.log('Sign out error (clearing state anyway):', error);
       setUser(null);
       setProfile(null);
       setSession(null);
-      navigate('/');
       toast({
         title: "Signed out",
         description: "You have been signed out.",
