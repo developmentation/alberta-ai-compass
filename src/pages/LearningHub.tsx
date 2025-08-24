@@ -325,7 +325,7 @@ const LearningHub = () => {
 
       {/* Article Viewer Modal */}
       <Dialog open={isArticleViewerOpen} onOpenChange={handleCloseArticleViewer}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           {selectedArticle && (
             <ArticleViewer 
               article={selectedArticle}
