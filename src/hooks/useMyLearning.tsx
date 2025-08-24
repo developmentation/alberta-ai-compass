@@ -15,7 +15,7 @@ export interface ContentItem {
   id: string;
   title: string;
   description: string;
-  type: 'learning_plan' | 'module' | 'news' | 'tool' | 'prompt_library';
+  type: 'learning_plan' | 'module' | 'news' | 'tool' | 'prompt_library' | 'articles';
   image_url?: string;
   video_url?: string;
   created_at: string;
@@ -199,6 +199,16 @@ export function useMyLearning() {
               .is('deleted_at', null)
               .maybeSingle();
             data = promptRes.data;
+            break;
+          case 'articles':
+            const articleRes = await supabase
+              .from('articles')
+              .select('id, title, description, image_url, video_url, created_at')
+              .eq('id', item.content_id)
+              .eq('status', 'published')
+              .is('deleted_at', null)
+              .maybeSingle();
+            data = articleRes.data;
             break;
           default:
             return null;
