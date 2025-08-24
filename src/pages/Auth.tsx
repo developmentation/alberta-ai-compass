@@ -31,11 +31,7 @@ export default function Auth() {
     e.preventDefault();
     setLoading(true);
     
-    const { error } = await signIn(loginForm.email, loginForm.password);
-    
-    if (!error) {
-      navigate('/admin');
-    }
+    await signIn(loginForm.email, loginForm.password);
     
     setLoading(false);
   };

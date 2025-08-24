@@ -39,9 +39,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
     
-    // Set up auth state listener FIRST - but without async operations
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         if (!mounted) return;
         
         console.log('Auth state changed:', event, !!session);
@@ -55,37 +55,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
         
-        // Defer profile fetching to avoid auth deadlocks
+        // Fetch profile immediately for signed in users
         if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
-          setTimeout(async () => {
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .maybeSingle();
+            
             if (!mounted) return;
             
-            try {
-              const { data: profile } = await supabase
+            setProfile(profile);
+            setLoading(false);
+            
+            // Update last login only on actual sign in
+            if (profile && event === 'SIGNED_IN') {
+              await supabase
                 .from('profiles')
-                .select('*')
-                .eq('id', session.user.id)
-                .maybeSingle();
-              
-              if (!mounted) return;
-              
-              setProfile(profile);
-              setLoading(false);
-              
-              // Update last login only on actual sign in
-              if (profile && event === 'SIGNED_IN') {
-                await supabase
-                  .from('profiles')
-                  .update({ last_login: new Date().toISOString() })
-                  .eq('id', session.user.id);
-              }
-            } catch (error) {
-              console.error('Error fetching profile:', error);
-              if (mounted) {
-                setLoading(false);
-              }
+                .update({ last_login: new Date().toISOString() })
+                .eq('id', session.user.id);
             }
-          }, 0);
+          } catch (error) {
+            console.error('Error fetching profile:', error);
+            if (mounted) {
+              setLoading(false);
+            }
+          }
         } else {
           setLoading(false);
         }
