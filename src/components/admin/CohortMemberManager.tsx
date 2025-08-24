@@ -98,7 +98,12 @@ export function CohortMemberManager({ cohortId, onMembersChange }: CohortMemberM
 
       if (error) {
         console.error('Insert error:', error);
-        throw error;
+        if (error.code === '23505') {
+          toast.error('One or more users are already members of this cohort');
+        } else {
+          throw error;
+        }
+        return;
       }
       
       console.log('Insert result:', data);
@@ -108,7 +113,11 @@ export function CohortMemberManager({ cohortId, onMembersChange }: CohortMemberM
       toast.success(`Added ${emails.length} member(s) to cohort`);
     } catch (error: any) {
       console.error('Error adding members:', error);
-      toast.error(error.message || 'Failed to add members');
+      if (error.code === '23505') {
+        toast.error('One or more users are already members of this cohort');
+      } else {
+        toast.error(error.message || 'Failed to add members');
+      }
     } finally {
       setLoading(false);
     }
@@ -140,7 +149,7 @@ export function CohortMemberManager({ cohortId, onMembersChange }: CohortMemberM
     if (!user || !cohortId) return;
     
     try {
-      // Check if already a member
+      // Check if already a member - using a simpler approach to avoid recursion
       const { data: existing } = await supabase
         .from('cohort_members')
         .select('id')
@@ -162,14 +171,25 @@ export function CohortMemberManager({ cohortId, onMembersChange }: CohortMemberM
           status: 'enrolled'
         });
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === '23505') {
+          toast.error('User is already a member of this cohort');
+        } else {
+          throw error;
+        }
+        return;
+      }
       
       await fetchMembers();
       onMembersChange?.();
       toast.success('User added to cohort');
     } catch (error: any) {
       console.error('Error adding profile to cohort:', error);
-      toast.error('Failed to add user to cohort');
+      if (error.code === '23505') {
+        toast.error('User is already a member of this cohort');
+      } else {
+        toast.error('Failed to add user to cohort');
+      }
     }
   };
 
