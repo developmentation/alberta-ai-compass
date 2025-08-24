@@ -1,5 +1,7 @@
 import { Badge } from "@/components/ui/badge";
-import { Star, Bookmark, BookmarkCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Star, Bookmark, BookmarkCheck, Play, Pause, Volume2, VolumeX } from "lucide-react";
+import { useState, useRef } from "react";
 
 interface NewsCardProps {
   title: string;
@@ -26,6 +28,10 @@ export const NewsCard = ({
   totalVotes = 0,
   isBookmarked = false
 }: NewsCardProps) => {
+  const [videoPlaying, setVideoPlaying] = useState(false);
+  const [videoMuted, setVideoMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
   // Truncate description to 100 characters
   const truncatedDescription = description.length > 100 
     ? description.substring(0, 100) + '...' 
@@ -39,6 +45,26 @@ export const NewsCard = ({
   const showVideo = !hasRealImage && hasVideo;
   const fallbackImage = "/placeholder.svg";
 
+  const toggleVideoPlayback = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click
+    if (videoRef.current) {
+      if (videoPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setVideoPlaying(!videoPlaying);
+    }
+  };
+
+  const toggleVideoMute = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click
+    if (videoRef.current) {
+      videoRef.current.muted = !videoMuted;
+      setVideoMuted(!videoMuted);
+    }
+  };
+
   return (
     <article 
       className="group rounded-2xl border border-border overflow-hidden bg-card/40 backdrop-blur-sm hover:bg-card-hover transition-all duration-500 hover:shadow-elegant hover:scale-[1.02] hover:-translate-y-1 cursor-pointer relative"
@@ -47,13 +73,40 @@ export const NewsCard = ({
       {/* Image/Video Section */}
       <div className="relative h-48 overflow-hidden">
         {showVideo ? (
-          <video
-            src={videoUrl}
-            className="w-full h-full object-cover"
-            muted
-            loop
-            playsInline
-          />
+          <div className="relative w-full h-full">
+            <video
+              ref={videoRef}
+              src={videoUrl}
+              className="w-full h-full object-cover"
+              muted={videoMuted}
+              loop
+              playsInline
+              onPlay={() => setVideoPlaying(true)}
+              onPause={() => setVideoPlaying(false)}
+              onEnded={() => setVideoPlaying(false)}
+            />
+            {/* Video Controls */}
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 hover:opacity-100 transition-opacity">
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="w-10 h-10 p-0 bg-white/90 hover:bg-white"
+                  onClick={toggleVideoPlayback}
+                >
+                  {videoPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="w-10 h-10 p-0 bg-white/90 hover:bg-white"
+                  onClick={toggleVideoMute}
+                >
+                  {videoMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                </Button>
+              </div>
+            </div>
+          </div>
         ) : (
           <img
             src={showImage ? image : fallbackImage}
