@@ -1460,9 +1460,9 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
               <div className="flex-1">
                 <div>
                   <h1 className="text-xl font-bold">{editingData.title}</h1>
-                  <p className="text-muted-foreground text-sm">
-                    {hasBegunModule ? `Section ${currentSectionIndex + 1} of ${editingData.sections.length}` : 'Module Overview'}
-                  </p>
+                  {!hasBegunModule && (
+                    <p className="text-muted-foreground text-sm">Module Overview</p>
+                  )}
                 </div>
               </div>
             </div>
