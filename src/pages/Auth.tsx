@@ -6,21 +6,32 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Eye, EyeOff, Github } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Auth() {
-  const [loginForm, setLoginForm] = useState({ email: '', password: '', rememberMe: false });
-  const [signupForm, setSignupForm] = useState({ name: '', email: '', password: '', confirmPassword: '', terms: false });
-  const [showPassword, setShowPassword] = useState({ login: false, signup: false, confirm: false });
-  const [loading, setLoading] = useState(false);
-  
+  // Login form state
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  // Signup form state
+  const [signupName, setSignupName] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
+  const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [signupLoading, setSignupLoading] = useState(false);
+
   const { signIn, signUp, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Auto-redirect to admin when user signs in
   useEffect(() => {
     if (user) {
       navigate('/admin');
@@ -29,54 +40,124 @@ export default function Auth() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     
-    const { error } = await signIn(loginForm.email, loginForm.password);
+    if (!loginEmail || !loginPassword) {
+      toast({
+        title: "Missing fields",
+        description: "Please enter both email and password.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoginLoading(true);
     
-    if (!error) {
-      // Navigate after successful sign in - auth state will update automatically
-      navigate('/admin');
-    } else {
-      setLoading(false);
+    try {
+      const { error } = await signIn(loginEmail, loginPassword);
+      
+      if (error) {
+        toast({
+          title: "Sign in failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+      // Success case is handled by the auth state listener - no manual navigation
+    } catch (err) {
+      toast({
+        title: "Sign in failed",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoginLoading(false);
     }
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (signupForm.password !== signupForm.confirmPassword) {
+    if (!signupName || !signupEmail || !signupPassword || !signupConfirmPassword) {
       toast({
-        title: "Password mismatch",
-        description: "Passwords don't match. Please try again.",
+        title: "Missing fields",
+        description: "Please fill in all required fields.",
         variant: "destructive",
       });
       return;
     }
 
-    if (!signupForm.terms) {
+    if (signupPassword !== signupConfirmPassword) {
+      toast({
+        title: "Passwords don't match",
+        description: "Please ensure both password fields match.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (signupPassword.length < 6) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!agreeToTerms) {
       toast({
         title: "Terms required",
-        description: "Please accept the terms and conditions.",
+        description: "Please agree to the terms and conditions.",
         variant: "destructive",
       });
       return;
     }
 
-    setLoading(true);
+    setSignupLoading(true);
     
-    await signUp(signupForm.email, signupForm.password, signupForm.name);
-    
-    setLoading(false);
+    try {
+      const { error } = await signUp(signupEmail, signupPassword, signupName);
+      
+      if (error) {
+        toast({
+          title: "Sign up failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        // Clear form on success
+        setSignupName('');
+        setSignupEmail('');
+        setSignupPassword('');
+        setSignupConfirmPassword('');
+        setAgreeToTerms(false);
+        
+        toast({
+          title: "Account created!",
+          description: "You can now sign in with your new account.",
+        });
+      }
+    } catch (err) {
+      toast({
+        title: "Sign up failed",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setSignupLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
+      {/* Background effects */}
       <div className="absolute inset-0 bg-grid-white/[0.02] bg-grid-pattern" />
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="h-[40rem] w-[40rem] bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-3xl opacity-20" />
       </div>
       
       <div className="relative z-10 w-full max-w-md">
+        {/* Back to home link */}
         <div className="mb-6">
           <Link 
             to="/"
@@ -95,7 +176,7 @@ export default function Auth() {
               </div>
             </div>
             <CardTitle className="text-2xl">Alberta AI Academy</CardTitle>
-            <CardDescription>Sign in to your account or create a new one</CardDescription>
+            <CardDescription>Access your learning dashboard</CardDescription>
           </CardHeader>
           
           <CardContent>
@@ -105,6 +186,7 @@ export default function Auth() {
                 <TabsTrigger value="signup">Sign Up</TabsTrigger>
               </TabsList>
               
+              {/* Sign In Tab */}
               <TabsContent value="login" className="space-y-4">
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
@@ -113,8 +195,9 @@ export default function Auth() {
                       id="login-email"
                       type="email"
                       placeholder="name@example.com"
-                      value={loginForm.email}
-                      onChange={(e) => setLoginForm(prev => ({ ...prev, email: e.target.value }))}
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      disabled={loginLoading}
                       required
                     />
                   </div>
@@ -124,9 +207,11 @@ export default function Auth() {
                     <div className="relative">
                       <Input
                         id="login-password"
-                        type={showPassword.login ? "text" : "password"}
-                        value={loginForm.password}
-                        onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
+                        type={showLoginPassword ? "text" : "password"}
+                        placeholder="Enter your password"
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
+                        disabled={loginLoading}
                         required
                       />
                       <Button
@@ -134,47 +219,21 @@ export default function Auth() {
                         variant="ghost"
                         size="sm"
                         className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowPassword(prev => ({ ...prev, login: !prev.login }))}
+                        onClick={() => setShowLoginPassword(!showLoginPassword)}
+                        disabled={loginLoading}
                       >
-                        {showPassword.login ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
                   </div>
                   
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="remember"
-                        checked={loginForm.rememberMe}
-                        onCheckedChange={(checked) => setLoginForm(prev => ({ ...prev, rememberMe: checked as boolean }))}
-                      />
-                      <Label htmlFor="remember" className="text-sm">Remember me</Label>
-                    </div>
-                    <Button variant="link" className="px-0 h-auto text-sm">
-                      Forgot password?
-                    </Button>
-                  </div>
-                  
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Signing in...' : 'Sign In'}
+                  <Button type="submit" className="w-full" disabled={loginLoading}>
+                    {loginLoading ? 'Signing in...' : 'Sign In'}
                   </Button>
                 </form>
-                
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <Separator className="w-full" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-                  </div>
-                </div>
-                
-                <Button variant="outline" className="w-full" disabled>
-                  <Github className="mr-2 h-4 w-4" />
-                  GitHub (Coming Soon)
-                </Button>
               </TabsContent>
               
+              {/* Sign Up Tab */}
               <TabsContent value="signup" className="space-y-4">
                 <form onSubmit={handleSignup} className="space-y-4">
                   <div className="space-y-2">
@@ -183,8 +242,9 @@ export default function Auth() {
                       id="signup-name"
                       type="text"
                       placeholder="John Doe"
-                      value={signupForm.name}
-                      onChange={(e) => setSignupForm(prev => ({ ...prev, name: e.target.value }))}
+                      value={signupName}
+                      onChange={(e) => setSignupName(e.target.value)}
+                      disabled={signupLoading}
                       required
                     />
                   </div>
@@ -195,12 +255,13 @@ export default function Auth() {
                       id="signup-email"
                       type="email"
                       placeholder="name@example.com"
-                      value={signupForm.email}
-                      onChange={(e) => setSignupForm(prev => ({ ...prev, email: e.target.value }))}
+                      value={signupEmail}
+                      onChange={(e) => setSignupEmail(e.target.value)}
+                      disabled={signupLoading}
                       required
                     />
-                    {(signupForm.email.endsWith('@canada.ca') || signupForm.email.endsWith('@gov.ab.ca')) && (
-                      <p className="text-xs text-green-600">✓ Government email detected - you'll be automatically verified</p>
+                    {(signupEmail.endsWith('@canada.ca') || signupEmail.endsWith('@gov.ab.ca')) && (
+                      <p className="text-xs text-green-600">✓ Government email detected</p>
                     )}
                   </div>
                   
@@ -209,19 +270,23 @@ export default function Auth() {
                     <div className="relative">
                       <Input
                         id="signup-password"
-                        type={showPassword.signup ? "text" : "password"}
-                        value={signupForm.password}
-                        onChange={(e) => setSignupForm(prev => ({ ...prev, password: e.target.value }))}
+                        type={showSignupPassword ? "text" : "password"}
+                        placeholder="Create a password"
+                        value={signupPassword}
+                        onChange={(e) => setSignupPassword(e.target.value)}
+                        disabled={signupLoading}
                         required
+                        minLength={6}
                       />
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
                         className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowPassword(prev => ({ ...prev, signup: !prev.signup }))}
+                        onClick={() => setShowSignupPassword(!showSignupPassword)}
+                        disabled={signupLoading}
                       >
-                        {showPassword.signup ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showSignupPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
                   </div>
@@ -231,9 +296,11 @@ export default function Auth() {
                     <div className="relative">
                       <Input
                         id="confirm-password"
-                        type={showPassword.confirm ? "text" : "password"}
-                        value={signupForm.confirmPassword}
-                        onChange={(e) => setSignupForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="Confirm your password"
+                        value={signupConfirmPassword}
+                        onChange={(e) => setSignupConfirmPassword(e.target.value)}
+                        disabled={signupLoading}
                         required
                       />
                       <Button
@@ -241,9 +308,10 @@ export default function Auth() {
                         variant="ghost"
                         size="sm"
                         className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowPassword(prev => ({ ...prev, confirm: !prev.confirm }))}
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        disabled={signupLoading}
                       >
-                        {showPassword.confirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
                   </div>
@@ -251,35 +319,22 @@ export default function Auth() {
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="terms"
-                      checked={signupForm.terms}
-                      onCheckedChange={(checked) => setSignupForm(prev => ({ ...prev, terms: checked as boolean }))}
+                      checked={agreeToTerms}
+                      onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
+                      disabled={signupLoading}
                     />
                     <Label htmlFor="terms" className="text-sm">
                       I agree to the{' '}
-                      <Button variant="link" className="p-0 h-auto text-sm underline">
+                      <Link to="/privacy" className="underline hover:text-primary">
                         Terms and Conditions
-                      </Button>
+                      </Link>
                     </Label>
                   </div>
                   
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Creating account...' : 'Create Account'}
+                  <Button type="submit" className="w-full" disabled={signupLoading || !agreeToTerms}>
+                    {signupLoading ? 'Creating account...' : 'Create Account'}
                   </Button>
                 </form>
-                
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <Separator className="w-full" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-                  </div>
-                </div>
-                
-                <Button variant="outline" className="w-full" disabled>
-                  <Github className="mr-2 h-4 w-4" />
-                  GitHub (Coming Soon)
-                </Button>
               </TabsContent>
             </Tabs>
           </CardContent>

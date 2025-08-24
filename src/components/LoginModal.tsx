@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,8 +16,16 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, user } = useAuth();
   const navigate = useNavigate();
+
+  // Auto-close modal and redirect when user signs in
+  useEffect(() => {
+    if (user && isOpen) {
+      onClose();
+      navigate('/admin');
+    }
+  }, [user, isOpen, onClose, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,12 +33,10 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     
     const { error } = await signIn(email, password);
     
-    if (!error) {
-      onClose();
-      navigate('/admin');
-    } else {
+    if (error) {
       setLoading(false);
     }
+    // Success case is handled by useEffect above
   };
 
   return (
@@ -61,6 +67,7 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@domain.com"
+              disabled={loading}
               required
               className="bg-input border-border"
             />
@@ -73,6 +80,7 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
+              disabled={loading}
               required
               className="bg-input border-border"
             />
