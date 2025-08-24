@@ -37,20 +37,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Fetch profile data for authenticated user
   const fetchProfile = async (userId: string): Promise<Profile | null> => {
     try {
-      console.log('Fetching profile for user:', userId);
-      
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
       
       if (error) {
         console.error('Error fetching profile:', error);
         return null;
       }
 
-      console.log('Profile fetched successfully:', profile?.role);
       return profile;
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -78,8 +75,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       async (event, session) => {
         if (!mounted) return;
         
-        console.log('Auth state changed:', event, !!session?.user);
+        console.log('Auth state changed:', event, !!session);
         
+        setLoading(true);
         setSession(session);
         setUser(session?.user ?? null);
 
@@ -89,27 +87,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        // Handle authenticated user - fetch profile with timeout
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
-        );
-        
+        // Handle authenticated user - fetch profile
         try {
-          setLoading(true);
-          console.log('Fetching profile for authenticated user...');
-          
-          const profile = await Promise.race([
-            fetchProfile(session.user.id),
-            timeoutPromise
-          ]) as Profile | null;
+          const profile = await fetchProfile(session.user.id);
           
           if (mounted) {
             setProfile(profile);
-            console.log('Profile set:', profile?.role);
             
             // Update last login on sign in
             if (event === 'SIGNED_IN' && profile) {
-              updateLastLogin(session.user.id).catch(console.error);
+              await updateLastLogin(session.user.id);
             }
           }
         } catch (error) {
@@ -119,7 +106,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         } finally {
           if (mounted) {
-            console.log('Setting loading to false');
             setLoading(false);
           }
         }
@@ -129,7 +115,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Get initial session AFTER setting up the listener
     const initializeAuth = async () => {
       try {
-        setLoading(true);
         const { data: { session: initialSession }, error } = await supabase.auth.getSession();
         
         if (!mounted) return;
@@ -139,6 +124,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setLoading(false);
           return;
         }
+
+        // If we already have a session from the listener, don't process it again
+        if (session) return;
 
         console.log('Initial session:', !!initialSession);
         
@@ -243,14 +231,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     try {
-      console.log('Starting sign out process...');
-      
-      // Clear local state first
-      setUser(null);
-      setProfile(null);
-      setSession(null);
-      setLoading(false);
-      
       const { error } = await supabase.auth.signOut();
       
       if (error && !error.message.includes('session')) {
@@ -263,35 +243,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       
-      console.log('Sign out successful');
+      // State will be cleared by the auth state listener
       toast({
         title: "Signed out",
         description: "You have been successfully signed out.",
       });
-
-      // Force redirect to home page
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 500);
-      
     } catch (error: any) {
       console.log('Sign out error (clearing state anyway):', error);
-      
-      // Clear state on any error
-      setUser(null);
-      setProfile(null);
-      setSession(null);
-      setLoading(false);
-      
+      // State will be cleared by the auth state listener
       toast({
         title: "Signed out",
         description: "You have been signed out.",
       });
-
-      // Force redirect on error too
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 500);
     }
   };
 

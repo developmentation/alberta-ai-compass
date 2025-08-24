@@ -26,33 +26,19 @@ export function useNews() {
   const fetchNews = async () => {
     try {
       setLoading(true);
-      setError(null);
-      console.log('useNews: Fetching from database...');
-      
       const { data, error } = await supabase
         .from('news')
         .select('*')
         .eq('status', 'published')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
-      
-      console.log('useNews: Database response:', { data: data?.length, error });
 
-      if (error) {
-        console.error('Database error:', error);
-        throw error;
-      }
-      
+      if (error) throw error;
       setNews(data || []);
-      console.log('useNews: Successfully loaded', data?.length || 0, 'news items');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch news';
-      console.error('useNews: Error fetching news:', errorMessage);
-      setError(errorMessage);
-      setNews([]); // Set empty array on error
+      setError(err instanceof Error ? err.message : 'Failed to fetch news');
     } finally {
       setLoading(false);
-      console.log('useNews: Loading complete');
     }
   };
 

@@ -27,26 +27,20 @@ export default function Auth() {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [signupLoading, setSignupLoading] = useState(false);
 
-  const { signIn, signUp, user, profile, loading } = useAuth();
+  const { signIn, signUp, user, profile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   // Auto-redirect based on user role when user signs in
   useEffect(() => {
-    if (user && profile && !loading) {
-      console.log('Redirecting user with role:', profile.role);
-      setLoginLoading(false); // Clear login loading state
-      
-      // Small delay to ensure auth is fully complete
-      setTimeout(() => {
-        if (profile.role === 'admin' || profile.role === 'facilitator') {
-          navigate('/admin');
-        } else {
-          navigate('/');
-        }
-      }, 100);
+    if (user && profile) {
+      if (profile.role === 'admin' || profile.role === 'facilitator') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
     }
-  }, [user, profile, loading, navigate]);
+  }, [user, profile, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,16 +65,15 @@ export default function Auth() {
           description: error.message,
           variant: "destructive",
         });
-        setLoginLoading(false);
       }
-      // Success case is handled by the auth state listener and useEffect above
-    } catch (error) {
-      console.error('Login error:', error);
+      // Success case is handled by the auth state listener - no manual navigation
+    } catch (err) {
       toast({
         title: "Sign in failed",
         description: "An unexpected error occurred.",
         variant: "destructive",
       });
+    } finally {
       setLoginLoading(false);
     }
   };

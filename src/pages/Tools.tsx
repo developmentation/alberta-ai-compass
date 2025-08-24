@@ -10,10 +10,8 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Search, Loader2, Star, Bookmark } from "lucide-react";
 import { useTools } from "@/hooks/useTools";
 import { useContentRatings } from "@/hooks/useContentRatings";
-import { useAuth } from "@/hooks/useAuth";
 
 const Tools = () => {
-  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [minStarRating, setMinStarRating] = useState(0);
@@ -23,7 +21,7 @@ const Tools = () => {
   const { tools, loading, error } = useTools();
   
   const toolItems = tools.map(item => ({ id: item.id, type: 'tool' }));
-  const { ratingsData, loading: ratingsLoading } = useContentRatings(toolItems, user?.id);
+  const { ratingsData } = useContentRatings(toolItems);
 
   const categories = ["all", "open_source", "saas", "commercial"];
   const starFilters = [0, 1, 2, 3, 4, 5];
