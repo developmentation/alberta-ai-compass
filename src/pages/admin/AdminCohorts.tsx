@@ -310,16 +310,24 @@ export function AdminCohorts() {
     
     console.log('AdminCohorts - getInitialData cohort:', cohort);
     
-    return {
+    const initialData: any = {
       name: cohort.name,
       description: cohort.description || "",
       start_date: cohort.start_date.split("T")[0],
       end_date: cohort.end_date ? cohort.end_date.split("T")[0] : "",
       status: cohort.status,
-      image_url: cohort.image_url || "",
-      video_url: cohort.video_url || "",
       days: cohort.days || [],
     };
+    
+    // Only include image_url and video_url if they have actual values
+    if (cohort.image_url) {
+      initialData.image_url = cohort.image_url;
+    }
+    if (cohort.video_url) {
+      initialData.video_url = cohort.video_url;
+    }
+    
+    return initialData;
   };
 
   const getStatusBadge = (status: string) => {
