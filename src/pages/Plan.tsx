@@ -129,10 +129,10 @@ const Plan = () => {
                 case 'news':
                   const { data: newsData } = await supabase
                     .from('news')
-                    .select('id, title as name, description, image_url, video_url, status, level')
+                    .select('id, title, description, image_url, video_url, status, level')
                     .eq('id', item.original_id)
                     .maybeSingle();
-                  contentDetails = newsData;
+                  contentDetails = newsData ? { ...newsData, name: newsData.title } : null;
                   break;
                 case 'tool':
                   const { data: toolData } = await supabase
