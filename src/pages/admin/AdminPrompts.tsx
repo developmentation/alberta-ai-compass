@@ -37,6 +37,7 @@ interface Prompt {
   sector_tags: any;
   status: "draft" | "review" | "published" | "archived";
   image_url?: string;
+  video_url?: string;
   created_at: string;
   created_by: string;
 }
@@ -59,6 +60,7 @@ export function AdminPrompts() {
     status: "draft" as "draft" | "review" | "published" | "archived",
     sector_tags: "",
     image_url: "",
+    video_url: "",
   });
 
   useEffect(() => {
@@ -104,6 +106,7 @@ export function AdminPrompts() {
         status: formData.status,
         sector_tags: { tags: sectorTagsArray },
         image_url: formData.image_url || null,
+        video_url: formData.video_url || null,
         created_by: user?.id,
         updated_by: user?.id,
       };
@@ -151,6 +154,7 @@ export function AdminPrompts() {
       status: prompt.status,
       sector_tags: prompt.sector_tags?.tags ? prompt.sector_tags.tags.join(", ") : "",
       image_url: prompt.image_url || "",
+      video_url: prompt.video_url || "",
     });
     setIsDialogOpen(true);
   };
@@ -204,6 +208,7 @@ export function AdminPrompts() {
       status: "draft",
       sector_tags: "",
       image_url: "",
+      video_url: "",
     });
   };
 
@@ -316,10 +321,13 @@ export function AdminPrompts() {
                 <UnifiedMediaUpload
                   onMediaUpload={(url, type) => {
                     if (type === 'image') {
-                      setFormData({ ...formData, image_url: url });
+                      setFormData({ ...formData, image_url: url, video_url: url ? '' : formData.video_url });
+                    } else {
+                      setFormData({ ...formData, video_url: url, image_url: url ? '' : formData.image_url });
                     }
                   }}
                   currentImageUrl={formData.image_url}
+                  currentVideoUrl={formData.video_url}
                   bucketName="media-assets"
                 />
 
@@ -376,6 +384,7 @@ export function AdminPrompts() {
                   <div className="ml-4">
                     <MediaDisplay
                       imageUrl={prompt.image_url}
+                      videoUrl={prompt.video_url}
                       title={prompt.name}
                       className="w-20 h-16 rounded-md overflow-hidden flex-shrink-0"
                     />
