@@ -77,16 +77,18 @@ User request: "${message}"
 Available learning content:
 ${JSON.stringify(contentData, null, 2)}
 
+CRITICAL: You MUST return ONLY a valid JSON array. Do not include any explanatory text, markdown formatting, or additional content before or after the JSON. Your response must be pure JSON that can be parsed directly.
+
 Return a JSON array of objects with "type" and "id" fields for the most relevant learning content (maximum 5 items). Only include content that directly relates to the user's learning goals.
 
-Example format:
+Required format (return ONLY this, nothing else):
 [
   {"type": "modules", "id": "uuid-here"},
   {"type": "tools", "id": "uuid-here"},
   {"type": "learning_plans", "id": "uuid-here"}
 ]
 
-Be selective - only recommend highly relevant content.`;
+Be selective - only recommend highly relevant content. RETURN ONLY THE JSON ARRAY, NO OTHER TEXT.`;
         break;
 
       case 'final_response':
