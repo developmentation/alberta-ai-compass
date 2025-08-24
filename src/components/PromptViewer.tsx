@@ -39,8 +39,8 @@ export function PromptViewer({ prompt, children, open, onOpenChange }: PromptVie
   const [userInput, setUserInput] = useState<string>('');
   const [internalOpen, setInternalOpen] = useState(false);
   const { toast } = useToast();
-  const { isBookmarked, toggleBookmark } = useBookmarks(prompt.id, 'prompt_library');
-  const { userRating, aggregatedRating, submitRating } = useRatings(prompt.id, 'prompt_library');
+  const { isBookmarked, toggleBookmark } = useBookmarks(prompt.id, 'prompt');
+  const { userRating, aggregatedRating, submitRating } = useRatings(prompt.id, 'prompt');
 
   const isOpen = open !== undefined ? open : internalOpen;
   const setIsOpen = onOpenChange || setInternalOpen;
@@ -145,7 +145,7 @@ export function PromptViewer({ prompt, children, open, onOpenChange }: PromptVie
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => toggleBookmark(prompt.id, 'prompt_library')}
+                  onClick={() => toggleBookmark(prompt.id, 'prompt')}
                   className="flex items-center gap-2"
                 >
                   {isBookmarked ? (
