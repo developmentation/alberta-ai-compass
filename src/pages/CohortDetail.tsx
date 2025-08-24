@@ -195,6 +195,7 @@ export default function CohortDetail() {
                       .from('articles')
                       .select('*')
                       .eq('id', item.content_id)
+                      .eq('is_active', true)
                       .is('deleted_at', null)
                       .maybeSingle();
                     contentDetails = articleData;
@@ -332,6 +333,10 @@ export default function CohortDetail() {
       } catch (error) {
         console.error('Error loading module data:', error);
       }
+    } else if (content.type === 'article') {
+      // For articles, use the content_data which contains the full article details
+      setSelectedContent(content.content_data || content);
+      setSelectedViewer('article');
     } else {
       // For other content types, use the content_data which contains the full details
       setSelectedContent(content.content_data || content);
