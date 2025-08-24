@@ -127,8 +127,6 @@ export function AdminSidebar() {
     <Sidebar
       collapsible="icon"
     >
-      <SidebarTrigger className="m-2 self-end" />
-
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="flex items-center gap-2">
