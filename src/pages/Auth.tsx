@@ -37,11 +37,14 @@ export default function Auth() {
       console.log('Redirecting user with role:', profile.role);
       setLoginLoading(false); // Clear login loading state
       
-      if (profile.role === 'admin' || profile.role === 'facilitator') {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
+      // Small delay to ensure auth is fully complete
+      setTimeout(() => {
+        if (profile.role === 'admin' || profile.role === 'facilitator') {
+          navigate('/admin');
+        } else {
+          navigate('/');
+        }
+      }, 100);
     }
   }, [user, profile, loading, navigate]);
 

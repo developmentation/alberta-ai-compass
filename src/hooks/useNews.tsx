@@ -26,19 +26,40 @@ export function useNews() {
   const fetchNews = async () => {
     try {
       setLoading(true);
+      setError(null);
+      console.log('useNews: Fetching from database...');
+      
+      // Create timeout abort controller
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      
       const { data, error } = await supabase
         .from('news')
         .select('*')
         .eq('status', 'published')
         .eq('is_active', true)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .abortSignal(controller.signal);
 
-      if (error) throw error;
+      clearTimeout(timeoutId);
+      
+      console.log('useNews: Database response:', { data: data?.length, error });
+
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+      
       setNews(data || []);
+      console.log('useNews: Successfully loaded', data?.length || 0, 'news items');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch news');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch news';
+      console.error('useNews: Error fetching news:', errorMessage);
+      setError(errorMessage);
+      setNews([]); // Set empty array on error
     } finally {
       setLoading(false);
+      console.log('useNews: Loading complete');
     }
   };
 
