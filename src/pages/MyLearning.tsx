@@ -19,7 +19,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
 import { ImageVideoViewer } from '@/components/ImageVideoViewer';
-import { format } from 'date-fns';
+import { format } from 'date-fns/format';
 
 export default function MyLearning() {
   const { user } = useAuth();
