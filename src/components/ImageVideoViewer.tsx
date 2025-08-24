@@ -73,7 +73,10 @@ export function ImageVideoViewer({
   if (videoUrl) {
     if (isYouTubeUrl(videoUrl)) {
       return (
-        <div className={`relative ${baseClasses}`}>
+        <div 
+          className={`relative ${baseClasses}`}
+          onClick={(e) => e.stopPropagation()}
+        >
           <iframe
             src={convertToEmbedUrl(videoUrl)}
             title={title || "YouTube video player"}
@@ -89,7 +92,10 @@ export function ImageVideoViewer({
       );
     } else {
       return (
-        <div className={`relative ${baseClasses}`}>
+        <div 
+          className={`relative ${baseClasses}`}
+          onClick={(e) => e.stopPropagation()}
+        >
           <video
             src={videoUrl}
             className="w-full h-full object-cover rounded-lg"
@@ -107,6 +113,7 @@ export function ImageVideoViewer({
               className="absolute bottom-2 left-2 bg-black/50 hover:bg-black/70 text-white border-white/20"
               onClick={(e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 const video = e.currentTarget.parentElement?.querySelector('video');
                 if (video) {
                   if (videoPlaying) {
