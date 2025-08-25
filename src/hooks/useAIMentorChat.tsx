@@ -272,11 +272,11 @@ export function useAIMentorChat() {
 
   const fetchAllLearningContent = async () => {
     const [modules, news, tools, prompts, learningPlans] = await Promise.all([
-      supabase.from('modules').select('id, name, description').eq('status', 'published'),
-      supabase.from('news').select('id, title, description').eq('status', 'published').eq('is_active', true),
-      supabase.from('tools').select('id, name, description').eq('status', 'published'),
-      supabase.from('prompt_library').select('id, name, description').eq('status', 'published'),
-      supabase.from('learning_plans').select('id, name, description').eq('status', 'published'),
+      supabase.from('modules').select('id, name, description').eq('status', 'published').is('deleted_at', null),
+      supabase.from('news').select('id, title, description').eq('status', 'published').eq('is_active', true).is('deleted_at', null),
+      supabase.from('tools').select('id, name, description').eq('status', 'published').is('deleted_at', null),
+      supabase.from('prompt_library').select('id, name, description').eq('status', 'published').is('deleted_at', null),
+      supabase.from('learning_plans').select('id, name, description').eq('status', 'published').is('deleted_at', null),
     ]);
 
     return [

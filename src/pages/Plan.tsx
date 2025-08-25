@@ -101,6 +101,7 @@ const Plan = () => {
           .select('*')
           .eq('id', planId)
           .eq('status', 'published')
+          .is('deleted_at', null)
           .maybeSingle();
 
         if (planError) throw planError;
@@ -124,6 +125,7 @@ const Plan = () => {
                     .from('modules')
                     .select('id, name, description, image_url, video_url, status, level')
                     .eq('id', item.original_id)
+                    .is('deleted_at', null)
                     .maybeSingle();
                   contentDetails = moduleData;
                   break;
@@ -132,6 +134,7 @@ const Plan = () => {
                     .from('news')
                     .select('id, title, description, image_url, video_url, status, level')
                     .eq('id', item.original_id)
+                    .is('deleted_at', null)
                     .maybeSingle();
                   contentDetails = newsData ? { ...newsData, name: newsData.title } : null;
                   break;
@@ -141,6 +144,7 @@ const Plan = () => {
                     .from('articles')
                     .select('id, title, description, image_url, video_url, status, level, json_data')
                     .eq('id', item.original_id)
+                    .is('deleted_at', null)
                     .maybeSingle();
                   contentDetails = articleData ? { ...articleData, name: articleData.title } : null;
                   break;
@@ -149,6 +153,7 @@ const Plan = () => {
                     .from('tools')
                     .select('id, name, description, image_url, video_url, status, url, cost_indicator, stars')
                     .eq('id', item.original_id)
+                    .is('deleted_at', null)
                     .maybeSingle();
                   contentDetails = toolData;
                   break;
@@ -157,6 +162,7 @@ const Plan = () => {
                     .from('prompt_library')
                     .select('id, name, description, image_url, status, purpose, sample_output, stars')
                     .eq('id', item.original_id)
+                    .is('deleted_at', null)
                     .maybeSingle();
                   contentDetails = promptData;
                   break;
@@ -165,6 +171,7 @@ const Plan = () => {
                     .from('learning_plans')
                     .select('id, name, description, image_url, video_url, status, level, star_rating')
                     .eq('id', item.original_id)
+                    .is('deleted_at', null)
                     .maybeSingle();
                   contentDetails = planLinkData;
                   break;
@@ -235,6 +242,7 @@ const Plan = () => {
             .from('modules')
             .select('*')
             .eq('id', content.id)
+            .is('deleted_at', null)
             .maybeSingle();
           
           if (moduleData) {
@@ -275,6 +283,7 @@ const Plan = () => {
             .from('articles')
             .select('*')
             .eq('id', content.id)
+            .is('deleted_at', null)
             .maybeSingle();
           
           if (articleData) {
