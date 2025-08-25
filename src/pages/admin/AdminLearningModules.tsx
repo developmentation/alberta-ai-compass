@@ -176,6 +176,9 @@ export default function AdminLearningModules() {
         description: "Module updated successfully",
       });
 
+      // Refresh the modules list to show updated data
+      fetchModules();
+      
       // Close the modal after successful save
       handleCloseViewer();
     } catch (error: any) {
