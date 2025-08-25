@@ -1467,102 +1467,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              {/* Show menu button when module has begun or in content tab */}
-              {(hasBegunModule || activeTab === "content") && (
-                <Sheet open={isTableOfContentsOpen} onOpenChange={setIsTableOfContentsOpen}>
-                  <SheetTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Menu className="h-4 w-4" />
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="left">
-                    <SheetHeader>
-                      <SheetTitle>Table of Contents</SheetTitle>
-                      {isAdminMode && isEditable && (
-                        <Button onClick={handleAddSection} size="sm" className="mt-2">
-                          <Plus className="mr-2 h-4 w-4" />
-                          Add Section
-                        </Button>
-                      )}
-                    </SheetHeader>
-                    <ScrollArea className="h-full mt-6">
-                      <div className="space-y-2">
-                        {editingData.sections.map((section, index) => (
-                          <div key={section.id} className="group">
-                            {/* Section Navigation Button */}
-                            <Button
-                              variant={index === currentSectionIndex ? "default" : "ghost"}
-                              className="w-full justify-start h-auto p-3 mb-2"
-                              onClick={() => {
-                                setCurrentSectionIndex(index);
-                                setIsTableOfContentsOpen(false);
-                              }}
-                            >
-                              <div className="flex items-center gap-2 w-full">
-                                {completedSections.has(index) ? (
-                                  <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-                                ) : (
-                                  <Circle className="h-4 w-4 flex-shrink-0" />
-                                )}
-                                <span className="text-left flex-1 truncate">{section.title}</span>
-                              </div>
-                            </Button>
-                            
-                            {/* Admin Controls */}
-                            {isAdminMode && isEditable && (
-                              <div className="space-y-2 px-2 mb-4">
-                                {/* Direct Editable Title */}
-                                <Input
-                                  value={section.title}
-                                  onChange={(e) => handleEditSectionTitle(index, e.target.value)}
-                                  className="text-sm"
-                                  placeholder="Section title"
-                                />
-                                
-                                {/* Control Buttons */}
-                                <div className="flex gap-1 justify-between">
-                                  <div className="flex gap-1">
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => handleMoveSectionUp(index)}
-                                      disabled={index === 0}
-                                      className="h-7 w-7 p-0"
-                                      title="Move up"
-                                    >
-                                      <ChevronLeft className="h-3 w-3 rotate-90" />
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => handleMoveSectionDown(index)}
-                                      disabled={index === editingData.sections.length - 1}
-                                      className="h-7 w-7 p-0"
-                                      title="Move down"
-                                    >
-                                      <ChevronRight className="h-3 w-3 rotate-90" />
-                                    </Button>
-                                  </div>
-                                  
-                                  <Button
-                                    size="sm"
-                                    variant="destructive"
-                                    onClick={() => handleDeleteSection(index)}
-                                    className="h-7 w-7 p-0"
-                                    title="Delete section"
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  </SheetContent>
-                </Sheet>
-              )}
+              {/* Removed hamburger menu - Table of Contents is now in Structure tab */}
               
               <div className="flex-1">
                 <div>
@@ -1639,8 +1544,9 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
       <main className="flex-1 overflow-y-auto">
         <div className="container mx-auto px-4 py-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="info">Module Info</TabsTrigger>
+              <TabsTrigger value="structure">Structure</TabsTrigger>
               <TabsTrigger value="content">Content</TabsTrigger>
             </TabsList>
             
@@ -1648,6 +1554,112 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
               <Card className="max-w-4xl mx-auto">
                 <CardContent className="p-8">
                   {renderModuleInfo()}
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="structure" className="mt-6">
+              <Card className="max-w-4xl mx-auto">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Module Structure</CardTitle>
+                    {isAdminMode && isEditable && (
+                      <Button onClick={handleAddSection} size="sm">
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Section
+                      </Button>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {editingData.sections.map((section, index) => (
+                      <div key={section.id} className="flex items-center gap-4 p-4 border rounded-lg">
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <span className="text-sm font-medium text-muted-foreground w-8">
+                            {index + 1}.
+                          </span>
+                          {completedSections.has(index) ? (
+                            <CheckCircle className="h-5 w-5 text-green-500" />
+                          ) : (
+                            <Circle className="h-5 w-5 text-muted-foreground" />
+                          )}
+                        </div>
+                        
+                        <div className="flex-1">
+                          {isAdminMode && isEditable ? (
+                            <Input
+                              value={section.title}
+                              onChange={(e) => handleEditSectionTitle(index, e.target.value)}
+                              className="font-medium"
+                              placeholder="Section title"
+                            />
+                          ) : (
+                            <h3 className="font-medium">{section.title}</h3>
+                          )}
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setCurrentSectionIndex(index);
+                              setActiveTab("content");
+                            }}
+                            className="text-primary hover:text-primary"
+                          >
+                            View
+                          </Button>
+                          
+                          {isAdminMode && isEditable && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleMoveSectionUp(index)}
+                                disabled={index === 0}
+                                title="Move up"
+                              >
+                                <ChevronLeft className="h-4 w-4 rotate-90" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleMoveSectionDown(index)}
+                                disabled={index === editingData.sections.length - 1}
+                                title="Move down"
+                              >
+                                <ChevronRight className="h-4 w-4 rotate-90" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteSection(index)}
+                                className="text-destructive hover:text-destructive"
+                                title="Delete section"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {editingData.sections.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p>No sections created yet</p>
+                        {isAdminMode && isEditable && (
+                          <Button onClick={handleAddSection} className="mt-4">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add First Section
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
