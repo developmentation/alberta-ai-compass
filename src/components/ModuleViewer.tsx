@@ -91,9 +91,10 @@ interface ModuleViewerProps {
   onClose?: () => void;
   moduleId?: string;
   initialLanguage?: string;
+  showCloseButton?: boolean;
 }
 
-export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = true, onSave, onClose, moduleId, initialLanguage = 'en' }: ModuleViewerProps) {
+export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = true, onSave, onClose, moduleId, initialLanguage = 'en', showCloseButton = true }: ModuleViewerProps) {
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [completedSections, setCompletedSections] = useState<Set<number>>(new Set());
   const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
@@ -1507,7 +1508,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                   Save Changes
                 </Button>
               )}
-              {onClose && !isAdminMode && (
+              {onClose && !isAdminMode && showCloseButton && (
                 <Button onClick={onClose} variant="outline" size="sm">
                   <X className="mr-2 h-4 w-4" />
                   Close

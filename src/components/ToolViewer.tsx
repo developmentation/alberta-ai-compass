@@ -23,9 +23,10 @@ interface ToolViewerProps {
   tool: Tool;
   onClose?: () => void;
   className?: string;
+  showCloseButton?: boolean;
 }
 
-export function ToolViewer({ tool, onClose, className = "" }: ToolViewerProps) {
+export function ToolViewer({ tool, onClose, className = "", showCloseButton = true }: ToolViewerProps) {
   const { isBookmarked, toggleBookmark } = useBookmarks(tool.id, 'tool');
   const { userRating, aggregatedRating, submitRating } = useRatings(tool.id, 'tool');
 
@@ -86,7 +87,7 @@ export function ToolViewer({ tool, onClose, className = "" }: ToolViewerProps) {
             </Button>
           </div>
         </div>
-        {onClose && (
+        {onClose && showCloseButton && (
           <Button variant="ghost" size="sm" onClick={onClose} className="ml-4">
             <X className="w-4 h-4" />
           </Button>

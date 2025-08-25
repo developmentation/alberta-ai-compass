@@ -298,13 +298,13 @@ export function UniversalContentOpener({ isOpen, onClose, content }: UniversalCo
     switch (viewerData.type) {
       case 'news':
         console.log('📰 Rendering NewsViewer with data:', viewerData.data);
-        return <NewsViewer news={viewerData.data} onClose={onClose} />;
+        return <NewsViewer news={viewerData.data} onClose={onClose} showCloseButton={false} />;
       case 'tool':
         console.log('🔧 Rendering ToolViewer with data:', viewerData.data);
-        return <ToolViewer tool={viewerData.data} onClose={onClose} />;
+        return <ToolViewer tool={viewerData.data} onClose={onClose} showCloseButton={false} />;
       case 'module':
         console.log('📚 Rendering ModuleViewer with data:', viewerData.data);
-        return <ModuleViewer {...viewerData.data} onClose={onClose} />;
+        return <ModuleViewer {...viewerData.data} onClose={onClose} showCloseButton={false} />;
       case 'prompt':
         console.log('📝 Rendering PromptViewer with data:', viewerData.data);
         return (

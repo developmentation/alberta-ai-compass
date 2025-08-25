@@ -23,9 +23,10 @@ interface NewsViewerProps {
   news: NewsItem;
   onClose?: () => void;
   className?: string;
+  showCloseButton?: boolean;
 }
 
-export function NewsViewer({ news, onClose, className = "" }: NewsViewerProps) {
+export function NewsViewer({ news, onClose, className = "", showCloseButton = true }: NewsViewerProps) {
   const socialLinks = news.metadata?.social_links || {};
   const { isBookmarked, toggleBookmark } = useBookmarks(news.id, 'news');
   const { userRating, aggregatedRating, submitRating } = useRatings(news.id, 'news');
@@ -116,7 +117,7 @@ export function NewsViewer({ news, onClose, className = "" }: NewsViewerProps) {
             </Button>
           </div>
         </div>
-        {onClose && (
+        {onClose && showCloseButton && (
           <Button variant="ghost" size="sm" onClick={onClose} className="ml-4">
             <X className="w-4 h-4" />
           </Button>
