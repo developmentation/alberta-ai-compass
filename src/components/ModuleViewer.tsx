@@ -124,7 +124,9 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
   const { user } = useAuth();
 
   const currentSection = editingData.sections?.[currentSectionIndex];
-  const progress = editingData.sections ? (completedSections.size / editingData.sections.length) * 100 : 0;
+  const progress = editingData.sections && editingData.sections.length > 0 
+    ? ((currentSectionIndex + 1) / editingData.sections.length) * 100 
+    : 0;
 
   useEffect(() => {
     // Ensure proper data structure with content arrays
@@ -367,17 +369,19 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                     className="w-full h-full object-cover"
                   />
                 )}
-                <div className="absolute inset-0 bg-black/20" />
               </div>
             ) : (
               <div className="h-64 sm:h-80 flex items-center justify-center">
                 <BookOpen className="w-16 h-16 text-muted-foreground" />
               </div>
             )}
-            
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6 text-white">
-              <h1 className="text-2xl sm:text-3xl font-bold mb-2">{editingData.title}</h1>
-              <p className="text-white/90 text-sm sm:text-base">{editingData.description}</p>
+          </div>
+
+          {/* Module Title and Description */}
+          <div className="space-y-4">
+            <h1 className="text-3xl sm:text-4xl font-bold text-foreground">{editingData.title}</h1>
+            <div className="text-muted-foreground text-lg leading-relaxed">
+              <ReactMarkdown>{editingData.description}</ReactMarkdown>
             </div>
           </div>
 
@@ -954,6 +958,13 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
       title: "Success",
       description: `${type === 'image' ? 'Image' : 'Video'} uploaded successfully`,
     });
+    
+    // Force a re-render by updating the editingData
+    const updatedSections = [...editingData.sections];
+    setEditingData({
+      ...editingData,
+      sections: updatedSections
+    });
   };
 
   const calculateScore = () => {
@@ -1054,7 +1065,9 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                 className="min-h-[100px]"
               />
             ) : (
-              <p className="text-foreground leading-relaxed">{content.value}</p>
+            <div className="text-foreground leading-relaxed">
+              <ReactMarkdown>{content.value as string}</ReactMarkdown>
+            </div>
             )}
             {isAdminMode && isEditable && (
               <div className="flex gap-2">
@@ -1570,6 +1583,22 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                       </Button>
                     )}
                   </div>
+                  <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 rounded-full bg-primary flex items-center justify-center">
+                        <div className="h-1.5 w-1.5 rounded-full bg-primary-foreground" />
+                      </div>
+                      <span>Current section</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <span>Completed</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Circle className="h-4 w-4 text-muted-foreground" />
+                      <span>Not started</span>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -1579,10 +1608,18 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                           <span className="text-sm font-medium text-muted-foreground w-8">
                             {index + 1}.
                           </span>
-                          {completedSections.has(index) ? (
-                            <CheckCircle className="h-5 w-5 text-green-500" />
+                          {index === currentSectionIndex ? (
+                            <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                              <div className="h-2 w-2 rounded-full bg-primary-foreground" />
+                            </div>
+                          ) : completedSections.has(index) ? (
+                            <div title="Section completed">
+                              <CheckCircle className="h-5 w-5 text-green-500" />
+                            </div>
                           ) : (
-                            <Circle className="h-5 w-5 text-muted-foreground" />
+                            <div title="Section not started">
+                              <Circle className="h-5 w-5 text-muted-foreground" />
+                            </div>
                           )}
                         </div>
                         
