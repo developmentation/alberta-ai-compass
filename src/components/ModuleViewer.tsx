@@ -241,7 +241,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                   <SelectItem value="1">Level 1</SelectItem>
                   <SelectItem value="2">Level 2</SelectItem>
                   <SelectItem value="3">Level 3</SelectItem>
-                  <SelectItem value="red">RED</SelectItem>
+                  <SelectItem value="RED">RED</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -426,6 +426,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                    editingData.level === '2' ? 'Level 2' :
                    editingData.level === '3' ? 'Level 3' :
                    editingData.level === 'red' ? 'RED' :
+                   editingData.level === 'RED' ? 'RED' :
                    editingData.level}
                 </div>
                 <div className="text-sm text-muted-foreground">Level</div>
@@ -1852,36 +1853,46 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6 text-center">
-                    <div className="text-6xl font-bold text-primary">
-                      {calculateScore()}%
-                    </div>
-                    <div className="text-xl">
-                      {calculateScore() >= 70 ? (
-                        <div className="text-green-600">
-                          🎉 Congratulations! You've passed the module!
+                    {Object.keys(quizResults).length > 0 ? (
+                      <>
+                        <div className="text-6xl font-bold text-primary">
+                          {calculateScore()}%
                         </div>
-                      ) : (
-                        <div className="text-orange-600">
-                          Good attempt! Would you like to try again?
+                        <div className="text-xl">
+                          {calculateScore() >= 70 ? (
+                            <div className="text-green-600">
+                              🎉 Congratulations! You've passed the module!
+                            </div>
+                          ) : (
+                            <div className="text-orange-600">
+                              Good attempt! Would you like to try again?
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground max-w-md mx-auto">
-                      <div>
-                        <div className="font-medium">Correct Answers</div>
-                        <div>{Object.values(quizResults).filter(Boolean).length}</div>
+                        <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground max-w-md mx-auto">
+                          <div>
+                            <div className="font-medium">Correct Answers</div>
+                            <div>{Object.values(quizResults).filter(Boolean).length}</div>
+                          </div>
+                          <div>
+                            <div className="font-medium">Total Questions</div>
+                            <div>{Object.keys(quizResults).length}</div>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-xl text-green-600">
+                        🎉 Module Complete! You've successfully finished all the content.
                       </div>
-                      <div>
-                        <div className="font-medium">Total Questions</div>
-                        <div>{Object.keys(quizResults).length}</div>
-                      </div>
-                    </div>
+                    )}
                     <div className="flex gap-4 justify-center">
-                      <Button onClick={handleRetakeModule} variant="outline">
-                        <RotateCcw className="mr-2 h-4 w-4" />
-                        Retake Module
-                      </Button>
-                      {calculateScore() >= 70 && !isAdminMode && (
+                      {Object.keys(quizResults).length > 0 && (
+                        <Button onClick={handleRetakeModule} variant="outline">
+                          <RotateCcw className="mr-2 h-4 w-4" />
+                          Retake Module
+                        </Button>
+                      )}
+                      {(Object.keys(quizResults).length === 0 || calculateScore() >= 70) && !isAdminMode && (
                         <Button onClick={onClose || (() => window.location.href = '/modules')}>
                           Continue Learning
                         </Button>
