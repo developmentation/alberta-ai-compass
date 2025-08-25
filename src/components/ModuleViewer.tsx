@@ -250,7 +250,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
               }}
               currentImageUrl={imageUrl}
               currentVideoUrl={videoUrl}
-              bucketName="media-assets"
+              bucketName="module-assets"
               allowAiGeneration={true}
             />
           </div>
@@ -622,13 +622,21 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
 
   const handleSaveChanges = () => {
     if (onSave) {
-      // Include the separate media URLs in the saved data
+      // Include ALL editing data changes including sections, plus the separate media URLs
       const updatedData = {
         ...editingData,
         imageUrl,
-        videoUrl
+        videoUrl,
+        // Ensure sections array is properly included
+        sections: editingData.sections || []
       };
-      console.log('Saving module with data:', { updatedData, imageUrl, videoUrl, editingData });
+      console.log('Saving module with complete data:', { 
+        updatedData, 
+        imageUrl, 
+        videoUrl, 
+        editingData,
+        sectionsCount: editingData.sections?.length || 0
+      });
       onSave(updatedData);
       toast({
         title: "Success",
@@ -832,6 +840,48 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
       ...editingData,
       sections: updatedSections
     });
+  };
+
+  const handleMoveSectionUp = (sectionIndex: number) => {
+    if (sectionIndex <= 0) return;
+    
+    const updatedSections = [...editingData.sections];
+    const temp = updatedSections[sectionIndex];
+    updatedSections[sectionIndex] = updatedSections[sectionIndex - 1];
+    updatedSections[sectionIndex - 1] = temp;
+    
+    setEditingData({
+      ...editingData,
+      sections: updatedSections
+    });
+    
+    // Adjust current section index if needed
+    if (currentSectionIndex === sectionIndex) {
+      setCurrentSectionIndex(sectionIndex - 1);
+    } else if (currentSectionIndex === sectionIndex - 1) {
+      setCurrentSectionIndex(sectionIndex);
+    }
+  };
+
+  const handleMoveSectionDown = (sectionIndex: number) => {
+    if (sectionIndex >= editingData.sections.length - 1) return;
+    
+    const updatedSections = [...editingData.sections];
+    const temp = updatedSections[sectionIndex];
+    updatedSections[sectionIndex] = updatedSections[sectionIndex + 1];
+    updatedSections[sectionIndex + 1] = temp;
+    
+    setEditingData({
+      ...editingData,
+      sections: updatedSections
+    });
+    
+    // Adjust current section index if needed
+    if (currentSectionIndex === sectionIndex) {
+      setCurrentSectionIndex(sectionIndex + 1);
+    } else if (currentSectionIndex === sectionIndex + 1) {
+      setCurrentSectionIndex(sectionIndex);
+    }
   };
 
   const handleFileUpload = async (file: File, contentIndex: number) => {
@@ -1441,14 +1491,37 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                                   className="h-8 text-xs"
                                   placeholder="Section title"
                                 />
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleDeleteSection(index)}
-                                  className="h-8 w-8 p-0"
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
+                                <div className="flex gap-1">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleMoveSectionUp(index)}
+                                    disabled={index === 0}
+                                    className="h-8 w-8 p-0"
+                                    title="Move up"
+                                  >
+                                    <ChevronLeft className="h-3 w-3 rotate-90" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleMoveSectionDown(index)}
+                                    disabled={index === editingData.sections.length - 1}
+                                    className="h-8 w-8 p-0"
+                                    title="Move down"
+                                  >
+                                    <ChevronRight className="h-3 w-3 rotate-90" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleDeleteSection(index)}
+                                    className="h-8 w-8 p-0"
+                                    title="Delete section"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
                               </div>
                             )}
                           </div>
@@ -1686,7 +1759,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                 onMediaUpload={(url, type) => handleMediaUpload(url, type, uploadContentIndex)}
                 currentImageUrl={editingData.sections?.[currentSectionIndex]?.content[uploadContentIndex]?.type === 'image' ? editingData.sections[currentSectionIndex].content[uploadContentIndex].url : undefined}
                 currentVideoUrl={editingData.sections?.[currentSectionIndex]?.content[uploadContentIndex]?.type === 'video' ? editingData.sections[currentSectionIndex].content[uploadContentIndex].url : undefined}
-                bucketName="media-assets"
+                bucketName="module-assets"
                 allowAiGeneration={true}
               />
             )}
