@@ -36,10 +36,15 @@ import {
   Clock,
   Target,
   Users,
-  Calendar
+  Calendar,
+  Star,
+  Bookmark,
+  BookmarkCheck
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useBookmarks } from '@/hooks/useBookmarks';
+import { useRatings } from '@/hooks/useRatings';
 import { supabase } from '@/integrations/supabase/client';
 import ReactMarkdown from 'react-markdown';
 
@@ -153,6 +158,8 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
   
   const { toast } = useToast();
   const { user } = useAuth();
+  const { isBookmarked, toggleBookmark } = useBookmarks(moduleData.id, 'module');
+  const { userRating, aggregatedRating, submitRating } = useRatings(moduleData.id, 'module');
 
   const currentSection = editingData.sections?.[currentSectionIndex];
   const progress = editingData.sections && editingData.sections.length > 0 
@@ -414,6 +421,49 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
             <div className="text-muted-foreground text-lg leading-relaxed">
               <ReactMarkdown>{editingData.description}</ReactMarkdown>
             </div>
+            
+            {/* Rating and bookmark section */}
+            {!isAdminMode && (
+              <div className="flex items-center gap-4 pt-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        onClick={() => submitRating(star)}
+                        className="p-1 hover:scale-110 transition-transform"
+                      >
+                        <Star 
+                          className={`w-4 h-4 ${
+                            star <= (userRating || 0)
+                              ? 'fill-yellow-400 text-yellow-400' 
+                              : 'text-muted-foreground'
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    {aggregatedRating?.average_rating?.toFixed(1) || '0.0'} 
+                    ({aggregatedRating?.total_votes || 0} votes)
+                  </span>
+                </div>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => toggleBookmark(moduleData.id, 'module')}
+                  className="flex items-center gap-2"
+                >
+                  {isBookmarked ? (
+                    <BookmarkCheck className="w-4 h-4 fill-primary text-primary" />
+                  ) : (
+                    <Bookmark className="w-4 h-4" />
+                  )}
+                  {isBookmarked ? 'Bookmarked' : 'Bookmark'}
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Module Details */}
