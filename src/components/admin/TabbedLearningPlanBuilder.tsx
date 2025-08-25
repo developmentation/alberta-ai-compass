@@ -56,11 +56,21 @@ export function TabbedLearningPlanBuilder({
     content_items: [],
   });
 
+  const [hasLoadedInitialData, setHasLoadedInitialData] = useState(false);
+
   useEffect(() => {
-    if (initialData && isOpen) {
+    if (initialData && isOpen && !hasLoadedInitialData) {
+      console.log('Loading initial data:', initialData);
       setFormData(prev => ({ ...prev, ...initialData }));
+      setHasLoadedInitialData(true);
     }
-  }, [initialData, isOpen]);
+  }, [initialData, isOpen, hasLoadedInitialData]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setHasLoadedInitialData(false);
+    }
+  }, [isOpen]);
 
   const handleSubmit = () => {
     console.log('TabbedLearningPlanBuilder - handleSubmit formData:', formData);
