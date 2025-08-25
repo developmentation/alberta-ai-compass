@@ -573,13 +573,8 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
     try {
       const languageName = SUPPORTED_LANGUAGES.find(lang => lang.code === currentLanguage)?.name || 'English';
 
-      const response = await fetch(`https://mxgidgtbqmxjebyaprwc.supabase.co/functions/v1/evaluate-answer`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14Z2lkZ3RicW14amVieWFwcndjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIxOTkwNjksImV4cCI6MjA2Nzc3NTA2OX0.YWw5W_6s29DJ9zXyFQaGY6Bftz8Wuf6xirwLMk_uDJY`,
-        },
-        body: JSON.stringify({
+      const response = await supabase.functions.invoke('gemini-short-answer', {
+        body: {
           moduleTitle: editingData.title,
           moduleDescription: editingData.description,
           sectionTitle: currentSection?.title,
@@ -588,16 +583,21 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
           userAnswer,
           language: currentLanguage,
           languageName
-        })
+        }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to evaluate answer');
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to evaluate answer');
       }
 
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error('No response stream');
+      // Handle streaming response
+      const responseData = response.data;
+      if (!responseData || !responseData.body) {
+        throw new Error('No response stream available');
+      }
 
+      const reader = responseData.body.getReader();
+      
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
