@@ -650,27 +650,39 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
   };
 
   const handleEditContent = (contentIndex: number, field: string, value: any) => {
+    console.log('handleEditContent called:', { contentIndex, field, value, currentSectionIndex });
+    
     const updatedSections = [...editingData.sections];
     
     // Ensure content is an array
     if (!Array.isArray(updatedSections[currentSectionIndex].content)) {
       updatedSections[currentSectionIndex].content = [];
+      console.log('Content was not an array, returning early');
       return; // Can't edit content that doesn't exist
     }
     
     const updatedContent = [...updatedSections[currentSectionIndex].content];
+    console.log('Content before update:', updatedContent[contentIndex]);
+    
     updatedContent[contentIndex] = {
       ...updatedContent[contentIndex],
       [field]: value
     };
+    
+    console.log('Content after update:', updatedContent[contentIndex]);
+    
     updatedSections[currentSectionIndex] = {
       ...updatedSections[currentSectionIndex],
       content: updatedContent
     };
-    setEditingData({
+    
+    const newEditingData = {
       ...editingData,
       sections: updatedSections
-    });
+    };
+    
+    console.log('Setting new editing data:', newEditingData);
+    setEditingData(newEditingData);
   };
 
   const handleQuizTypeChange = (contentIndex: number, newQuizType: 'multiple-choice' | 'true-false' | 'short-answer') => {
@@ -945,12 +957,20 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
   };
 
   const handleMediaUpload = (url: string, type: 'image' | 'video', contentIndex: number) => {
+    console.log('handleMediaUpload called with:', { url, type, contentIndex });
+    console.log('Current section:', currentSectionIndex);
+    console.log('Current content before update:', editingData.sections?.[currentSectionIndex]?.content[contentIndex]);
+    
+    // Update the content URL
     handleEditContent(contentIndex, 'url', url);
+    
     if (type === 'image') {
       handleEditContent(contentIndex, 'alt', 'Uploaded image');
     } else {
       handleEditContent(contentIndex, 'caption', 'Uploaded video');
     }
+    
+    // Close the dialog
     setIsUploadDialogOpen(false);
     setUploadContentIndex(null);
 
@@ -959,12 +979,14 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
       description: `${type === 'image' ? 'Image' : 'Video'} uploaded successfully`,
     });
     
-    // Force a re-render by updating the editingData
-    const updatedSections = [...editingData.sections];
-    setEditingData({
-      ...editingData,
-      sections: updatedSections
-    });
+    // Force a complete re-render by creating a new object reference
+    setTimeout(() => {
+      setEditingData(prev => ({
+        ...prev,
+        sections: [...prev.sections]
+      }));
+      console.log('Content after update:', editingData.sections?.[currentSectionIndex]?.content[contentIndex]);
+    }, 100);
   };
 
   const calculateScore = () => {
@@ -1197,6 +1219,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
               <div className="space-y-2">
                 {content.type === 'image' && content.url && (
                   <img 
+                    key={content.url} // Force re-render when URL changes
                     src={content.url} 
                     alt={content.alt || 'Module image'} 
                     className="max-w-full h-auto rounded"
