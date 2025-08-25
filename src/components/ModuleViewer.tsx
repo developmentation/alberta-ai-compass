@@ -822,14 +822,37 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
   };
 
   const handleDeleteSection = (sectionIndex: number) => {
-    const updatedSections = editingData.sections.filter((_, index) => index !== sectionIndex);
-    // Adjust current section if needed
-    if (currentSectionIndex >= updatedSections.length && updatedSections.length > 0) {
-      setCurrentSectionIndex(updatedSections.length - 1);
+    // Prevent deleting if only one section remains
+    if (editingData.sections.length <= 1) {
+      toast({
+        title: "Cannot delete section",
+        description: "Module must have at least one section",
+        variant: "destructive",
+      });
+      return;
     }
+
+    const updatedSections = editingData.sections.filter((_, index) => index !== sectionIndex);
+    
+    // Adjust current section index if needed
+    let newCurrentIndex = currentSectionIndex;
+    if (currentSectionIndex === sectionIndex) {
+      // If we're deleting the current section, move to the previous one or first
+      newCurrentIndex = sectionIndex > 0 ? sectionIndex - 1 : 0;
+    } else if (currentSectionIndex > sectionIndex) {
+      // If current section is after the deleted one, shift back
+      newCurrentIndex = currentSectionIndex - 1;
+    }
+    
+    setCurrentSectionIndex(Math.min(newCurrentIndex, updatedSections.length - 1));
     setEditingData({
       ...editingData,
       sections: updatedSections
+    });
+
+    toast({
+      title: "Section deleted",
+      description: "Section has been removed from the module",
     });
   };
 
@@ -1465,58 +1488,67 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                     <ScrollArea className="h-full mt-6">
                       <div className="space-y-2">
                         {editingData.sections.map((section, index) => (
-                          <div key={section.id} className="space-y-2">
+                          <div key={section.id} className="group">
+                            {/* Section Navigation Button */}
                             <Button
                               variant={index === currentSectionIndex ? "default" : "ghost"}
-                              className="w-full justify-start h-auto p-3"
+                              className="w-full justify-start h-auto p-3 mb-2"
                               onClick={() => {
                                 setCurrentSectionIndex(index);
                                 setIsTableOfContentsOpen(false);
                               }}
                             >
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 w-full">
                                 {completedSections.has(index) ? (
-                                  <CheckCircle className="h-4 w-4 text-green-500" />
+                                  <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
                                 ) : (
-                                  <Circle className="h-4 w-4" />
+                                  <Circle className="h-4 w-4 flex-shrink-0" />
                                 )}
-                                <span className="text-left">{section.title}</span>
+                                <span className="text-left flex-1 truncate">{section.title}</span>
                               </div>
                             </Button>
+                            
+                            {/* Admin Controls */}
                             {isAdminMode && isEditable && (
-                              <div className="flex gap-1 px-3">
+                              <div className="space-y-2 px-2 mb-4">
+                                {/* Direct Editable Title */}
                                 <Input
                                   value={section.title}
                                   onChange={(e) => handleEditSectionTitle(index, e.target.value)}
-                                  className="h-8 text-xs"
+                                  className="text-sm"
                                   placeholder="Section title"
                                 />
-                                <div className="flex gap-1">
+                                
+                                {/* Control Buttons */}
+                                <div className="flex gap-1 justify-between">
+                                  <div className="flex gap-1">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleMoveSectionUp(index)}
+                                      disabled={index === 0}
+                                      className="h-7 w-7 p-0"
+                                      title="Move up"
+                                    >
+                                      <ChevronLeft className="h-3 w-3 rotate-90" />
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleMoveSectionDown(index)}
+                                      disabled={index === editingData.sections.length - 1}
+                                      className="h-7 w-7 p-0"
+                                      title="Move down"
+                                    >
+                                      <ChevronRight className="h-3 w-3 rotate-90" />
+                                    </Button>
+                                  </div>
+                                  
                                   <Button
                                     size="sm"
-                                    variant="outline"
-                                    onClick={() => handleMoveSectionUp(index)}
-                                    disabled={index === 0}
-                                    className="h-8 w-8 p-0"
-                                    title="Move up"
-                                  >
-                                    <ChevronLeft className="h-3 w-3 rotate-90" />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleMoveSectionDown(index)}
-                                    disabled={index === editingData.sections.length - 1}
-                                    className="h-8 w-8 p-0"
-                                    title="Move down"
-                                  >
-                                    <ChevronRight className="h-3 w-3 rotate-90" />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
+                                    variant="destructive"
                                     onClick={() => handleDeleteSection(index)}
-                                    className="h-8 w-8 p-0"
+                                    className="h-7 w-7 p-0"
                                     title="Delete section"
                                   >
                                     <Trash2 className="h-3 w-3" />
