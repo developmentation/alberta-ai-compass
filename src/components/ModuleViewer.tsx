@@ -590,13 +590,34 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
         throw new Error(response.error.message || 'Failed to evaluate answer');
       }
 
-      // Handle streaming response
-      const responseData = response.data;
-      if (!responseData || !responseData.body) {
-        throw new Error('No response stream available');
+      // Handle streaming response - call edge function directly
+      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+      const streamResponse = await fetch(`${SUPABASE_URL}/functions/v1/gemini-short-answer`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          moduleTitle: editingData.title,
+          moduleDescription: editingData.description,
+          sectionTitle: currentSection?.title,
+          question: currentContent.question,
+          expectedAnswer,
+          userAnswer,
+          language: currentLanguage,
+          languageName
+        })
+      });
+
+      if (!streamResponse.ok) {
+        throw new Error(`HTTP error! status: ${streamResponse.status}`);
       }
 
-      const reader = responseData.body.getReader();
+      const reader = streamResponse.body?.getReader();
+      if (!reader) {
+        throw new Error('No response stream available');
+      }
       
       while (true) {
         const { done, value } = await reader.read();
@@ -617,6 +638,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
               }
             } catch (e) {
               // Ignore parsing errors for stream data
+              console.log('Parse error:', e);
             }
           }
         }

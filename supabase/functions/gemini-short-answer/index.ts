@@ -87,47 +87,80 @@ Your evaluation:`;
       throw new Error(`Gemini API error: ${response.status}`);
     }
 
-    // Create a readable stream for the response
+    // Create a readable stream for the response - matching gemini-stream pattern
     const stream = new ReadableStream({
       async start(controller) {
-        const reader = response.body?.getReader();
-        if (!reader) {
-          controller.close();
-          return;
-        }
-
+        const encoder = new TextEncoder();
+        
         try {
+          console.log('Starting gemini-short-answer stream');
+          
+          const reader = response.body?.getReader();
+          if (!reader) {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: "Error: No response from AI service" })}\n\n`));
+            controller.enqueue(encoder.encode("event: complete\ndata: {}\n\n"));
+            controller.close();
+            return;
+          }
+
+          let buffer = '';
+          
           while (true) {
             const { done, value } = await reader.read();
-            if (done) break;
-
+            
+            if (done) {
+              console.log('Gemini stream complete');
+              break;
+            }
+            
             const chunk = new TextDecoder().decode(value);
-            const lines = chunk.split('\n');
-
+            console.log('Raw Gemini chunk:', chunk);
+            buffer += chunk;
+            
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+            
             for (const line of lines) {
-              if (line.startsWith('[') || line.startsWith(',')) {
-                try {
-                  // Remove leading comma and parse JSON
-                  const cleanLine = line.startsWith(',') ? line.slice(1) : line;
-                  const data = JSON.parse(cleanLine);
+              const trimmedLine = line.trim();
+              if (!trimmedLine) continue;
+              
+              try {
+                const data = JSON.parse(trimmedLine);
+                if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                  let text = data.candidates[0].content.parts[0].text;
+                  text = text.replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+                  console.log('Found Gemini text:', text);
                   
-                  if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    const text = data.candidates[0].content.parts[0].text;
-                    console.log('Streaming text:', text);
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+                  console.log('Streamed evaluation chunk');
+                }
+              } catch (e) {
+                if (trimmedLine.includes('"text":')) {
+                  const match = trimmedLine.match(/"text":\s*"((?:[^"\\]|\\.)*)"/);
+                  if (match) {
+                    let text = match[1];
+                    text = text
+                      .replace(/\\"/g, '"')
+                      .replace(/\\n/g, '\n')
+                      .replace(/\\r/g, '\r')
+                      .replace(/\\t/g, '\t')
+                      .replace(/\\\\/g, '\\');
                     
-                    // Send the text chunk as server-sent event
-                    const sseData = `data: ${JSON.stringify({ text })}\n\n`;
-                    controller.enqueue(new TextEncoder().encode(sseData));
+                    console.log('Found text pattern:', text);
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
                   }
-                } catch (parseError) {
-                  // Ignore parsing errors for malformed chunks
-                  console.log('Parse error (ignored):', parseError);
                 }
               }
             }
           }
+          
+          controller.enqueue(encoder.encode("event: complete\ndata: {}\n\n"));
+          console.log('Stream completed for short answer evaluation');
+          
         } catch (error) {
-          console.error('Stream reading error:', error);
+          console.error("Streaming error:", error);
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: `Error: ${error.message}` })}\n\n`));
+          controller.enqueue(encoder.encode("event: complete\ndata: {}\n\n"));
         } finally {
           controller.close();
         }
