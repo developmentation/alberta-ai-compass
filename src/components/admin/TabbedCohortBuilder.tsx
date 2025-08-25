@@ -65,28 +65,25 @@ export function TabbedCohortBuilder({
 
   const [editingDay, setEditingDay] = useState<CohortDay | null>(null);
   const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
+  const [hasLoadedInitialData, setHasLoadedInitialData] = useState(false);
 
   useEffect(() => {
-    if (initialData && Object.keys(initialData).length > 0) {
-      console.log('TabbedCohortBuilder - Initial Data:', initialData);
-      console.log('TabbedCohortBuilder - Current formData before update:', formData);
-      
-      // Only update if we're opening for editing (have meaningful initial data)
-      // or if this is the first time opening (formData is empty)
-      const isFormEmpty = !formData.name && !formData.description && formData.days.length === 0;
-      const hasValidInitialData = initialData.name || initialData.days?.length > 0;
-      
-      if (isFormEmpty || hasValidInitialData) {
-        setFormData(prev => {
-          const updated = { ...prev, ...initialData };
-          console.log('TabbedCohortBuilder - Updated formData:', updated);
-          return updated;
-        });
-      } else {
-        console.log('TabbedCohortBuilder - Skipping update to preserve current form state');
-      }
+    if (initialData && Object.keys(initialData).length > 0 && isOpen && !hasLoadedInitialData) {
+      console.log('TabbedCohortBuilder - Loading initial data:', initialData);
+      setFormData(prev => {
+        const updated = { ...prev, ...initialData };
+        console.log('TabbedCohortBuilder - Updated formData:', updated);
+        return updated;
+      });
+      setHasLoadedInitialData(true);
     }
-  }, [initialData]);
+  }, [initialData, isOpen, hasLoadedInitialData]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setHasLoadedInitialData(false);
+    }
+  }, [isOpen]);
 
   const handleSubmit = () => {
     console.log('TabbedCohortBuilder - handleSubmit formData:', formData);
@@ -117,7 +114,7 @@ export function TabbedCohortBuilder({
       day_description: '',
       content_items: []
     };
-    setFormData({ ...formData, days: [...formData.days, newDay] });
+    setFormData(prev => ({ ...prev, days: [...prev.days, newDay] }));
   };
 
   const handleEditDay = (day: CohortDay, index: number) => {
@@ -130,42 +127,48 @@ export function TabbedCohortBuilder({
     
     const updatedDays = [...formData.days];
     updatedDays[selectedDayIndex] = editingDay;
-    setFormData({ ...formData, days: updatedDays });
+    setFormData(prev => ({ ...prev, days: updatedDays }));
     setEditingDay(null);
     setSelectedDayIndex(null);
   };
 
   const handleDeleteDay = (index: number) => {
-    const updatedDays = formData.days.filter((_, i) => i !== index);
-    // Renumber days
-    const renumberedDays = updatedDays.map((day, idx) => ({
-      ...day,
-      day_number: idx + 1,
-      day_name: day.day_name.includes('Day ') ? `Day ${idx + 1}` : day.day_name
-    }));
-    setFormData({ ...formData, days: renumberedDays });
+    setFormData(prev => {
+      const updatedDays = prev.days.filter((_, i) => i !== index);
+      // Renumber days
+      const renumberedDays = updatedDays.map((day, idx) => ({
+        ...day,
+        day_number: idx + 1,
+        day_name: day.day_name.includes('Day ') ? `Day ${idx + 1}` : day.day_name
+      }));
+      return { ...prev, days: renumberedDays };
+    });
   };
 
   const handleUpdateDayContent = (dayIndex: number, items: EnhancedContentItem[]) => {
-    const updatedDays = [...formData.days];
-    updatedDays[dayIndex].content_items = items;
-    setFormData({ ...formData, days: updatedDays });
+    setFormData(prev => {
+      const updatedDays = [...prev.days];
+      updatedDays[dayIndex].content_items = items;
+      return { ...prev, days: updatedDays };
+    });
   };
 
   const onDragEndDays = (result: any) => {
     if (!result.destination) return;
 
-    const items = Array.from(formData.days);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
+    setFormData(prev => {
+      const items = Array.from(prev.days);
+      const [reorderedItem] = items.splice(result.source.index, 1);
+      items.splice(result.destination.index, 0, reorderedItem);
 
-    // Renumber days
-    const renumberedDays = items.map((day, idx) => ({
-      ...day,
-      day_number: idx + 1
-    }));
+      // Renumber days
+      const renumberedDays = items.map((day, idx) => ({
+        ...day,
+        day_number: idx + 1
+      }));
 
-    setFormData({ ...formData, days: renumberedDays });
+      return { ...prev, days: renumberedDays };
+    });
   };
 
   const totalContentItems = formData.days.reduce((acc, day) => acc + day.content_items.length, 0);
@@ -210,21 +213,21 @@ export function TabbedCohortBuilder({
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label>Cohort Name *</Label>
-                    <Input
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="Enter cohort name..."
-                    />
+                     <Input
+                       value={formData.name}
+                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                       placeholder="Enter cohort name..."
+                     />
                   </div>
 
                   <div className="space-y-2">
                     <Label>Description</Label>
-                    <Textarea
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      placeholder="Describe this cohort and its objectives..."
-                      rows={4}
-                    />
+                     <Textarea
+                       value={formData.description}
+                       onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                       placeholder="Describe this cohort and its objectives..."
+                       rows={4}
+                     />
                   </div>
 
                   <div className="grid grid-cols-3 gap-4">
@@ -233,7 +236,7 @@ export function TabbedCohortBuilder({
                       <Input
                         type="date"
                         value={formData.start_date}
-                        onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                        onChange={(e) => setFormData(prev => ({ ...prev, start_date: e.target.value }))}
                       />
                     </div>
 
@@ -242,7 +245,7 @@ export function TabbedCohortBuilder({
                       <Input
                         type="date"
                         value={formData.end_date}
-                        onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                        onChange={(e) => setFormData(prev => ({ ...prev, end_date: e.target.value }))}
                       />
                     </div>
 
@@ -250,7 +253,7 @@ export function TabbedCohortBuilder({
                       <Label>Status</Label>
                       <Select
                         value={formData.status}
-                        onValueChange={(value) => setFormData({ ...formData, status: value as any })}
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as any }))}
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -271,14 +274,14 @@ export function TabbedCohortBuilder({
                   <CardTitle>Cohort Media</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <UnifiedMediaUpload
-                    onMediaUpload={(url, type) => {
-                      if (type === 'image') {
-                        setFormData({ ...formData, image_url: url });
-                      } else {
-                        setFormData({ ...formData, video_url: url });
-                      }
-                    }}
+                   <UnifiedMediaUpload
+                     onMediaUpload={(url, type) => {
+                       if (type === 'image') {
+                         setFormData(prev => ({ ...prev, image_url: url }));
+                       } else {
+                         setFormData(prev => ({ ...prev, video_url: url }));
+                       }
+                     }}
                     currentImageUrl={formData.image_url}
                     currentVideoUrl={formData.video_url}
                     bucketName="cohort-assets"
@@ -514,18 +517,18 @@ export function TabbedCohortBuilder({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium mb-1 block">Day Name</Label>
-                  <Input
-                    value={editingDay.day_name}
-                    onChange={(e) => setEditingDay({ ...editingDay, day_name: e.target.value })}
-                    placeholder="Enter day name..."
-                  />
+                   <Input
+                     value={editingDay.day_name}
+                     onChange={(e) => setEditingDay(prev => prev ? { ...prev, day_name: e.target.value } : null)}
+                     placeholder="Enter day name..."
+                   />
                 </div>
                 <div>
                   <Label className="text-sm font-medium mb-1 block">Planned Date (Optional)</Label>
                   <Input
                     type="date"
                     value={editingDay.planned_date || ''}
-                    onChange={(e) => setEditingDay({ ...editingDay, planned_date: e.target.value })}
+                    onChange={(e) => setEditingDay(prev => prev ? { ...prev, planned_date: e.target.value } : null)}
                   />
                 </div>
               </div>
@@ -534,7 +537,7 @@ export function TabbedCohortBuilder({
                 <Label className="text-sm font-medium mb-1 block">Description</Label>
                 <Textarea
                   value={editingDay.day_description}
-                  onChange={(e) => setEditingDay({ ...editingDay, day_description: e.target.value })}
+                  onChange={(e) => setEditingDay(prev => prev ? { ...prev, day_description: e.target.value } : null)}
                   placeholder="Describe what happens on this day..."
                   rows={3}
                 />
@@ -542,12 +545,12 @@ export function TabbedCohortBuilder({
 
               <div>
                 <Label className="text-sm font-medium mb-1 block">Day Image</Label>
-                <UnifiedMediaUpload
-                  onMediaUpload={(url, type) => {
-                    if (type === 'image') {
-                      setEditingDay({ ...editingDay, day_image_url: url });
-                    }
-                  }}
+                 <UnifiedMediaUpload
+                   onMediaUpload={(url, type) => {
+                     if (type === 'image') {
+                       setEditingDay(prev => prev ? { ...prev, day_image_url: url } : null);
+                     }
+                   }}
                   currentImageUrl={editingDay.day_image_url}
                   bucketName="cohort-day-assets"
                 />
