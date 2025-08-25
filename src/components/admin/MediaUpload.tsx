@@ -52,7 +52,7 @@ export function MediaUpload({
   const convertToEmbedUrl = (url: string): string => {
     const videoId = extractYouTubeVideoId(url);
     if (videoId) {
-      return `https://www.youtube.com/embed/${videoId}`;
+      return `https://www.youtube.com/embed/${videoId}?origin=${window.location.origin}&enablejsapi=0`;
     }
     return url; // Return original URL if we can't extract video ID
   };

@@ -74,7 +74,7 @@ const extractYouTubeVideoId = (url: string): string | null => {
 const convertToEmbedUrl = (url: string): string => {
   const videoId = extractYouTubeVideoId(url);
   if (videoId) {
-    return `https://www.youtube.com/embed/${videoId}`;
+    return `https://www.youtube.com/embed/${videoId}?origin=${window.location.origin}&enablejsapi=0`;
   }
   return url;
 };
@@ -422,14 +422,9 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
               <ReactMarkdown>{editingData.description}</ReactMarkdown>
             </div>
             
-            {/* Debug information */}
-            <div className="text-sm text-blue-500 border border-blue-200 p-2 rounded">
-              Debug: isAdminMode = {String(isAdminMode)}, moduleId = {moduleData.id}
-            </div>
-            
             {/* Rating and bookmark section */}
             {!isAdminMode && (
-              <div className="flex items-center gap-4 pt-2 border border-green-200 p-2 rounded">
+              <div className="flex items-center gap-4 pt-2">
                 <div className="flex items-center gap-2">
                   <div className="flex items-center">
                     {[1, 2, 3, 4, 5].map((star) => (

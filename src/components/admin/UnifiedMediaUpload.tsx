@@ -60,7 +60,7 @@ export function UnifiedMediaUpload({
   const convertToEmbedUrl = (url: string): string => {
     const videoId = extractYouTubeVideoId(url);
     if (videoId) {
-      return `https://www.youtube.com/embed/${videoId}`;
+      return `https://www.youtube.com/embed/${videoId}?origin=${window.location.origin}&enablejsapi=0`;
     }
     return url;
   };
