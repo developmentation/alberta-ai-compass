@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -14,19 +14,22 @@ export function useContentRatings(contentItems: Array<{id: string, type: string}
   const [ratingsData, setRatingsData] = useState<Record<string, ContentRatingData>>({});
   const [loading, setLoading] = useState(false);
 
+  // Memoize content IDs to prevent infinite loops
+  const contentIds = useMemo(() => {
+    return contentItems.map(item => item.id).sort();
+  }, [JSON.stringify(contentItems.map(item => ({ id: item.id, type: item.type })))]);
+
   useEffect(() => {
-    if (user && contentItems.length > 0) {
+    if (user && contentIds.length > 0) {
       fetchRatingsAndBookmarks();
     }
-  }, [user, contentItems]);
+  }, [user, contentIds.join(',')]);
 
   const fetchRatingsAndBookmarks = async () => {
-    if (!user || contentItems.length === 0) return;
+    if (!user || contentIds.length === 0) return;
 
     setLoading(true);
-    try {
-      const contentIds = contentItems.map(item => item.id);
-      
+    try {      
       // Fetch star ratings
       const { data: starRatings } = await supabase
         .from('star_ratings')
