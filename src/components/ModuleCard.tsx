@@ -203,7 +203,7 @@ export const ModuleCard = ({
 
       {/* Module Viewer Dialog */}
       <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
-        <DialogContent className="max-w-6xl max-h-[95vh] overflow-hidden p-0">
+        <DialogContent className="w-[90vw] h-[90vh] max-w-none max-h-none overflow-y-auto p-0">
           {moduleData && (
             <ModuleViewer 
               moduleData={moduleData}
