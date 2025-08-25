@@ -47,6 +47,37 @@ import { LanguageSelector, SUPPORTED_LANGUAGES } from '@/components/LanguageSele
 import { AIExplanationModal } from '@/components/AIExplanationModal';
 import { UnifiedMediaUpload } from '@/components/admin/UnifiedMediaUpload';
 
+// YouTube helper functions
+const extractYouTubeVideoId = (url: string): string | null => {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/v\/([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/user\/[^\/]+#p\/[^\/]+\/[^\/]+\/([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/.*[?&]v=([a-zA-Z0-9_-]{11})/
+  ];
+  
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+  
+  return null;
+};
+
+const convertToEmbedUrl = (url: string): string => {
+  const videoId = extractYouTubeVideoId(url);
+  if (videoId) {
+    return `https://www.youtube.com/embed/${videoId}`;
+  }
+  return url;
+};
+
+const isYouTubeUrl = (url: string): boolean => {
+  return extractYouTubeVideoId(url) !== null;
+};
+
 interface ModuleData {
   id: string;
   title: string;
@@ -1203,38 +1234,87 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
       case 'audio':
         return (
           <div key={index} className="space-y-2">
-            {isEditing ? (
-              <div className="space-y-2">
-                <Input
-                  value={content.url || ''}
-                  onChange={(e) => handleEditContent(index, 'url', e.target.value)}
-                  placeholder="Media URL"
-                />
-                <Input
-                  value={content.caption || ''}
-                  onChange={(e) => handleEditContent(index, 'caption', e.target.value)}
-                  placeholder="Caption"
-                />
-                <Input
-                  value={content.alt || ''}
-                  onChange={(e) => handleEditContent(index, 'alt', e.target.value)}
-                  placeholder="Alt text / Description"
-                />
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setUploadContentIndex(index);
-                      setIsUploadDialogOpen(true);
-                    }}
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    Upload or Generate
-                  </Button>
-                </div>
-              </div>
-            ) : (
+             {isEditing ? (
+               <div className="space-y-2">
+                 <Input
+                   value={content.url || ''}
+                   onChange={(e) => handleEditContent(index, 'url', e.target.value)}
+                   placeholder="Media URL"
+                 />
+                 <Input
+                   value={content.caption || ''}
+                   onChange={(e) => handleEditContent(index, 'caption', e.target.value)}
+                   placeholder="Caption"
+                 />
+                 <Input
+                   value={content.alt || ''}
+                   onChange={(e) => handleEditContent(index, 'alt', e.target.value)}
+                   placeholder="Alt text / Description"
+                 />
+                 
+                 {/* Preview in edit mode */}
+                 {content.url && (
+                   <div className="border rounded p-2">
+                     <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                       Preview:
+                     </label>
+                     {content.type === 'image' && (
+                       <img 
+                         src={content.url} 
+                         alt="Preview" 
+                         className="max-w-full h-auto max-h-32 rounded"
+                       />
+                     )}
+                     {content.type === 'video' && (
+                       <>
+                         {isYouTubeUrl(content.url) ? (
+                           <div className="relative aspect-video max-w-full max-h-32 rounded overflow-hidden">
+                             <iframe
+                               src={convertToEmbedUrl(content.url)}
+                               title="Video preview"
+                               width="100%"
+                               height="100%"
+                               className="absolute inset-0 w-full h-full"
+                               frameBorder="0"
+                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                               referrerPolicy="strict-origin-when-cross-origin"
+                               allowFullScreen
+                             />
+                           </div>
+                         ) : (
+                           <video 
+                             src={content.url} 
+                             controls 
+                             className="max-w-full h-auto max-h-32 rounded"
+                           />
+                         )}
+                       </>
+                     )}
+                     {content.type === 'audio' && (
+                       <audio 
+                         src={content.url} 
+                         controls 
+                         className="w-full"
+                       />
+                     )}
+                   </div>
+                 )}
+                 
+                 <div className="flex gap-2">
+                   <Button
+                     size="sm"
+                     variant="outline"
+                     onClick={() => {
+                       setUploadContentIndex(index);
+                       setIsUploadDialogOpen(true);
+                     }}
+                   >
+                     <Upload className="h-4 w-4 mr-2" />
+                     Upload or Generate
+                   </Button>
+                 </div>
+               </div>
+             ) : (
               <div className="space-y-2">
                 {content.type === 'image' && content.url && (
                   <img 
@@ -1245,12 +1325,31 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                   />
                 )}
                 {content.type === 'video' && content.url && (
-                  <video 
-                    src={content.url} 
-                    controls 
-                    className="max-w-full h-auto rounded"
-                    aria-label={content.alt || 'Module video'}
-                  />
+                  <>
+                    {isYouTubeUrl(content.url) ? (
+                      <div className="relative aspect-video max-w-full rounded overflow-hidden">
+                        <iframe
+                          src={convertToEmbedUrl(content.url)}
+                          title={content.caption || 'Module video'}
+                          width="100%"
+                          height="100%"
+                          className="absolute inset-0 w-full h-full"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          referrerPolicy="strict-origin-when-cross-origin"
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : (
+                      <video 
+                        key={content.url}
+                        src={content.url} 
+                        controls 
+                        className="max-w-full h-auto rounded"
+                        aria-label={content.caption || 'Module video'}
+                      />
+                    )}
+                  </>
                 )}
                 {content.type === 'audio' && content.url && (
                   <audio 
