@@ -65,9 +65,9 @@ const Tools = () => {
 
       <div className="relative z-10">
         {/* Hero Section */}
-        <section className="py-20">
+        <section className="pt-5">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16 animate-fade-in-up">
+            <div className="text-center mb-4 animate-fade-in-up">
               <div className="inline-block px-3 py-1 text-xs font-medium bg-primary/10 text-primary rounded-full border border-primary/20 mb-6">
                 HANDS-ON PRACTICE
               </div>
@@ -80,7 +80,7 @@ const Tools = () => {
             </div>
 
             {/* Search and Filters */}
-            <div className="max-w-4xl mx-auto mb-16">
+            <div className="max-w-4xl mx-auto mb-4">
               <div className="flex flex-col sm:flex-row gap-4 mb-6">
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
