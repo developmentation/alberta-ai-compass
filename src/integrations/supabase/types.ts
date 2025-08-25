@@ -490,7 +490,7 @@ export type Database = {
           created_by: string | null
           deleted_at: string | null
           description: string
-          duration: unknown | null
+          duration: string | null
           id: string
           image_url: string | null
           is_ai_generated: boolean | null
@@ -511,7 +511,7 @@ export type Database = {
           created_by?: string | null
           deleted_at?: string | null
           description: string
-          duration?: unknown | null
+          duration?: string | null
           id?: string
           image_url?: string | null
           is_ai_generated?: boolean | null
@@ -532,7 +532,7 @@ export type Database = {
           created_by?: string | null
           deleted_at?: string | null
           description?: string
-          duration?: unknown | null
+          duration?: string | null
           id?: string
           image_url?: string | null
           is_ai_generated?: boolean | null
