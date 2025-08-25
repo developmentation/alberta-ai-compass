@@ -45,7 +45,7 @@ export function useCohortMembership() {
         .from('cohort_members')
         .select(`
           *,
-          cohort:cohorts (
+          cohort:cohorts!inner (
             id,
             name,
             description,
@@ -57,7 +57,8 @@ export function useCohortMembership() {
           )
         `)
         .or(`user_id.eq.${user.id},email.eq.${profile.email}`)
-        .eq('status', 'enrolled');
+        .eq('status', 'enrolled')
+        .is('cohort.deleted_at', null);
 
       if (error) throw error;
       
