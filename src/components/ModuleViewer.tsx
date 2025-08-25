@@ -36,15 +36,10 @@ import {
   Clock,
   Target,
   Users,
-  Calendar,
-  Star,
-  Bookmark,
-  BookmarkCheck
+  Calendar
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { useBookmarks } from '@/hooks/useBookmarks';
-import { useRatings } from '@/hooks/useRatings';
 import { supabase } from '@/integrations/supabase/client';
 import ReactMarkdown from 'react-markdown';
 
@@ -74,7 +69,7 @@ const extractYouTubeVideoId = (url: string): string | null => {
 const convertToEmbedUrl = (url: string): string => {
   const videoId = extractYouTubeVideoId(url);
   if (videoId) {
-    return `https://www.youtube.com/embed/${videoId}?origin=${window.location.origin}&enablejsapi=0`;
+    return `https://www.youtube.com/embed/${videoId}`;
   }
   return url;
 };
@@ -158,8 +153,6 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
   
   const { toast } = useToast();
   const { user } = useAuth();
-  const { isBookmarked, toggleBookmark } = useBookmarks(moduleData.id, 'module');
-  const { userRating, aggregatedRating, submitRating } = useRatings(moduleData.id, 'module');
 
   const currentSection = editingData.sections?.[currentSectionIndex];
   const progress = editingData.sections && editingData.sections.length > 0 
@@ -421,68 +414,6 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
             <div className="text-muted-foreground text-lg leading-relaxed">
               <ReactMarkdown>{editingData.description}</ReactMarkdown>
             </div>
-            
-            {/* Debug information */}
-            <div className="bg-yellow-100 border border-yellow-400 p-3 rounded mb-4">
-              <div className="text-sm text-black">
-                <div>Debug Info:</div>
-                <div>isAdminMode: {String(isAdminMode)}</div>
-                <div>moduleData.id: {moduleData.id}</div>
-                <div>user: {user ? 'logged in' : 'not logged in'}</div>
-                <div>userRating: {String(userRating)}</div>
-                <div>isBookmarked: {String(isBookmarked)}</div>
-                <div>Condition (!isAdminMode): {String(!isAdminMode)}</div>
-              </div>
-            </div>
-            
-            {/* Rating and bookmark section */}
-            {!isAdminMode ? (
-              <div className="bg-green-100 border border-green-400 p-3 rounded">
-                <div className="flex items-center gap-4 pt-2">
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={star}
-                          onClick={() => submitRating(star)}
-                          className="p-1 hover:scale-110 transition-transform"
-                        >
-                          <Star 
-                            className={`w-4 h-4 ${
-                              star <= (userRating || 0)
-                                ? 'fill-yellow-400 text-yellow-400' 
-                                : 'text-muted-foreground'
-                            }`}
-                          />
-                        </button>
-                      ))}
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      {aggregatedRating?.average_rating?.toFixed(1) || '0.0'} 
-                      ({aggregatedRating?.total_votes || 0} votes)
-                    </span>
-                  </div>
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleBookmark(moduleData.id, 'module')}
-                    className="flex items-center gap-2"
-                  >
-                    {isBookmarked ? (
-                      <BookmarkCheck className="w-4 h-4 fill-primary text-primary" />
-                    ) : (
-                      <Bookmark className="w-4 h-4" />
-                    )}
-                    {isBookmarked ? 'Bookmarked' : 'Bookmark'}
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-red-100 border border-red-400 p-3 rounded">
-                <div className="text-sm text-black">Admin mode is ON - rating/bookmark hidden</div>
-              </div>
-            )}
           </div>
 
           {/* Module Details */}
