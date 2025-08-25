@@ -57,10 +57,10 @@ export function TabbedLearningPlanBuilder({
   });
 
   useEffect(() => {
-    if (initialData) {
+    if (initialData && isOpen) {
       setFormData(prev => ({ ...prev, ...initialData }));
     }
-  }, [initialData]);
+  }, [initialData, isOpen]);
 
   const handleSubmit = () => {
     onSave(formData);
@@ -122,31 +122,31 @@ export function TabbedLearningPlanBuilder({
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Plan Name *</Label>
-                      <Input
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="Enter learning plan name..."
-                      />
+                       <Input
+                         value={formData.name}
+                         onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                         placeholder="Enter learning plan name..."
+                       />
                     </div>
 
                     <div className="space-y-2">
                       <Label>Language</Label>
-                      <Input
-                        value={formData.language}
-                        onChange={(e) => setFormData({ ...formData, language: e.target.value })}
-                        placeholder="English"
-                      />
+                       <Input
+                         value={formData.language}
+                         onChange={(e) => setFormData(prev => ({ ...prev, language: e.target.value }))}
+                         placeholder="English"
+                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label>Description *</Label>
-                    <Textarea
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      placeholder="Describe what this learning plan covers..."
-                      rows={4}
-                    />
+                     <Textarea
+                       value={formData.description}
+                       onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                       placeholder="Describe what this learning plan covers..."
+                       rows={4}
+                     />
                   </div>
 
                   <div className="grid grid-cols-3 gap-4">
@@ -154,7 +154,7 @@ export function TabbedLearningPlanBuilder({
                       <Label>Difficulty Level</Label>
                       <Select
                         value={formData.level}
-                        onValueChange={(value) => setFormData({ ...formData, level: value as any })}
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, level: value as any }))}
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -172,7 +172,7 @@ export function TabbedLearningPlanBuilder({
                       <Label>Status</Label>
                       <Select
                         value={formData.status}
-                        onValueChange={(value) => setFormData({ ...formData, status: value as any })}
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as any }))}
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -190,7 +190,7 @@ export function TabbedLearningPlanBuilder({
                       <Label>Estimated Duration</Label>
                       <Input
                         value={formData.duration}
-                        onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+                        onChange={(e) => setFormData(prev => ({ ...prev, duration: e.target.value }))}
                         placeholder="e.g., 2 weeks, 40 hours"
                       />
                     </div>
@@ -200,7 +200,7 @@ export function TabbedLearningPlanBuilder({
                     <Label>Learning Outcomes</Label>
                     <Textarea
                       value={formData.learning_outcomes}
-                      onChange={(e) => setFormData({ ...formData, learning_outcomes: e.target.value })}
+                      onChange={(e) => setFormData(prev => ({ ...prev, learning_outcomes: e.target.value }))}
                       placeholder="What will learners achieve? (comma-separated)"
                       rows={3}
                     />
@@ -249,7 +249,7 @@ export function TabbedLearningPlanBuilder({
                   <EnhancedContentBuilder
                     title="Learning Path Items"
                     contentItems={formData.content_items}
-                    onUpdateContent={(items) => setFormData({ ...formData, content_items: items })}
+                    onUpdateContent={(items) => setFormData(prev => ({ ...prev, content_items: items }))}
                   />
                 </CardContent>
               </Card>
@@ -268,7 +268,7 @@ export function TabbedLearningPlanBuilder({
                     <Label>Learning Steps</Label>
                     <Textarea
                       value={formData.steps}
-                      onChange={(e) => setFormData({ ...formData, steps: e.target.value })}
+                      onChange={(e) => setFormData(prev => ({ ...prev, steps: e.target.value }))}
                       placeholder="Define the learning steps (one per line):
 
 1. Introduction and overview
