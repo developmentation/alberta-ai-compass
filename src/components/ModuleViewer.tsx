@@ -959,16 +959,44 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
   const handleMediaUpload = (url: string, type: 'image' | 'video', contentIndex: number) => {
     console.log('handleMediaUpload called with:', { url, type, contentIndex });
     console.log('Current section:', currentSectionIndex);
-    console.log('Current content before update:', editingData.sections?.[currentSectionIndex]?.content[contentIndex]);
     
-    // Update the content URL
-    handleEditContent(contentIndex, 'url', url);
-    
-    if (type === 'image') {
-      handleEditContent(contentIndex, 'alt', 'Uploaded image');
-    } else {
-      handleEditContent(contentIndex, 'caption', 'Uploaded video');
-    }
+    // Create a complete new state update instead of multiple calls
+    setEditingData(prevData => {
+      const updatedSections = [...prevData.sections];
+      const currentSection = updatedSections[currentSectionIndex];
+      
+      if (!currentSection || !Array.isArray(currentSection.content)) {
+        console.log('Invalid section or content structure');
+        return prevData;
+      }
+      
+      const updatedContent = [...currentSection.content];
+      const contentItem = updatedContent[contentIndex];
+      
+      if (!contentItem) {
+        console.log('Content item not found at index:', contentIndex);
+        return prevData;
+      }
+      
+      // Update the content item with new URL and metadata
+      updatedContent[contentIndex] = {
+        ...contentItem,
+        url: url,
+        ...(type === 'image' ? { alt: 'Uploaded image' } : { caption: 'Uploaded video' })
+      };
+      
+      updatedSections[currentSectionIndex] = {
+        ...currentSection,
+        content: updatedContent
+      };
+      
+      console.log('Updated content item:', updatedContent[contentIndex]);
+      
+      return {
+        ...prevData,
+        sections: updatedSections
+      };
+    });
     
     // Close the dialog
     setIsUploadDialogOpen(false);
@@ -978,15 +1006,6 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
       title: "Success",
       description: `${type === 'image' ? 'Image' : 'Video'} uploaded successfully`,
     });
-    
-    // Force a complete re-render by creating a new object reference
-    setTimeout(() => {
-      setEditingData(prev => ({
-        ...prev,
-        sections: [...prev.sections]
-      }));
-      console.log('Content after update:', editingData.sections?.[currentSectionIndex]?.content[contentIndex]);
-    }, 100);
   };
 
   const calculateScore = () => {
