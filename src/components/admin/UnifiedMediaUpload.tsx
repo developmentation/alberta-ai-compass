@@ -96,6 +96,8 @@ export function UnifiedMediaUpload({
 
       onMediaUpload(publicUrl, type);
       
+      console.log('UnifiedMediaUpload - onMediaUpload called with:', { publicUrl, type });
+      
       toast({
         title: "Success",
         description: `${type === 'image' ? 'Image' : 'Video'} uploaded successfully`,

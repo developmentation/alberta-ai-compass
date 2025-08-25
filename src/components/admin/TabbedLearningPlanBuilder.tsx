@@ -63,6 +63,7 @@ export function TabbedLearningPlanBuilder({
   }, [initialData, isOpen]);
 
   const handleSubmit = () => {
+    console.log('TabbedLearningPlanBuilder - handleSubmit formData:', formData);
     onSave(formData);
   };
 
@@ -215,10 +216,17 @@ export function TabbedLearningPlanBuilder({
                 <CardContent>
                   <UnifiedMediaUpload
                     onMediaUpload={(url, type) => {
+                      console.log('TabbedLearningPlanBuilder - onMediaUpload called:', { url, type });
                       if (type === 'image') {
-                        setFormData(prev => ({ ...prev, image_url: url }));
+                        setFormData(prev => {
+                          console.log('Setting image_url:', url, 'prev:', prev);
+                          return { ...prev, image_url: url };
+                        });
                       } else {
-                        setFormData(prev => ({ ...prev, video_url: url }));
+                        setFormData(prev => {
+                          console.log('Setting video_url:', url, 'prev:', prev);
+                          return { ...prev, video_url: url };
+                        });
                       }
                     }}
                     currentImageUrl={formData.image_url}
