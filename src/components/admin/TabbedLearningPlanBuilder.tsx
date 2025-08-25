@@ -214,26 +214,30 @@ export function TabbedLearningPlanBuilder({
                   <CardTitle>Plan Media</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <UnifiedMediaUpload
-                    onMediaUpload={(url, type) => {
-                      console.log('TabbedLearningPlanBuilder - onMediaUpload called:', { url, type });
-                      if (type === 'image') {
-                        setFormData(prev => {
-                          console.log('Setting image_url:', url, 'prev:', prev);
-                          return { ...prev, image_url: url };
-                        });
-                      } else {
-                        setFormData(prev => {
-                          console.log('Setting video_url:', url, 'prev:', prev);
-                          return { ...prev, video_url: url };
-                        });
-                      }
-                    }}
-                    currentImageUrl={formData.image_url}
-                    currentVideoUrl={formData.video_url}
-                    bucketName="learning-plan-assets"
-                    allowAiGeneration={true}
-                  />
+                   <UnifiedMediaUpload
+                     onMediaUpload={(url, type) => {
+                       console.log('TabbedLearningPlanBuilder - onMediaUpload called:', { url, type });
+                       if (type === 'image') {
+                         setFormData(prev => {
+                           console.log('Setting image_url:', url, 'prev image_url:', prev.image_url);
+                           const newData = { ...prev, image_url: url, video_url: '' };
+                           console.log('New formData after image upload:', newData);
+                           return newData;
+                         });
+                       } else {
+                         setFormData(prev => {
+                           console.log('Setting video_url:', url, 'prev video_url:', prev.video_url);
+                           const newData = { ...prev, video_url: url, image_url: '' };
+                           console.log('New formData after video upload:', newData);
+                           return newData;
+                         });
+                       }
+                     }}
+                     currentImageUrl={formData.image_url}
+                     currentVideoUrl={formData.video_url}
+                     bucketName="learning-plan-assets"
+                     allowAiGeneration={true}
+                   />
                 </CardContent>
               </Card>
             </TabsContent>
