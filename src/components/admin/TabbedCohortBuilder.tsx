@@ -235,6 +235,7 @@ export function TabbedCohortBuilder({
                       <Label>Start Date *</Label>
                       <Input
                         type="date"
+                        max="2100-12-31"
                         value={formData.start_date}
                         onChange={(e) => setFormData(prev => ({ ...prev, start_date: e.target.value }))}
                       />
@@ -244,6 +245,7 @@ export function TabbedCohortBuilder({
                       <Label>End Date</Label>
                       <Input
                         type="date"
+                        max="2100-12-31"
                         value={formData.end_date}
                         onChange={(e) => setFormData(prev => ({ ...prev, end_date: e.target.value }))}
                       />
@@ -527,6 +529,7 @@ export function TabbedCohortBuilder({
                   <Label className="text-sm font-medium mb-1 block">Planned Date (Optional)</Label>
                   <Input
                     type="date"
+                    max="2100-12-31"
                     value={editingDay.planned_date || ''}
                     onChange={(e) => setEditingDay(prev => prev ? { ...prev, planned_date: e.target.value } : null)}
                   />
