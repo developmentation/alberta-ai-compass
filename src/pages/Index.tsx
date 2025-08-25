@@ -242,7 +242,7 @@ const Index = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex items-end justify-between mb-8">
                 <div className="animate-fade-in-up">
-                  <h2 className="text-3xl sm:text-4xl font-bold tracking-tight bg-gradient-primary bg-clip-text text-transparent">
+                  <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
                     Featured Learning Plans
                   </h2>
                   <p className="text-muted-foreground mt-2">Curated paths with timelines, milestones, and outcomes.</p>
