@@ -29,7 +29,7 @@ export const HeroSection = ({ onSearch, searchResults }: HeroSectionProps) => {
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-card/60 backdrop-blur-sm border border-border rounded-lg mb-12">
               <span className="text-sm font-medium text-primary">🍁</span>
               <span className="text-sm text-muted-foreground">
-                A free service provided by the Government of Alberta
+                A free learning service from Alberta to the world.
               </span>
             </div>
           </div>
