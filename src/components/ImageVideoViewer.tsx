@@ -24,6 +24,8 @@ export function ImageVideoViewer({
   const [videoPlaying, setVideoPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  console.log('ImageVideoViewer received:', { imageUrl, videoUrl, title });
+
   // Helper function to check if a URL is valid (not empty/null/placeholder)
   const isValidUrl = (url?: string): boolean => {
     if (!url || !url.trim()) return false;

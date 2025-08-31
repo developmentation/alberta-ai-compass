@@ -36,6 +36,7 @@ export const ResourceCard = ({
   showBookmark = true,
   showRating = true
 }: ResourceCardProps) => {
+  console.log('ResourceCard props:', { id, title, image_url, video_url });
   const { user } = useAuth();
   const { isBookmarked, toggleBookmark } = useBookmarks(id, 'resource');
   const { userRating, aggregatedRating, submitRating, refetch } = useRatings(id, 'resource');

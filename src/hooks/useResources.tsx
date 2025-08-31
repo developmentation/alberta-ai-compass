@@ -62,6 +62,7 @@ export function useResources(parentId?: string) {
       const { data, error } = await query;
 
       if (error) throw error;
+      console.log('useResources fetched:', data);
       setResources(data || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch resources');
