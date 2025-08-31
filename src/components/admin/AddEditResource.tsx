@@ -70,7 +70,7 @@ export const AddEditResource = ({ resource, onSuccess, onCancel }: AddEditResour
     try {
       const resourceData = {
         ...formData,
-        parent_id: formData.parent_id || null,
+        parent_id: formData.parent_id === "none" ? null : formData.parent_id || null,
         metadata: formData.metadata,
         json_data: [],
         level: formData.level as "1" | "2" | "3" | "RED",
@@ -233,12 +233,12 @@ export const AddEditResource = ({ resource, onSuccess, onCancel }: AddEditResour
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="parent">Parent Resource (Optional)</Label>
-                <Select value={formData.parent_id} onValueChange={(value) => setFormData({ ...formData, parent_id: value })}>
+                <Select value={formData.parent_id || "none"} onValueChange={(value) => setFormData({ ...formData, parent_id: value === "none" ? "" : value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select parent resource (leave empty for top-level)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None (Top-level resource)</SelectItem>
+                    <SelectItem value="none">None (Top-level resource)</SelectItem>
                     {parentResources.map((parent) => (
                       <SelectItem key={parent.id} value={parent.id}>
                         {parent.title}
@@ -246,7 +246,7 @@ export const AddEditResource = ({ resource, onSuccess, onCancel }: AddEditResour
                     ))}
                   </SelectContent>
                 </Select>
-                {formData.parent_id && (
+                {formData.parent_id && formData.parent_id !== "none" && (
                   <div className="flex items-center gap-2 mt-2">
                     <Badge variant="outline">
                       Child of: {parentResources.find(p => p.id === formData.parent_id)?.title}
