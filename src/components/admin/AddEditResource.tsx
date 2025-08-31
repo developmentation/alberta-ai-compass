@@ -33,7 +33,7 @@ export const AddEditResource = ({ resource, onSuccess, onCancel }: AddEditResour
     url: "",
     level: "1",
     language: "English",
-    status: "draft" as "draft" | "published" | "archived",
+    status: "draft" as "draft" | "review" | "published" | "archived",
     is_active: true,
     parent_id: "",
     image_url: "",
@@ -74,7 +74,7 @@ export const AddEditResource = ({ resource, onSuccess, onCancel }: AddEditResour
         metadata: formData.metadata,
         json_data: [],
         level: formData.level as "1" | "2" | "3" | "RED",
-        status: formData.status as "draft" | "published" | "archived",
+        status: formData.status as "draft" | "review" | "published" | "archived",
         updated_by: user.id,
         updated_at: new Date().toISOString(),
       };
@@ -185,9 +185,10 @@ export const AddEditResource = ({ resource, onSuccess, onCancel }: AddEditResour
                       <SelectValue placeholder="Select level" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1">Beginner</SelectItem>
-                      <SelectItem value="2">Intermediate</SelectItem>
-                      <SelectItem value="3">Advanced</SelectItem>
+                      <SelectItem value="1">1</SelectItem>
+                      <SelectItem value="2">2</SelectItem>
+                      <SelectItem value="3">3</SelectItem>
+                      <SelectItem value="RED">RED</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -214,8 +215,9 @@ export const AddEditResource = ({ resource, onSuccess, onCancel }: AddEditResour
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="draft">Draft</SelectItem>
+                      <SelectItem value="review">Review</SelectItem>
                       <SelectItem value="published">Published</SelectItem>
-                      <SelectItem value="archived">Archived</SelectItem>
+                      <SelectItem value="archived">Archive</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
