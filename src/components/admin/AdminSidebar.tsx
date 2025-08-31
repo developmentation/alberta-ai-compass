@@ -11,7 +11,8 @@ import {
   UserCircle,
   ChevronDown,
   ChevronRight,
-  Shield
+  Shield,
+  ExternalLink
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -73,6 +74,11 @@ const adminMenuItems: AdminMenuItem[] = [
     title: "Tools",
     url: "/admin/tools",
     icon: Wrench,
+  },
+  {
+    title: "Resources",
+    url: "/admin/resources",
+    icon: ExternalLink,
   },
   {
     title: "Prompts",
