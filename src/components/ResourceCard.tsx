@@ -40,6 +40,22 @@ export const ResourceCard = ({
   const { isBookmarked, toggleBookmark } = useBookmarks(id, 'resource');
   const { userRating, aggregatedRating, submitRating, refetch } = useRatings(id, 'resource');
 
+  // Helper function to check if URL is a YouTube URL  
+  const isYouTubeUrl = (url: string): boolean => {
+    if (!url) return false;
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)/,
+      /youtube\.com\/v\//,
+      /youtube\.com\/user\/.*#p\/.*\/.*\//,
+      /youtube\.com\/.*[?&]v=/
+    ];
+    return patterns.some(pattern => pattern.test(url));
+  };
+
+  // Determine what to show - prioritize real images, then videos (including YouTube), then fallback
+  const hasRealImage = image_url && image_url.trim() && image_url !== "/placeholder.svg" && !image_url.includes('/videos/') && !isYouTubeUrl(image_url);
+  const hasVideo = video_url && video_url.trim() && (video_url.includes('/videos/') || isYouTubeUrl(video_url));
+
   const handleBookmark = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!user) return;
@@ -99,12 +115,23 @@ export const ResourceCard = ({
           </div>
         </div>
 
-        {((image_url && image_url.trim()) || (video_url && video_url.trim())) && (
+        {(hasRealImage || hasVideo) && (
           <div className="mb-4">
             <ImageVideoViewer 
-              imageUrl={image_url && image_url.trim() ? image_url : undefined}
-              videoUrl={video_url && video_url.trim() ? video_url : undefined}
+              imageUrl={hasRealImage ? image_url : undefined}
+              videoUrl={hasVideo ? video_url : undefined}
               alt={title}
+            />
+          </div>
+        )}
+
+        {/* Fallback for when no real media */}
+        {!hasRealImage && !hasVideo && image_url && image_url.trim() && (
+          <div className="mb-4">
+            <img
+              src={image_url}
+              alt={title}
+              className="w-full h-48 object-cover rounded-lg"
             />
           </div>
         )}
