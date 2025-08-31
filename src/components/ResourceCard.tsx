@@ -38,7 +38,7 @@ export const ResourceCard = ({
 }: ResourceCardProps) => {
   const { user } = useAuth();
   const { isBookmarked, toggleBookmark } = useBookmarks(id, 'resource');
-  const { userRating, submitRating } = useRatings(id, 'resource');
+  const { userRating, aggregatedRating, submitRating, refetch } = useRatings(id, 'resource');
 
   const handleBookmark = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -46,9 +46,10 @@ export const ResourceCard = ({
     toggleBookmark(id, 'resource');
   };
 
-  const handleRating = (rating: number) => {
+  const handleRating = async (rating: number) => {
     if (!user) return;
-    submitRating(rating);
+    await submitRating(rating);
+    refetch(); // Refresh the rating data
   };
 
   const handleExternalLink = (e: React.MouseEvent) => {
@@ -67,7 +68,7 @@ export const ResourceCard = ({
             <div className="flex items-center gap-1">
               <Star className="w-3 h-3 fill-primary text-primary" />
               <span className="text-xs text-muted-foreground">
-                {stars_rating.toFixed(1)}
+                {(aggregatedRating?.average_rating || stars_rating || 0).toFixed(1)} ({aggregatedRating?.total_votes || 0})
               </span>
             </div>
           </div>

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2, Edit, Plus, Search, ExternalLink, FileText, Users } from "lucide-react";
+import { ImageVideoViewer } from "@/components/ImageVideoViewer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useResources } from "@/hooks/useResources";
 import { supabase } from "@/integrations/supabase/client";
@@ -164,6 +165,22 @@ export const AdminResources = () => {
                   </Button>
                 </div>
               </div>
+              
+              {(resource.image_url || resource.video_url) && (
+                <div className="mt-4">
+                  <div className="w-full h-32 overflow-hidden rounded-lg">
+                    <ImageVideoViewer
+                      imageUrl={resource.image_url}
+                      videoUrl={resource.video_url}
+                      alt={resource.title}
+                      title={resource.title}
+                      className="w-full h-full object-cover"
+                      aspectRatio="auto"
+                      showControls={true}
+                    />
+                  </div>
+                </div>
+              )}
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge className={getStatusColor(resource.status)}>
                   {resource.status}
