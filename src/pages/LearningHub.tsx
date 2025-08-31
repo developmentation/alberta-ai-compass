@@ -93,6 +93,35 @@ const LearningHub = () => {
       };
     });
 
+  // Transform and filter resources from database
+  const filteredResources = resources
+    .filter(resource => {
+      const resourceLevel = resource.level?.toLowerCase();
+      const matchesFilter = activeFilter === "all" || 
+        (activeFilter === "1" && resourceLevel === "1") ||
+        (activeFilter === "2" && resourceLevel === "2") ||
+        (activeFilter === "3" && resourceLevel === "3") ||
+        (activeFilter === "red" && resourceLevel === "red");
+        
+      const matchesSearch = resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           resource.description.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const ratingData = ratingsData[resource.id];
+      const matchesRating = minStarRating === 0 || (ratingData?.averageRating || 0) >= minStarRating;
+      const matchesBookmark = !showBookmarkedOnly || (ratingData?.isBookmarked || false);
+      
+      return matchesFilter && matchesSearch && matchesRating && matchesBookmark;
+    })
+    .map(resource => {
+      const ratingData = ratingsData[resource.id];
+      return {
+        ...resource,
+        averageRating: ratingData?.averageRating || 0,
+        totalVotes: ratingData?.totalVotes || 0,
+        isBookmarked: ratingData?.isBookmarked || false
+      };
+    });
+
   const filters = [
     { key: "all", label: "All" },
     { key: "1", label: "Level 1" },
@@ -458,7 +487,7 @@ const LearningHub = () => {
             {!resourcesLoading && !resourcesError && (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {resources.map((resource, index) => (
+                  {filteredResources.map((resource, index) => (
                     <div key={resource.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
                       <ResourceCard
                         id={resource.id}
@@ -475,6 +504,14 @@ const LearningHub = () => {
                   ))}
                 </div>
 
+                {filteredResources.length === 0 && resources.length > 0 && (
+                  <div className="text-center py-16">
+                    <p className="text-muted-foreground text-lg">
+                      No resources found matching your criteria. Try adjusting your search or filters.
+                    </p>
+                  </div>
+                )}
+                
                 {resources.length === 0 && (
                   <div className="text-center py-16">
                     <p className="text-muted-foreground text-lg">

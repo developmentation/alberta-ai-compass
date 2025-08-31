@@ -31,13 +31,25 @@ export function useResources(parentId?: string) {
   const fetchResources = async () => {
     try {
       setLoading(true);
+      
+      // Get current user's profile to check role
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', (await supabase.auth.getUser()).data.user?.id)
+        .single();
+      
       let query = supabase
         .from('resources')
         .select('*')
-        .eq('status', 'published')
         .eq('is_active', true)
         .is('deleted_at', null)
         .order('created_at', { ascending: false });
+
+      // Only filter by published status for non-admin/non-facilitator users
+      if (!profile || !['admin', 'facilitator'].includes(profile.role)) {
+        query = query.eq('status', 'published');
+      }
 
       if (parentId !== undefined) {
         if (parentId === null) {
