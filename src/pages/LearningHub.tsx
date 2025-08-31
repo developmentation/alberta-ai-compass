@@ -34,6 +34,8 @@ const LearningHub = () => {
   const { articles, loading: articlesLoading, error: articlesError } = useArticles();
   const { resources, loading: resourcesLoading, error: resourcesError } = useResources(null);
   
+  console.log('LearningHub - Resources:', resources, 'Loading:', resourcesLoading, 'Error:', resourcesError);
+  
   // Prepare content items for ratings - include plans, modules, articles, and resources
   const contentItems = [
     ...learningPlans.map(item => ({ id: item.id, type: 'learning_plan' })),
@@ -121,6 +123,8 @@ const LearningHub = () => {
         isBookmarked: ratingData?.isBookmarked || false
       };
     });
+
+  console.log('LearningHub - Filtered Resources:', filteredResources);
 
   const filters = [
     { key: "all", label: "All" },
