@@ -99,11 +99,11 @@ export const ResourceCard = ({
           </div>
         </div>
 
-        {(image_url || video_url) && (
+        {((image_url && image_url.trim()) || (video_url && video_url.trim())) && (
           <div className="mb-4">
             <ImageVideoViewer 
-              imageUrl={image_url}
-              videoUrl={video_url}
+              imageUrl={image_url && image_url.trim() ? image_url : undefined}
+              videoUrl={video_url && video_url.trim() ? video_url : undefined}
               alt={title}
             />
           </div>
