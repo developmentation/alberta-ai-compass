@@ -853,16 +853,20 @@ export type Database = {
           deleted_at: string | null
           description: string
           id: string
+          image_url: string | null
           is_active: boolean | null
+          json_data: Json | null
           language: string | null
           level: Database["public"]["Enums"]["content_level"]
-          name: string
-          screenshot_asset_id: string | null
+          metadata: Json | null
+          parent_id: string | null
           stars_rating: number | null
           status: Database["public"]["Enums"]["content_status"]
+          title: string
           updated_at: string | null
           updated_by: string | null
           url: string
+          video_url: string | null
         }
         Insert: {
           created_at?: string | null
@@ -870,16 +874,20 @@ export type Database = {
           deleted_at?: string | null
           description: string
           id?: string
+          image_url?: string | null
           is_active?: boolean | null
+          json_data?: Json | null
           language?: string | null
           level: Database["public"]["Enums"]["content_level"]
-          name: string
-          screenshot_asset_id?: string | null
+          metadata?: Json | null
+          parent_id?: string | null
           stars_rating?: number | null
           status?: Database["public"]["Enums"]["content_status"]
+          title: string
           updated_at?: string | null
           updated_by?: string | null
           url: string
+          video_url?: string | null
         }
         Update: {
           created_at?: string | null
@@ -887,16 +895,20 @@ export type Database = {
           deleted_at?: string | null
           description?: string
           id?: string
+          image_url?: string | null
           is_active?: boolean | null
+          json_data?: Json | null
           language?: string | null
           level?: Database["public"]["Enums"]["content_level"]
-          name?: string
-          screenshot_asset_id?: string | null
+          metadata?: Json | null
+          parent_id?: string | null
           stars_rating?: number | null
           status?: Database["public"]["Enums"]["content_status"]
+          title?: string
           updated_at?: string | null
           updated_by?: string | null
           url?: string
+          video_url?: string | null
         }
         Relationships: [
           {
@@ -907,10 +919,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "resources_screenshot_asset_id_fkey"
-            columns: ["screenshot_asset_id"]
+            foreignKeyName: "resources_parent_id_fkey"
+            columns: ["parent_id"]
             isOneToOne: false
-            referencedRelation: "media_assets"
+            referencedRelation: "resources"
             referencedColumns: ["id"]
           },
           {

@@ -4,6 +4,7 @@ import { Footer } from "@/components/Footer";
 import { LearningPlanCard } from "@/components/LearningPlanCard";
 import { ModuleCard } from "@/components/ModuleCard";
 import { ArticleCard } from "@/components/ArticleCard";
+import { ResourceCard } from "@/components/ResourceCard";
 import { ArticleViewer } from "@/components/ArticleViewer";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,8 +14,10 @@ import { Search, Filter, Loader2, Star, Bookmark } from "lucide-react";
 import { useLearningPlans } from "@/hooks/useLearningPlans";
 import { useModules } from "@/hooks/useModules";
 import { useArticles } from "@/hooks/useArticles";
+import { useResources } from "@/hooks/useResources";
 import { useAuth } from "@/hooks/useAuth";
 import { useContentRatings } from "@/hooks/useContentRatings";
+import { useNavigate } from "react-router-dom";
 
 const LearningHub = () => {
   const [activeFilter, setActiveFilter] = useState("all");
@@ -24,16 +27,19 @@ const LearningHub = () => {
   const [selectedArticle, setSelectedArticle] = useState<any>(null);
   const [isArticleViewerOpen, setIsArticleViewerOpen] = useState(false);
   
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { learningPlans, loading: plansLoading, error: plansError } = useLearningPlans();
   const { modules, loading: modulesLoading, error: modulesError } = useModules();
   const { articles, loading: articlesLoading, error: articlesError } = useArticles();
+  const { resources, loading: resourcesLoading, error: resourcesError } = useResources(null);
   
-  // Prepare content items for ratings - include plans, modules, and articles
+  // Prepare content items for ratings - include plans, modules, articles, and resources
   const contentItems = [
     ...learningPlans.map(item => ({ id: item.id, type: 'learning_plan' })),
     ...modules.map(item => ({ id: item.id, type: 'module' })),
-    ...articles.map(item => ({ id: item.id, type: 'article' }))
+    ...articles.map(item => ({ id: item.id, type: 'article' })),
+    ...resources.map(item => ({ id: item.id, type: 'resource' }))
   ];
   const { ratingsData } = useContentRatings(contentItems);
 
@@ -48,8 +54,8 @@ const LearningHub = () => {
   };
 
   // Loading state
-  const loading = plansLoading || modulesLoading || articlesLoading;
-  const error = plansError || modulesError || articlesError;
+  const loading = plansLoading || modulesLoading || articlesLoading || resourcesLoading;
+  const error = plansError || modulesError || articlesError || resourcesError;
 
   // Transform and filter articles from database
   const filteredArticles = articles
@@ -419,6 +425,60 @@ const LearningHub = () => {
                   <div className="text-center py-16">
                     <p className="text-muted-foreground text-lg">
                       No articles available at this time.
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </section>
+        {/* Resources */}
+        <section className="py-16 border-t border-border/50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-12 animate-fade-in-up">
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">Resources</h2>
+              <p className="text-muted-foreground">Third-party resources and external tools for enhanced learning.</p>
+            </div>
+
+            {resourcesLoading && (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <span className="ml-2 text-muted-foreground">Loading resources...</span>
+              </div>
+            )}
+            
+            {resourcesError && (
+              <div className="text-center py-16">
+                <p className="text-destructive text-lg">
+                  Error loading resources: {resourcesError}
+                </p>
+              </div>
+            )}
+
+            {!resourcesLoading && !resourcesError && (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {resources.map((resource, index) => (
+                    <div key={resource.id} style={{ animationDelay: `${index * 0.1}s` }} className="animate-fade-in-up">
+                      <ResourceCard
+                        id={resource.id}
+                        title={resource.title}
+                        description={resource.description}
+                        url={resource.url}
+                        level={resource.level}
+                        image_url={resource.image_url}
+                        video_url={resource.video_url}
+                        stars_rating={resource.stars_rating}
+                        onClick={() => navigate(`/resource/${resource.id}`)}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {resources.length === 0 && (
+                  <div className="text-center py-16">
+                    <p className="text-muted-foreground text-lg">
+                      No resources available at this time.
                     </p>
                   </div>
                 )}

@@ -28,8 +28,10 @@ import { AdminPrompts } from "./pages/admin/AdminPrompts";
 import { AdminLearningPlans } from "./pages/admin/AdminLearningPlans";
 import AdminLearningModules from "./pages/admin/AdminLearningModules";
 import { AdminCohorts } from "./pages/admin/AdminCohorts";
+import { AdminResources } from "./pages/admin/AdminResources";
 import AdminSystemSetup from "./pages/admin/AdminSystemSetup";
 import { AdminProfile } from "./pages/admin/AdminProfile";
+import { ResourceDetail } from "./pages/ResourceDetail";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
@@ -64,9 +66,11 @@ const App = () => (
             <Route path="/admin/learning/plans" element={<ProtectedRoute requireFacilitator><AdminLearningPlans /></ProtectedRoute>} />
             <Route path="/admin/learning/modules" element={<ProtectedRoute requireFacilitator><AdminLearningModules /></ProtectedRoute>} />
             <Route path="/admin/learning/cohorts" element={<ProtectedRoute requireFacilitator><AdminCohorts /></ProtectedRoute>} />
+            <Route path="/admin/resources" element={<ProtectedRoute requireFacilitator><AdminResources /></ProtectedRoute>} />
             <Route path="/admin/setup" element={<ProtectedRoute requireAdmin><AdminSystemSetup /></ProtectedRoute>} />
             <Route path="/admin/profile" element={<ProtectedRoute requireFacilitator><AdminProfile /></ProtectedRoute>} />
             <Route path="/plan/:planId" element={<Plan />} />
+            <Route path="/resource/:id" element={<ResourceDetail />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
