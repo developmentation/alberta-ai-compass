@@ -24,6 +24,18 @@ export function ImageVideoViewer({
   const [videoPlaying, setVideoPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  // Helper function to check if a URL is valid (not empty/null/placeholder)
+  const isValidUrl = (url?: string): boolean => {
+    if (!url || !url.trim()) return false;
+    if (url === "/placeholder.svg") return false;
+    return true;
+  };
+
+  // Helper function to check if URL is a video file
+  const isVideoFile = (url: string): boolean => {
+    return url.includes('/videos/') || url.match(/\.(mp4|webm|ogg|mov|avi)(\?|$)/i) !== null;
+  };
+
   // Helper function to extract YouTube video ID from various URL formats
   const extractYouTubeVideoId = (url: string): string | null => {
     const patterns = [
@@ -83,9 +95,13 @@ export function ImageVideoViewer({
 
   const baseClasses = `w-full object-cover rounded-lg ${getAspectRatioClass()} ${className}`;
 
-  // Render video (YouTube or regular)
-  if (videoUrl) {
-    if (isYouTubeUrl(videoUrl)) {
+  // Determine what media to show - prioritize real images, then videos
+  const validImageUrl = isValidUrl(imageUrl) && !isVideoFile(imageUrl!) && !isYouTubeUrl(imageUrl!) ? imageUrl : undefined;
+  const validVideoUrl = isValidUrl(videoUrl) ? videoUrl : (isValidUrl(imageUrl) && (isVideoFile(imageUrl!) || isYouTubeUrl(imageUrl!)) ? imageUrl : undefined);
+
+  // Render video (YouTube or regular) if we have a valid video URL
+  if (validVideoUrl) {
+    if (isYouTubeUrl(validVideoUrl)) {
       return (
         <div 
           className={`relative ${baseClasses}`}
@@ -112,7 +128,7 @@ export function ImageVideoViewer({
           }}
         >
           <iframe
-            src={convertToEmbedUrl(videoUrl)}
+            src={convertToEmbedUrl(validVideoUrl)}
             title={title || "YouTube video player"}
             width="100%"
             height="100%"
@@ -147,9 +163,9 @@ export function ImageVideoViewer({
         >
           <video
             ref={videoRef}
-            src={videoUrl}
+            src={validVideoUrl}
             className="w-full h-full object-cover rounded-lg"
-            poster={imageUrl}
+            poster={validImageUrl}
             controls={!showControls}
             onPlay={() => setVideoPlaying(true)}
             onPause={() => setVideoPlaying(false)}
@@ -190,11 +206,11 @@ export function ImageVideoViewer({
     }
   }
 
-  // Render image
-  if (imageUrl) {
+  // Render image if we have a valid image URL
+  if (validImageUrl) {
     return (
       <img
-        src={imageUrl}
+        src={validImageUrl}
         alt={alt}
         title={title}
         className={baseClasses}
