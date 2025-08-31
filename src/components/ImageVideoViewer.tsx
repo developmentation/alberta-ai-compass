@@ -24,6 +24,9 @@ export function ImageVideoViewer({
   const [videoPlaying, setVideoPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  // Debug logging
+  console.log('ImageVideoViewer received:', { imageUrl, videoUrl, title });
+
   // Helper function to check if a URL is valid (not empty/null/placeholder)
   const isValidUrl = (url?: string): boolean => {
     if (!url || !url.trim()) return false;
@@ -99,8 +102,11 @@ export function ImageVideoViewer({
   const validImageUrl = isValidUrl(imageUrl) && !isVideoFile(imageUrl!) && !isYouTubeUrl(imageUrl!) ? imageUrl : undefined;
   const validVideoUrl = isValidUrl(videoUrl) ? videoUrl : (isValidUrl(imageUrl) && (isVideoFile(imageUrl!) || isYouTubeUrl(imageUrl!)) ? imageUrl : undefined);
 
+  console.log('ImageVideoViewer processed:', { validImageUrl, validVideoUrl });
+
   // Render video (YouTube or regular) if we have a valid video URL
   if (validVideoUrl) {
+    console.log('ImageVideoViewer rendering video:', validVideoUrl);
     if (isYouTubeUrl(validVideoUrl)) {
       return (
         <div 
@@ -208,6 +214,7 @@ export function ImageVideoViewer({
 
   // Render image if we have a valid image URL
   if (validImageUrl) {
+    console.log('ImageVideoViewer rendering image:', validImageUrl);
     return (
       <img
         src={validImageUrl}
@@ -219,5 +226,6 @@ export function ImageVideoViewer({
   }
 
   // No media to display
+  console.log('ImageVideoViewer rendering nothing - no valid media');
   return null;
 }
