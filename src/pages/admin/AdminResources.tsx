@@ -13,9 +13,12 @@ import { useToast } from "@/hooks/use-toast";
 import { AddEditResource } from "@/components/admin/AddEditResource";
 
 export const AdminResources = () => {
+  console.log("AdminResources component rendering");
   const { user } = useAuth();
+  console.log("AdminResources - User:", user);
   const { toast } = useToast();
   const { resources, loading, refetch } = useResources();
+  console.log("AdminResources - Resources:", resources, "Loading:", loading);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);

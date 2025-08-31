@@ -130,6 +130,7 @@ export function AdminSidebar() {
   };
 
   const shouldShowItem = (item: AdminMenuItem) => {
+    console.log(`AdminSidebar - Checking item: ${item.title}, adminOnly: ${item.adminOnly}, isAdmin: ${isAdmin}, isFacilitator: ${isFacilitator}`);
     if (item.adminOnly && !isAdmin) return false;
     if (!isFacilitator) return false;
     return true;
