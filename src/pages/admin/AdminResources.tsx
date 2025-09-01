@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { AddEditResource } from "@/components/admin/AddEditResource";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 
 export const AdminResources = () => {
   console.log("AdminResources component rendering");
@@ -95,6 +96,7 @@ export const AdminResources = () => {
 
   if (loading) {
     return (
+      <AdminLayout>
       <div className="space-y-6">
         <div className="h-8 bg-muted animate-pulse rounded" />
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -103,10 +105,12 @@ export const AdminResources = () => {
           ))}
         </div>
       </div>
+      </AdminLayout>
     );
   }
 
   return (
+      <AdminLayout>
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
@@ -292,5 +296,6 @@ export const AdminResources = () => {
         </DialogContent>
       </Dialog>
     </div>
+    </AdminLayout>
   );
 };
