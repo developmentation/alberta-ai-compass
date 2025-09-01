@@ -29,7 +29,7 @@ export default function MyLearning() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedContent, setSelectedContent] = useState<any>(null);
-  const [viewerType, setViewerType] = useState<'news' | 'article' | 'tool' | 'module' | 'prompt_library' | null>(null);
+  const [viewerType, setViewerType] = useState<'news' | 'article' | 'tool' | 'module' | 'prompt_library' | 'resource' | null>(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
 
   const handleLoginClick = () => setIsLoginModalOpen(true);
@@ -87,11 +87,20 @@ export default function MyLearning() {
               .single();
             contentData = articleData;
             break;
+          case 'resource':
+            const { data: resourceData } = await supabase
+              .from('resources')
+              .select('*')
+              .eq('id', item.id)
+              .is('deleted_at', null)
+              .single();
+            contentData = resourceData;
+            break;
         }
         
         if (contentData) {
           setSelectedContent(contentData);
-          setViewerType(item.type as 'news' | 'article' | 'tool' | 'module' | 'prompt_library');
+          setViewerType(item.type as 'news' | 'article' | 'tool' | 'module' | 'prompt_library' | 'resource');
           // Only open the main dialog for non-prompt content
           // Prompts handle their own modal
           if (item.type !== 'prompt_library') {
@@ -122,7 +131,8 @@ export default function MyLearning() {
       news: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
       article: 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
       tool: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-      prompt_library: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400'
+      prompt_library: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400',
+      resource: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
     };
     return colors[type as keyof typeof colors] || 'bg-muted text-muted-foreground';
   };
@@ -134,7 +144,8 @@ export default function MyLearning() {
       news: 'News',
       article: 'Article',
       tool: 'Tool',
-      prompt_library: 'Prompt'
+      prompt_library: 'Prompt',
+      resource: 'Resource'
     };
     return labels[type as keyof typeof labels] || type;
   };
@@ -394,6 +405,12 @@ export default function MyLearning() {
               onClose={handleCloseViewer}
             />
           )}
+          {selectedContent && viewerType === 'resource' && (
+            <ArticleViewer
+              article={selectedContent}
+              onClose={handleCloseViewer}
+            />
+          )}
         </DialogContent>
       </Dialog>
 
@@ -412,3 +429,4 @@ export default function MyLearning() {
     </div>
   );
 }
+

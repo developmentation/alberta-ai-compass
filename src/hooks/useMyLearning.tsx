@@ -15,7 +15,7 @@ export interface ContentItem {
   id: string;
   title: string;
   description: string;
-  type: 'learning_plan' | 'module' | 'news' | 'tool' | 'prompt_library' | 'article';
+  type: 'resource' | 'learning_plan' | 'module' | 'news' | 'tool' | 'prompt_library' | 'article';
   image_url?: string;
   video_url?: string;
   created_at: string;
@@ -56,20 +56,19 @@ export function useMyLearning() {
     setError(null);
     
     try {
-      // Fetch stats
-      console.log('useMyLearning: Fetching stats...');
+      // Fetch all user interactions
       const [bookmarksRes, completionsRes, ratingsRes] = await Promise.all([
         supabase
           .from('user_bookmarks')
-          .select('id')
+          .select('content_id, content_type, created_at')
           .eq('user_id', user.id),
         supabase
           .from('user_completions')
-          .select('id')
+          .select('content_id, content_type, completed_at')
           .eq('user_id', user.id),
         supabase
           .from('user_ratings')
-          .select('id')
+          .select('content_id, content_type, rating, created_at')
           .eq('user_id', user.id)
       ]);
 
@@ -79,57 +78,72 @@ export function useMyLearning() {
         ratings: ratingsRes
       });
 
+      // Set stats
       setStats({
         bookmarked: bookmarksRes.data?.length || 0,
         completed: completionsRes.data?.length || 0,
         rated: ratingsRes.data?.length || 0
       });
 
-      // Fetch content based on filter
-      let contentData: ContentItem[] = [];
-      
-      if (filter === 'all' || filter === 'bookmarked') {
-        const { data: bookmarks } = await supabase
-          .from('user_bookmarks')
-          .select('content_id, content_type, created_at')
-          .eq('user_id', user.id);
+      // Combine all interactions into a single map
+      const interactionsMap = new Map<string, {
+        content_id: string;
+        content_type: string;
+        bookmarked_at?: string;
+        completed_at?: string;
+        rating?: number;
+      }>();
 
-        if (bookmarks) {
-          const bookmarkedContent = await fetchContentDetails(bookmarks);
-          contentData = [...contentData, ...bookmarkedContent];
-        }
+      // Process bookmarks
+      if (bookmarksRes.data && (filter === 'all' || filter === 'bookmarked')) {
+        bookmarksRes.data.forEach(bookmark => {
+          const key = `${bookmark.content_type}_${bookmark.content_id}`;
+          interactionsMap.set(key, {
+            content_id: bookmark.content_id,
+            content_type: bookmark.content_type,
+            bookmarked_at: bookmark.created_at
+          });
+        });
       }
 
-      if (filter === 'all' || filter === 'completed') {
-        const { data: completions } = await supabase
-          .from('user_completions')
-          .select('content_id, content_type, completed_at')
-          .eq('user_id', user.id);
-
-        if (completions) {
-          const completedContent = await fetchContentDetails(completions);
-          contentData = [...contentData, ...completedContent];
-        }
+      // Process completions
+      if (completionsRes.data && (filter === 'all' || filter === 'completed')) {
+        completionsRes.data.forEach(completion => {
+          const key = `${completion.content_type}_${completion.content_id}`;
+          const existing = interactionsMap.get(key);
+          if (existing) {
+            existing.completed_at = completion.completed_at;
+          } else {
+            interactionsMap.set(key, {
+              content_id: completion.content_id,
+              content_type: completion.content_type,
+              completed_at: completion.completed_at
+            });
+          }
+        });
       }
 
-      if (filter === 'all' || filter === 'rated') {
-        const { data: ratings } = await supabase
-          .from('user_ratings')
-          .select('content_id, content_type, rating, created_at')
-          .eq('user_id', user.id);
-
-        if (ratings) {
-          const ratedContent = await fetchContentDetails(ratings);
-          contentData = [...contentData, ...ratedContent];
-        }
+      // Process ratings
+      if (ratingsRes.data && (filter === 'all' || filter === 'rated')) {
+        ratingsRes.data.forEach(rating => {
+          const key = `${rating.content_type}_${rating.content_id}`;
+          const existing = interactionsMap.get(key);
+          if (existing) {
+            existing.rating = rating.rating;
+          } else {
+            interactionsMap.set(key, {
+              content_id: rating.content_id,
+              content_type: rating.content_type,
+              rating: rating.rating
+            });
+          }
+        });
       }
 
-      // Remove duplicates based on content_id and type
-      const uniqueContent = contentData.filter((item, index, arr) => 
-        arr.findIndex(i => i.id === item.id && i.type === item.type) === index
-      );
+      // Fetch content details for all interactions
+      const contentData = await fetchContentDetails(Array.from(interactionsMap.values()));
+      setContent(contentData);
 
-      setContent(uniqueContent);
     } catch (error) {
       console.error('Error fetching my learning data:', error);
       setError('Failed to load your learning data');
@@ -138,105 +152,118 @@ export function useMyLearning() {
     }
   };
 
-  const fetchContentDetails = async (items: Array<{
-    content_id: string;
-    content_type: string;
-    created_at?: string;
-    completed_at?: string;
-    rating?: number;
-  }>): Promise<ContentItem[]> => {
-    const contentPromises = items.map(async (item) => {
+  const fetchContentDetails = async (
+    interactions: Array<{
+      content_id: string;
+      content_type: string;
+      bookmarked_at?: string;
+      completed_at?: string;
+      rating?: number;
+    }>
+  ): Promise<ContentItem[]> => {
+    console.log('fetchContentDetails: Processing', interactions.length, 'interactions');
+    
+    const contentPromises = interactions.map(async (interaction) => {
       try {
         let data: any = null;
         
-        switch (item.content_type) {
+        switch (interaction.content_type) {
           case 'learning_plan':
             const planRes = await supabase
               .from('learning_plans')
-              .select('id, name, description, image_url, video_url, created_at')
-              .eq('id', item.content_id)
-              .eq('status', 'published')
-              .is('deleted_at', null)
+              .select('*')
+              .eq('id', interaction.content_id)
               .maybeSingle();
             data = planRes.data;
             break;
           case 'module':
             const moduleRes = await supabase
               .from('modules')
-              .select('id, name, description, image_url, video_url, created_at')
-              .eq('id', item.content_id)
-              .eq('status', 'published')
-              .is('deleted_at', null)
+              .select('*')
+              .eq('id', interaction.content_id)
               .maybeSingle();
             data = moduleRes.data;
             break;
           case 'news':
             const newsRes = await supabase
               .from('news')
-              .select('id, title, description, image_url, video_url, created_at')
-              .eq('id', item.content_id)
-              .eq('status', 'published')
-              .is('deleted_at', null)
+              .select('*')
+              .eq('id', interaction.content_id)
               .maybeSingle();
             data = newsRes.data;
             break;
           case 'tool':
             const toolRes = await supabase
               .from('tools')
-              .select('id, name, description, image_url, video_url, created_at')
-              .eq('id', item.content_id)
-              .eq('status', 'published')
-              .is('deleted_at', null)
+              .select('*')
+              .eq('id', interaction.content_id)
               .maybeSingle();
             data = toolRes.data;
             break;
+          case 'resource':
+            const resourceRes = await supabase
+              .from('resources')
+              .select('*')
+              .eq('id', interaction.content_id)
+              .maybeSingle();
+            data = resourceRes.data;
+            break;
+
           case 'prompt_library':
             const promptRes = await supabase
               .from('prompt_library')
-              .select('id, name, description, image_url, video_url, created_at')
-              .eq('id', item.content_id)
-              .eq('status', 'published')
-              .is('deleted_at', null)
+              .select('*')
+              .eq('id', interaction.content_id)
               .maybeSingle();
             data = promptRes.data;
             break;
           case 'article':
             const articleRes = await supabase
               .from('articles')
-              .select('id, title, description, image_url, video_url, created_at')
-              .eq('id', item.content_id)
-              .eq('status', 'published')
-              .is('deleted_at', null)
+              .select('*')
+              .eq('id', interaction.content_id)
               .maybeSingle();
             data = articleRes.data;
             break;
           default:
+            console.warn(`Unknown content type: ${interaction.content_type}`);
             return null;
         }
 
         if (data) {
-            return {
-              id: data.id,
-              title: data.title || data.name || '',
-              description: data.description || '',
-              type: item.content_type as ContentItem['type'],
-              image_url: data.image_url || undefined,
-              video_url: data.video_url || undefined,
-              created_at: data.created_at,
-              rating: item.rating || undefined,
-              completed_at: item.completed_at || undefined,
-              bookmarked_at: item.created_at || undefined
-            };
+          // Skip deleted content only if deleted_at exists and is not null
+          if (data.deleted_at) {
+            console.log(`Content ${interaction.content_id} is deleted, skipping`);
+            return null;
+          }
+
+          return {
+            id: data.id,
+            title: data.title || data.name || '',
+            description: data.description || '',
+            type: interaction.content_type as ContentItem['type'],
+            image_url: data.image_url || undefined,
+            video_url: data.video_url || undefined,
+            created_at: data.created_at,
+            rating: interaction.rating || undefined,
+            completed_at: interaction.completed_at || undefined,
+            bookmarked_at: interaction.bookmarked_at || undefined
+          };
+        } else {
+          console.log(`No data found for ${interaction.content_type} ${interaction.content_id}`);
         }
       } catch (error) {
-        console.error(`Error fetching ${item.content_type}:`, error);
+        console.error(`Error fetching ${interaction.content_type} with id ${interaction.content_id}:`, error);
       }
       
       return null;
     });
 
     const results = await Promise.all(contentPromises);
-    return results.filter(Boolean) as ContentItem[];
+    const validResults = results.filter(Boolean) as ContentItem[];
+    
+    console.log('fetchContentDetails: Returning', validResults.length, 'valid items');
+    return validResults;
   };
 
   return {
@@ -249,3 +276,4 @@ export function useMyLearning() {
     refetch: fetchMyLearningData
   };
 }
+
