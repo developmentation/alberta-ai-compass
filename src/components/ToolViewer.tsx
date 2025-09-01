@@ -99,8 +99,8 @@ export function ToolViewer({ tool, onClose, className = "", showCloseButton = tr
         <Card>
           <CardContent className="p-6">
             <ImageVideoViewer
-              imageUrl={tool.image_url}
-              videoUrl={tool.video_url}
+              image={tool.image_url}
+              video={tool.video_url}
               alt={tool.name}
               title={tool.name}
               aspectRatio="video"

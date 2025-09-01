@@ -111,8 +111,8 @@ export default function Cohorts() {
                       {(membership.cohort?.image_url || membership.cohort?.video_url) && (
                         <div className="w-full h-32 bg-muted rounded-lg overflow-hidden mb-4">
                           <ImageVideoViewer
-                            imageUrl={membership.cohort.image_url}
-                            videoUrl={membership.cohort.video_url}
+                            image={membership.cohort.image_url}
+                            video={membership.cohort.video_url}
                             alt={membership.cohort.name}
                             title={membership.cohort.name}
                             className="w-full h-full object-cover"

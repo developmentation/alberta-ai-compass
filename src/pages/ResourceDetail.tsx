@@ -154,11 +154,15 @@ export const ResourceDetail = () => {
 
           <CardContent className="space-y-6">
             {(resource.image_url || resource.video_url) && (
-              <div className="rounded-lg overflow-hidden">
+              <div className="rounded-lg overflow-hidden h-64">
+                {/* {resource.image_url} */}
+                {/* {resource.video_url} */}
                 <ImageVideoViewer 
-                  imageUrl={resource.image_url}
-                  videoUrl={resource.video_url}
+                  image={resource.image_url}
+                  video={resource.video_url}
                   alt={resource.title}
+                  className="h-full"
+                  showControls={true}
                 />
               </div>
             )}
@@ -213,12 +217,17 @@ export const ResourceDetail = () => {
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+
+
+
               {subResourcesLoading ? (
                 Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="h-48 bg-muted animate-pulse rounded-lg" />
                 ))
               ) : (
+                
                 subResources.map((subResource) => (
+
                   <ResourceCard
                     key={subResource.id}
                     id={subResource.id}
@@ -226,8 +235,8 @@ export const ResourceDetail = () => {
                     description={subResource.description}
                     url={subResource.url}
                     level={subResource.level}
-                    image_url={subResource.image_url}
-                    video_url={subResource.video_url}
+                    image={subResource.image_url}
+                    video={subResource.video_url}
                     stars_rating={subResource.stars_rating}
                     onClick={() => navigate(`/resource/${subResource.id}`)}
                   />

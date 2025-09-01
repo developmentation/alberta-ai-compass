@@ -3,8 +3,8 @@ import { Play, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ImageVideoViewerProps {
-  imageUrl?: string;
-  videoUrl?: string;
+  image?: string;
+  video?: string;
   alt?: string;
   title?: string;
   className?: string;
@@ -13,8 +13,8 @@ interface ImageVideoViewerProps {
 }
 
 export function ImageVideoViewer({
-  imageUrl,
-  videoUrl,
+  image,
+  video,
   alt = "Content media",
   title,
   className = "",
@@ -24,7 +24,7 @@ export function ImageVideoViewer({
   const [videoPlaying, setVideoPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  console.log('ImageVideoViewer received:', { imageUrl, videoUrl, title });
+  console.log('ImageVideoViewer received:', { image, video, title });
 
   // Helper function to check if a URL is valid (not empty/null/placeholder)
   const isValidUrl = (url?: string): boolean => {
@@ -98,8 +98,8 @@ export function ImageVideoViewer({
   const baseClasses = `w-full object-cover rounded-lg ${getAspectRatioClass()} ${className}`;
 
   // Determine what media to show - prioritize real images, then videos
-  const validImageUrl = isValidUrl(imageUrl) && !isVideoFile(imageUrl!) && !isYouTubeUrl(imageUrl!) ? imageUrl : undefined;
-  const validVideoUrl = isValidUrl(videoUrl) ? videoUrl : (isValidUrl(imageUrl) && (isVideoFile(imageUrl!) || isYouTubeUrl(imageUrl!)) ? imageUrl : undefined);
+  const validImageUrl = isValidUrl(image) && !isVideoFile(image!) && !isYouTubeUrl(image!) ? image : undefined;
+  const validVideoUrl = isValidUrl(video) ? video : (isValidUrl(image) && (isVideoFile(image!) || isYouTubeUrl(image!)) ? image : undefined);
 
   // Render video (YouTube or regular) if we have a valid video URL
   if (validVideoUrl) {

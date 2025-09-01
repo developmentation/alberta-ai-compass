@@ -96,8 +96,8 @@ export function ContentCard({ content, className = "", onView }: ContentCardProp
       {/* Media Content */}
       {(content.image_url || content.video_url) ? (
         <ImageVideoViewer
-          imageUrl={content.image_url}
-          videoUrl={content.video_url}
+          image={content.image_url}
+          video={content.video_url}
           alt={content.name}
           title={content.name}
           className="h-48"

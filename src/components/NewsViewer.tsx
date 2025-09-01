@@ -129,8 +129,8 @@ export function NewsViewer({ news, onClose, className = "", showCloseButton = tr
         <Card>
           <CardContent className="p-6">
             <ImageVideoViewer
-              imageUrl={news.image_url}
-              videoUrl={news.video_url}
+              image={news.image_url}
+              video={news.video_url}
               alt={news.title}
               title={news.title}
               aspectRatio="video"

@@ -103,7 +103,7 @@ export const ArticleViewer = ({ article, onClose, className = "" }: ArticleViewe
         return (
           <div key={index} className="mb-6">
             <ImageVideoViewer
-              imageUrl={section.content}
+              image={section.content}
               alt={section.title || 'Article image'}
               title={section.title || 'Article image'}
               className="w-full max-h-96 object-cover rounded-lg"
@@ -120,7 +120,7 @@ export const ArticleViewer = ({ article, onClose, className = "" }: ArticleViewe
         return (
           <div key={index} className="mb-6">
             <ImageVideoViewer
-              videoUrl={section.content}
+              video={section.content}
               title={section.title || 'Article video'}
               className="w-full max-h-96 rounded-lg"
               showControls={true}
@@ -189,8 +189,8 @@ export const ArticleViewer = ({ article, onClose, className = "" }: ArticleViewe
       {(article.image_url || article.video_url) && (
         <div className="mb-8">
           <ImageVideoViewer
-            imageUrl={article.image_url}
-            videoUrl={article.video_url}
+            image={article.image_url}
+            video={article.video_url}
             alt={article.title}
             title={article.title}
             className="w-full max-h-96 object-cover rounded-lg"

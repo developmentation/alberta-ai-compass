@@ -22,22 +22,6 @@ export const ArticleCard = ({
   video,
   onClick
 }: ArticleCardProps) => {
-  // Helper function to check if URL is a YouTube URL  
-  const isYouTubeUrl = (url: string): boolean => {
-    if (!url) return false;
-    const patterns = [
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)/,
-      /youtube\.com\/v\//,
-      /youtube\.com\/user\/.*#p\/.*\/.*\//,
-      /youtube\.com\/.*[?&]v=/
-    ];
-    return patterns.some(pattern => pattern.test(url));
-  };
-
-  // Determine what to show - prioritize real images, then videos (including YouTube), then fallback
-  const hasRealImage = image && image !== "/placeholder.svg" && !image.includes('/videos/') && !isYouTubeUrl(image);
-  const hasVideo = video && (video.includes('/videos/') || isYouTubeUrl(video));
-
   return (
     <article className="group relative overflow-hidden rounded-2xl border border-border bg-card/40 backdrop-blur-sm hover:bg-card-hover transition-all duration-500 hover:shadow-elegant hover:scale-[1.02] hover:-translate-y-1">
       {/* Content First */}
@@ -76,21 +60,13 @@ export const ArticleCard = ({
       {/* Image/Video Section */}
       <div className="h-36 overflow-hidden">
         <ImageVideoViewer
-          imageUrl={hasRealImage ? image : undefined}
-          videoUrl={hasVideo ? video : undefined}
+          image={image}
+          video={video}
           alt={title}
           title={title}
           className="h-full"
           showControls={true}
         />
-        {/* Fallback for when no real media */}
-        {!hasRealImage && !hasVideo && image && (
-          <img
-            src={image}
-            alt={title}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-          />
-        )}
       </div>
 
       {/* Hover Glow Effect */}

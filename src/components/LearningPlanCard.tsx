@@ -52,8 +52,8 @@ export const LearningPlanCard = ({
       {/* Image/Video Section */}
       <div className="relative h-48 overflow-hidden">
         <ImageVideoViewer
-          imageUrl={hasRealImage ? image : undefined}
-          videoUrl={hasVideo ? video : undefined}
+          image={hasRealImage ? image : undefined}
+          video={hasVideo ? video : undefined}
           alt={title}
           title={title}
           className="h-full"

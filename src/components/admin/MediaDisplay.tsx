@@ -20,8 +20,8 @@ export function MediaDisplay({
   return (
     <div className={className}>
       <ImageVideoViewer
-        imageUrl={imageUrl}
-        videoUrl={videoUrl}
+        image={imageUrl}
+        video={videoUrl}
         alt={title}
         title={title}
         className="w-full h-full object-cover"

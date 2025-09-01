@@ -49,22 +49,6 @@ export const ToolCard = ({
     }
   };
 
-  // Helper function to check if URL is a YouTube URL  
-  const isYouTubeUrl = (url: string): boolean => {
-    if (!url) return false;
-    const patterns = [
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)/,
-      /youtube\.com\/v\//,
-      /youtube\.com\/user\/.*#p\/.*\/.*\//,
-      /youtube\.com\/.*[?&]v=/
-    ];
-    return patterns.some(pattern => pattern.test(url));
-  };
-
-  // Determine what to show - prioritize real images, then videos (including YouTube), then fallback
-  const hasRealImage = image && image !== "/placeholder.svg" && !image.includes('/videos/') && !isYouTubeUrl(image);
-  const hasVideo = video && (video.includes('/videos/') || isYouTubeUrl(video));
-
   // Truncate description to 100 characters
   const truncatedDescription = description.length > 100 
     ? description.substring(0, 100) + '...' 
@@ -86,21 +70,13 @@ export const ToolCard = ({
       {(image || video) && (
         <div className="relative h-48 overflow-hidden">
           <ImageVideoViewer
-            imageUrl={hasRealImage ? image : undefined}
-            videoUrl={hasVideo ? video : undefined}
+            image={image}
+            video={video}
             alt={title}
             title={title}
             className="h-full"
             showControls={true}
           />
-          {/* Fallback for when no real media */}
-          {!hasRealImage && !hasVideo && image && (
-            <img
-              src={image}
-              alt={title}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            />
-          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           <Badge 
             variant="secondary"

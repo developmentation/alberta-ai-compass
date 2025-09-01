@@ -170,8 +170,8 @@ export const AdminResources = () => {
                 <div className="mt-4">
                   <div className="w-full h-32 overflow-hidden rounded-lg">
                     <ImageVideoViewer
-                      imageUrl={resource.image_url}
-                      videoUrl={resource.video_url}
+                      image={resource.image_url}
+                      video={resource.video_url}
                       alt={resource.title}
                       title={resource.title}
                       className="w-full h-full object-cover"

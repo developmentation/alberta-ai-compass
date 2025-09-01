@@ -203,8 +203,8 @@ const LearningHub = () => {
                module.level === '3' ? 'Advanced' : 
                module.level === 'red' ? 'RED' : 
                module.level || 'Beginner',
-        image_url: module.image_url || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1400&auto=format&fit=crop",
-        video_url: module.video_url,
+         image: module.image_url || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1400&auto=format&fit=crop",
+        video: module.video_url,
         tags: learningOutcomes.slice(0, 2).length > 0 ? learningOutcomes.slice(0, 2) : ["AI Learning", "Module"],
         averageRating: ratingData?.averageRating || 0,
         totalVotes: ratingData?.totalVotes || 0,
@@ -495,8 +495,8 @@ const LearningHub = () => {
                         description={resource.description}
                         url={resource.url}
                         level={resource.level}
-                        image_url={resource.image_url}
-                        video_url={resource.video_url}
+                        image={resource.image_url}
+                        video={resource.video_url}
                         stars_rating={resource.stars_rating}
                         onClick={() => navigate(`/resource/${resource.id}`)}
                       />

@@ -10,7 +10,7 @@ interface NewsCardProps {
   date: string;
   category: string;
   image: string;
-  videoUrl?: string;
+  video?: string;
   onClick?: () => void;
   averageRating?: number;
   totalVotes?: number;
@@ -23,7 +23,7 @@ export const NewsCard = ({
   date,
   category,
   image,
-  videoUrl,
+  video,
   onClick,
   averageRating = 0,
   totalVotes = 0,
@@ -37,26 +37,6 @@ export const NewsCard = ({
   const truncatedDescription = description.length > 100 
     ? description.substring(0, 100) + '...' 
     : description;
-
-  // Helper function to check if URL is a YouTube URL  
-  const isYouTubeUrl = (url: string): boolean => {
-    if (!url) return false;
-    const patterns = [
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)/,
-      /youtube\.com\/v\//,
-      /youtube\.com\/user\/.*#p\/.*\/.*\//,
-      /youtube\.com\/.*[?&]v=/
-    ];
-    return patterns.some(pattern => pattern.test(url));
-  };
-
-  // Determine what to show - prioritize real images, then videos (including YouTube), then fallback
-  const hasRealImage = image && image !== "/placeholder.svg" && !image.includes('/videos/') && !isYouTubeUrl(image);
-  const hasVideo = videoUrl && (videoUrl.includes('/videos/') || isYouTubeUrl(videoUrl));
-  
-  const showImage = hasRealImage;
-  const showVideo = !hasRealImage && hasVideo;
-  const fallbackImage = "/placeholder.svg";
 
   const toggleVideoPlayback = (e: React.MouseEvent) => {
     console.log('Play button clicked'); // Debug log
@@ -90,21 +70,13 @@ export const NewsCard = ({
       {/* Image/Video Section */}
       <div className="relative h-48 overflow-hidden">
         <ImageVideoViewer
-          imageUrl={hasRealImage ? image : undefined}
-          videoUrl={hasVideo ? videoUrl : undefined}
+          image={image}
+          video={video}
           alt={title}
           title={title}
           className="h-full"
           showControls={true}
         />
-        {/* Fallback for when no real media */}
-        {!hasRealImage && !hasVideo && (
-          <img
-            src={fallbackImage}
-            alt={title}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-          />
-        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
         <Badge 
           variant="secondary"

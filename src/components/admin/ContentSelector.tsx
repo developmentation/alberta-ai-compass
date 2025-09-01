@@ -243,8 +243,8 @@ export function ContentSelector({ isOpen, onClose, onSelect, selectedIds = [] }:
                         <div className="flex-shrink-0">
                           {(item.image_url || item.video_url) ? (
                             <ImageVideoViewer
-                              imageUrl={item.image_url}
-                              videoUrl={item.video_url}
+                              image={item.image_url}
+                              video={item.video_url}
                               alt={item.name}
                               title={item.name}
                               className="w-12 h-12 rounded object-cover"

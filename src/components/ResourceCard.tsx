@@ -14,8 +14,8 @@ interface ResourceCardProps {
   title: string;
   description: string;
   url: string;
-  image_url?: string;
-  video_url?: string;
+  image?: string;
+  video?: string;
   level: string;
   stars_rating: number;
   onClick?: () => void;
@@ -28,15 +28,15 @@ export const ResourceCard = ({
   title,
   description,
   url,
-  image_url,
-  video_url,
+  image,
+  video,
   level,
   stars_rating,
   onClick,
   showBookmark = true,
   showRating = true
 }: ResourceCardProps) => {
-  console.log('ResourceCard props:', { id, title, image_url, video_url });
+  console.log('ResourceCard props:', { id, title, image, video });
   const { user } = useAuth();
   const { isBookmarked, toggleBookmark } = useBookmarks(id, 'resource');
   const { userRating, aggregatedRating, submitRating, refetch } = useRatings(id, 'resource');
@@ -100,10 +100,13 @@ export const ResourceCard = ({
           </div>
         </div>
 
-        <ImageVideoViewer 
-          imageUrl={image_url}
-          videoUrl={video_url}
+        <ImageVideoViewer
+          image={image}
+          video={video}
           alt={title}
+          title={title}
+          className="h-full"
+          showControls={true}
         />
 
         <h3 className="text-lg font-semibold mb-2 text-foreground group-hover:text-primary transition-colors">

@@ -310,8 +310,8 @@ export default function MyLearning() {
                         {(item.image_url || item.video_url) && (
                           <div className="w-full h-32 bg-muted rounded-lg overflow-hidden">
                             <ImageVideoViewer
-                              imageUrl={item.image_url}
-                              videoUrl={item.video_url}
+                              image={item.image_url}
+                              video={item.video_url}
                               alt={item.title}
                               title={item.title}
                               className="w-full h-full object-cover"

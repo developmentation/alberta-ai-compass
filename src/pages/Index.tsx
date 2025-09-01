@@ -98,7 +98,7 @@ const Index = () => {
         date: format(parseISO(item.created_at), 'MMM dd, yyyy'),
         category: item.level?.charAt(0).toUpperCase() + item.level?.slice(1) || 'Update',
         image: item.image_url || "",
-        videoUrl: item.video_url,
+        video: item.video_url,
         averageRating: rating?.averageRating || 0,
         totalVotes: rating?.totalVotes || 0,
         isBookmarked: rating?.isBookmarked || false,

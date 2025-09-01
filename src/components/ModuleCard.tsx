@@ -12,8 +12,8 @@ interface ModuleCardProps {
   title: string;
   description: string;
   level: string;
-  image_url: string;
-  video_url?: string;
+  image: string;
+  video?: string;
   tags: string[];
   averageRating?: number;
   totalVotes?: number;
@@ -26,8 +26,8 @@ export const ModuleCard = ({
   title,
   description,
   level,
-  image_url,
-  video_url,
+  image,
+  video,
   tags,
   averageRating = 0,
   totalVotes = 0,
@@ -65,8 +65,8 @@ export const ModuleCard = ({
           learningOutcomes: jsonData?.learningOutcomes || jsonData?.learning_outcomes || [],
           tags: jsonData?.tags || [],
           sections: jsonData?.sections || [],
-          imageUrl: moduleFullData.image_url || image_url || '',
-          videoUrl: moduleFullData.video_url || video_url || ''
+          imageUrl: moduleFullData.image_url || image || '',
+          videoUrl: moduleFullData.video_url || video || ''
         };
         
         setModuleData(moduleViewerData);
@@ -85,8 +85,8 @@ export const ModuleCard = ({
         {/* Image/Video Section */}
         <div className="relative h-48 overflow-hidden">
           <ImageVideoViewer
-            imageUrl={image_url}
-            videoUrl={video_url}
+            image={image}
+            video={video}
             alt={title}
             title={title}
             className="h-full"
