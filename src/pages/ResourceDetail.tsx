@@ -17,7 +17,7 @@ export const ResourceDetail = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isBookmarked, toggleBookmark } = useBookmarks(id, 'resource');
-  const { userRating, submitRating } = useRatings(id, 'resource');
+  const { userRating, aggregatedRating, submitRating } = useRatings(id || undefined, 'resource');
   
   const [resource, setResource] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -120,7 +120,12 @@ export const ResourceDetail = () => {
                   <div className="flex items-center gap-1">
                     <Star className="w-4 h-4 fill-primary text-primary" />
                     <span className="text-sm font-medium">
-                      {resource.stars_rating.toFixed(1)}
+                      {aggregatedRating?.average_rating 
+                        ? `${aggregatedRating.average_rating.toFixed(1)} (${aggregatedRating.total_votes || 0} votes)`
+                        : resource?.stars_rating 
+                        ? `${resource.stars_rating.toFixed(1)}`
+                        : '0.0 (0 votes)'
+                      }
                     </span>
                   </div>
                 </div>
