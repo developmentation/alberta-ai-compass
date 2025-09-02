@@ -109,7 +109,7 @@ export function useAIMentorChat() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6dHRxbG95YW1jaXZjdHNmeGtrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5NzE5MDIsImV4cCI6MjA3MTU0NzkwMn0.kOaKsCgwsWYLWbloN1haekp5aJ0Fn2pfaYIgOyv3ENQ`,
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
         body: JSON.stringify({
           message,
@@ -185,7 +185,7 @@ export function useAIMentorChat() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6dHRxbG95YW1jaXZjdHNmeGtrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5NzE5MDIsImV4cCI6MjA3MTU0NzkwMn0.kOaKsCgwsWYLWbloN1haekp5aJ0Fn2pfaYIgOyv3ENQ`,
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
           body: JSON.stringify({
             message,
@@ -271,7 +271,8 @@ export function useAIMentorChat() {
   };
 
   const fetchAllLearningContent = async () => {
-    const [modules, news, tools, prompts, learningPlans] = await Promise.all([
+    const [resources, modules, news, tools, prompts, learningPlans] = await Promise.all([
+      supabase.from('resources').select('id, title, description').eq('status', 'published').is('deleted_at', null),
       supabase.from('modules').select('id, name, description').eq('status', 'published').is('deleted_at', null),
       supabase.from('news').select('id, title, description').eq('status', 'published').eq('is_active', true).is('deleted_at', null),
       supabase.from('tools').select('id, name, description').eq('status', 'published').is('deleted_at', null),
@@ -280,6 +281,7 @@ export function useAIMentorChat() {
     ]);
 
     return [
+      ...(resources.data?.map(item => ({ ...item, name: item.title, type: 'resources' })) || []),
       ...(modules.data?.map(item => ({ ...item, type: 'modules' })) || []),
       ...(news.data?.map(item => ({ ...item, name: item.title, type: 'news' })) || []),
       ...(tools.data?.map(item => ({ ...item, type: 'tools' })) || []),
@@ -341,7 +343,20 @@ export function useAIMentorChat() {
               .single();
             data = plansResult.data;
             break;
-        }
+
+
+          case 'resources':
+            const resourceResult = await supabase
+              .from('resources')
+              .select('*')
+              .eq('id', item.id)
+              .single();
+            data = resourceResult.data;
+            break;
+
+          }
+
+        
         
         if (data) {
           fetchedContent.push({ ...data, type: item.type });
@@ -359,7 +374,7 @@ export function useAIMentorChat() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6dHRxbG95YW1jaXZjdHNmeGtrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5NzE5MDIsImV4cCI6MjA3MTU0NzkwMn0.kOaKsCgwsWYLWbloN1haekp5aJ0Fn2pfaYIgOyv3ENQ`,
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
       },
       body: JSON.stringify({
         message,
@@ -379,7 +394,7 @@ export function useAIMentorChat() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6dHRxbG95YW1jaXZjdHNmeGtrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5NzE5MDIsImV4cCI6MjA3MTU0NzkwMn0.kOaKsCgwsWYLWbloN1haekp5aJ0Fn2pfaYIgOyv3ENQ`,
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
       },
       body: JSON.stringify({
         message: conversationHistory ? `Previous conversation:\n${conversationHistory}\n\nCurrent message: ${message}` : message,
@@ -396,7 +411,7 @@ export function useAIMentorChat() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6dHRxbG95YW1jaXZjdHNmeGtrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5NzE5MDIsImV4cCI6MjA3MTU0NzkwMn0.kOaKsCgwsWYLWbloN1haekp5aJ0Fn2pfaYIgOyv3ENQ`,
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
       },
       body: JSON.stringify({
         message,
