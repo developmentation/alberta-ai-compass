@@ -608,11 +608,11 @@ export function Chat() {
               <Badge variant="outline" className="text-xs">
                 {messages.length} messages
               </Badge>
-              {!scrollLocked && (
+              {/* {!scrollLocked && (
                 <Badge variant="secondary" className="text-xs cursor-pointer" onClick={forceScrollToBottom}>
                   Scroll unlocked - Click to resume auto-scroll
                 </Badge>
-              )}
+              )} */}
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={handleReset} disabled={loading || messages.length === 0}>
