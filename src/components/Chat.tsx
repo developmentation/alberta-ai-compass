@@ -27,7 +27,6 @@ import { processPDFFile } from '@/utils/parsePdf';
 import { isTextFile, extractTextFromFiles } from '@/utils/parseText';
 import { PDFSelector } from './PDFSelector';
 import { ExcelSelector } from './ExcelSelector';
-import './Chat.css'; // We'll create this CSS file
 
 interface PendingPDF {
   file: File;
@@ -48,6 +47,70 @@ const isImageFile = (file: File): boolean => {
 
 const isPdfFile = (file: File): boolean => {
   return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+};
+
+// Function to process markdown content and extract markdown from code blocks
+const processMarkdownContent = (content: string): string => {
+  // Pattern to match ```markdown ... ``` blocks (case insensitive, with optional whitespace)
+  const markdownBlockPattern = /```\s*markdown\s*\n([\s\S]*?)\n\s*```/gi;
+  
+  // Pattern to match ``` ... ``` blocks that contain markdown-like content
+  const genericCodeBlockPattern = /```\s*\n([\s\S]*?)\n\s*```/g;
+  
+  let processedContent = content;
+  
+  // First, handle explicit ```markdown blocks
+  processedContent = processedContent.replace(markdownBlockPattern, (match, markdownContent) => {
+    // Return the markdown content directly, without the code block wrapper
+    return markdownContent.trim();
+  });
+  
+  // Then, handle generic code blocks that might contain markdown
+  // Only process if they contain markdown-like patterns (headers, tables, lists, etc.)
+  processedContent = processedContent.replace(genericCodeBlockPattern, (match, codeContent) => {
+    const trimmedContent = codeContent.trim();
+    
+    // Check if the content looks like markdown (contains common markdown patterns)
+    const hasMarkdownPatterns = (
+      trimmedContent.includes('# ') ||      // Headers
+      trimmedContent.includes('## ') ||     // Headers
+      trimmedContent.includes('### ') ||    // Headers
+      trimmedContent.includes('| ') ||      // Tables
+      trimmedContent.includes('**') ||      // Bold
+      trimmedContent.includes('*') ||       // Italic/Lists
+      trimmedContent.includes('- ') ||      // Lists
+      trimmedContent.includes('1. ') ||     // Numbered lists
+      trimmedContent.includes('[') ||       // Links
+      trimmedContent.includes('> ')         // Blockquotes
+    );
+    
+    // If it looks like markdown and doesn't look like actual code, process it as markdown
+    const looksLikeCode = (
+      trimmedContent.includes('function ') ||
+      trimmedContent.includes('const ') ||
+      trimmedContent.includes('let ') ||
+      trimmedContent.includes('var ') ||
+      trimmedContent.includes('import ') ||
+      trimmedContent.includes('export ') ||
+      trimmedContent.includes('class ') ||
+      trimmedContent.includes('def ') ||
+      trimmedContent.includes('<?php') ||
+      trimmedContent.includes('<html') ||
+      trimmedContent.includes('<div') ||
+      trimmedContent.includes('SELECT ') ||
+      trimmedContent.includes('FROM ')
+    );
+    
+    if (hasMarkdownPatterns && !looksLikeCode) {
+      // Return the content as markdown, not as a code block
+      return trimmedContent;
+    }
+    
+    // Otherwise, keep it as a code block
+    return match;
+  });
+  
+  return processedContent;
 };
 
 // Copy to clipboard utility
@@ -652,22 +715,85 @@ export function Chat() {
 
                         {/* Message content */}
                         <div className="p-3 sm:p-4">
-                          <div className="text-sm sm:text-base markdown-content">
+                          <div className="text-sm sm:text-base">
                             {msg.role === 'assistant' ? (
-                              <ReactMarkdown 
-                                remarkPlugins={[remarkGfm]}
-                                components={{
-                                  table: ({ children }) => (
-                                    <div className="overflow-x-auto">
-                                      <table>{children}</table>
-                                    </div>
-                                  ),
-                                }}
-                              >
-                                {msg.content}
-                              </ReactMarkdown>
+                              <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-gray-900 dark:prose-headings:text-gray-100 prose-p:text-gray-900 dark:prose-p:text-gray-100 prose-strong:text-gray-900 dark:prose-strong:text-gray-100 prose-code:text-gray-900 dark:prose-code:text-gray-100 prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-table:text-gray-900 dark:prose-table:text-gray-100">
+                                <ReactMarkdown 
+                                  remarkPlugins={[remarkGfm]}
+                                  components={{
+                                    table: ({ children }) => (
+                                      <div className="overflow-x-auto my-4">
+                                        <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
+                                          {children}
+                                        </table>
+                                      </div>
+                                    ),
+                                    thead: ({ children }) => (
+                                      <thead className="bg-gray-50 dark:bg-gray-700">
+                                        {children}
+                                      </thead>
+                                    ),
+                                    th: ({ children }) => (
+                                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left font-semibold text-gray-900 dark:text-gray-100">
+                                        {children}
+                                      </th>
+                                    ),
+                                    td: ({ children }) => (
+                                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-900 dark:text-gray-100">
+                                        {children}
+                                      </td>
+                                    ),
+                                    tr: ({ children, ...props }) => (
+                                      <tr className="even:bg-gray-50 dark:even:bg-gray-800/50" {...props}>
+                                        {children}
+                                      </tr>
+                                    ),
+                                    h1: ({ children }) => (
+                                      <h1 className="text-xl font-bold mt-6 mb-4 pb-2 border-b border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
+                                        {children}
+                                      </h1>
+                                    ),
+                                    h2: ({ children }) => (
+                                      <h2 className="text-lg font-semibold mt-5 mb-3 pb-1 border-b border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">
+                                        {children}
+                                      </h2>
+                                    ),
+                                    h3: ({ children }) => (
+                                      <h3 className="text-base font-semibold mt-4 mb-2 text-gray-900 dark:text-gray-100">
+                                        {children}
+                                      </h3>
+                                    ),
+                                    blockquote: ({ children }) => (
+                                      <blockquote className="border-l-4 border-blue-500 pl-4 py-2 my-4 bg-blue-50 dark:bg-blue-900/20 italic text-gray-700 dark:text-gray-300">
+                                        {children}
+                                      </blockquote>
+                                    ),
+                                    code: ({ inline, children }) => {
+                                      if (inline) {
+                                        return (
+                                          <code className="bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded text-sm font-mono text-gray-900 dark:text-gray-100">
+                                            {children}
+                                          </code>
+                                        );
+                                      }
+                                      return (
+                                        <code className="text-gray-100">
+                                          {children}
+                                        </code>
+                                      );
+                                    },
+                                    pre: ({ children }) => (
+                                      <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto my-4">
+                                        {children}
+                                      </pre>
+                                    ),
+                                  }}
+                                >
+                                  {processMarkdownContent(msg.content)}
+                                </ReactMarkdown>
+                              </div>
                             ) : (
-                              <p>{msg.content}</p>
+                              <p className="text-white">{msg.content}</p>
                             )}
                           </div>
                           
@@ -876,7 +1002,7 @@ export function Chat() {
                 <Button
                   onClick={handleSendMessage}
                   disabled={(!inputMessage.trim() && totalAttachments === 0) || loading}
-                  className="absolute bottom-2 right-2 p-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="absolute bottom-2 right-4 p-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   size="sm"
                 >
                   <Send className="w-4 h-4" />
