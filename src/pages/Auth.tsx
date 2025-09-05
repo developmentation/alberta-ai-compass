@@ -6,13 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Separator } from '@/components/ui/separator';
-import { User, Mail, Lock, Eye, EyeOff, Github } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Auth() {
-  const [loginForm, setLoginForm] = useState({ email: '', password: '', rememberMe: false });
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [signupForm, setSignupForm] = useState({ name: '', email: '', password: '', confirmPassword: '', terms: false });
   const [showPassword, setShowPassword] = useState({ login: false, signup: false, confirm: false });
   const [loading, setLoading] = useState(false);
@@ -150,35 +149,12 @@ export default function Auth() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between text-sm">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <Checkbox
-                        checked={loginForm.rememberMe}
-                        onCheckedChange={(checked) => setLoginForm(prev => ({ ...prev, rememberMe: checked as boolean }))}
-                      />
-                      Remember me
-                    </label>
-                    <a href="#" className="text-primary hover:underline">Forgot password?</a>
-                  </div>
 
                   <Button type="submit" className="w-full bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow" disabled={loading}>
                     {loading ? 'Signing in...' : 'Sign In'}
                   </Button>
                 </form>
 
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-border"></div>
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-                  </div>
-                </div>
-
-                <Button variant="outline" className="w-full">
-                  <Github className="w-4 h-4 mr-2" />
-                  GitHub
-                </Button>
               </TabsContent>
               
               <TabsContent value="signup" className="space-y-6">
@@ -270,19 +246,6 @@ export default function Auth() {
                   </Button>
                 </form>
 
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-border"></div>
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-                  </div>
-                </div>
-
-                <Button variant="outline" className="w-full">
-                  <Github className="w-4 h-4 mr-2" />
-                  GitHub
-                </Button>
               </TabsContent>
             </Tabs>
           </CardContent>
