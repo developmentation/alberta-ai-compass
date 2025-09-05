@@ -634,7 +634,7 @@ export function Chat() {
             className="h-full overflow-y-auto px-4 sm:px-6 py-4 sm:py-6"
             onScroll={handleScroll}
           >
-            <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
+            <div className="max-w-8xl mx-auto space-y-4 sm:space-y-6">
               {isLoadingHistory ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="w-6 h-6 animate-spin mr-2" />
@@ -717,7 +717,7 @@ export function Chat() {
                         <div className="p-3 sm:p-4">
                           <div className="text-sm sm:text-base">
                             {msg.role === 'assistant' ? (
-                              <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-gray-900 dark:prose-headings:text-gray-100 prose-p:text-gray-900 dark:prose-p:text-gray-100 prose-strong:text-gray-900 dark:prose-strong:text-gray-100 prose-code:text-gray-900 dark:prose-code:text-gray-100 prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-table:text-gray-900 dark:prose-table:text-gray-100">
+                              <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-gray-900 dark:prose-headings:text-gray-100 prose-p:text-gray-900 dark:prose-p:text-gray-100 prose-strong:text-gray-900 dark:prose-strong:text-gray-100 prose-code:text-gray-900 dark:prose-code:text-gray-100 prose-pre:bg-gray-200 prose-pre:text-gray-100 prose-table:text-gray-900 dark:prose-table:text-gray-100">
                                 <ReactMarkdown 
                                   remarkPlugins={[remarkGfm]}
                                   components={{
@@ -777,13 +777,13 @@ export function Chat() {
                                         );
                                       }
                                       return (
-                                        <code className="text-gray-100">
+                                        <code className="text-gray-900 dark:text-gray-100">
                                           {children}
                                         </code>
                                       );
                                     },
                                     pre: ({ children }) => (
-                                      <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto my-4">
+                                      <pre className="bg-gray-200 dark:bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto my-4">
                                         {children}
                                       </pre>
                                     ),
