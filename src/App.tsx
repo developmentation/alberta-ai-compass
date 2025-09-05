@@ -13,6 +13,7 @@ import News from "./pages/News";
 import LearningHub from "./pages/LearningHub";
 import Tools from "./pages/Tools";
 import AIMentor from "./pages/AIMentor";
+import Chat from "./pages/Chat";
 import MyLearning from "./pages/MyLearning";
 import Cohorts from "./pages/Cohorts";
 import Plan from "./pages/Plan";
@@ -52,6 +53,7 @@ const App = () => (
             <Route path="/learning-hub" element={<LearningHub />} />
             <Route path="/tools" element={<Tools />} />
             <Route path="/ai-mentor" element={<AIMentor />} />
+            <Route path="/chat" element={<Chat />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/my-learning" element={<MyLearning />} />

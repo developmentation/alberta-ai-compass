@@ -65,6 +65,9 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
               <Link to="/ai-mentor" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 AI Mentor
               </Link>
+              <Link to="/chat" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Chat
+              </Link>
             </nav>
 
             {/* Desktop Actions */}
@@ -185,7 +188,17 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
               >
                 AI Mentor
               </Link>
-              
+
+
+              <Link 
+                to="/chat" 
+                className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Chat
+              </Link>
+
+
               <div className="pt-4 border-t border-border space-y-3">
                 {user ? (
                   <>
