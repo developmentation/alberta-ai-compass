@@ -2,7 +2,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
 const Privacy = () => {
-  const lastUpdated = "January 15, 2024";
+  const lastUpdated = "September 7, 2025";
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -50,141 +50,163 @@ const Privacy = () => {
                   <h2 className="text-2xl font-bold tracking-tight text-foreground">Our Commitment</h2>
                 </div>
                 <p className="text-muted-foreground leading-relaxed">
-                  Alberta AI Academy is committed to protecting your privacy and being transparent about how we handle your data. 
-                  We believe that privacy is a fundamental right, and we've designed our platform with privacy-by-design principles.
+                  The Government of Alberta, Ministry of Technology and Innovation is committed to ensuring your privacy while you visit AI Academy site.
                 </p>
               </div>
 
-              {/* Information Collection */}
+              {/* Standard Information Collected by Web Server */}
               <div className="mb-12">
-                <h2 className="text-3xl font-bold tracking-tight mb-6 text-foreground">Information We Collect</h2>
-                
-                <div className="space-y-8">
-                  <div className="rounded-xl border border-border bg-card/20 backdrop-blur-sm p-6">
-                    <h3 className="text-xl font-semibold mb-4 text-foreground">Account Information</h3>
-                    <ul className="space-y-2 text-muted-foreground">
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        Email address for account creation and communication
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        Profile information you choose to provide (name, learning preferences)
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        Account settings and preferences
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div className="rounded-xl border border-border bg-card/20 backdrop-blur-sm p-6">
-                    <h3 className="text-xl font-semibold mb-4 text-foreground">Learning Data</h3>
-                    <ul className="space-y-2 text-muted-foreground">
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        Learning plans and progress tracking
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        Interactions with our AI mentor and chat features
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        Bookmarked articles and saved resources
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        Usage patterns to improve recommendations
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div className="rounded-xl border border-border bg-card/20 backdrop-blur-sm p-6">
-                    <h3 className="text-xl font-semibold mb-4 text-foreground">Technical Information</h3>
-                    <ul className="space-y-2 text-muted-foreground">
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        Device and browser information for optimization
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        IP address for security and analytics (anonymized)
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        Cookies for essential functionality only
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              {/* How We Use Information */}
-              <div className="mb-12">
-                <h2 className="text-3xl font-bold tracking-tight mb-6 text-foreground">How We Use Your Information</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="rounded-xl border border-border bg-card/20 backdrop-blur-sm p-6">
-                    <h3 className="text-lg font-semibold mb-3 text-foreground">Personalization</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Create personalized learning recommendations and track your progress through our platform.
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border border-border bg-card/20 backdrop-blur-sm p-6">
-                    <h3 className="text-lg font-semibold mb-3 text-foreground">Communication</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Send important updates about your account, new features, and learning opportunities.
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border border-border bg-card/20 backdrop-blur-sm p-6">
-                    <h3 className="text-lg font-semibold mb-3 text-foreground">Improvement</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Analyze usage patterns to improve our platform and develop better learning resources.
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border border-border bg-card/20 backdrop-blur-sm p-6">
-                    <h3 className="text-lg font-semibold mb-3 text-foreground">Security</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Protect your account and prevent unauthorized access or fraudulent activity.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Data Sharing */}
-              <div className="mb-12">
-                <h2 className="text-3xl font-bold tracking-tight mb-6 text-foreground">Data Sharing</h2>
+                <h2 className="text-3xl font-bold tracking-tight mb-6 text-foreground">Standard Information Collected by Web Server</h2>
                 
                 <div className="rounded-xl border border-border bg-card/20 backdrop-blur-sm p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
-                      <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                    </div>
-                    <h3 className="text-xl font-semibold text-foreground">We Never Sell Your Data</h3>
-                  </div>
-                  <p className="text-muted-foreground mb-4">
-                    Your personal information is never sold to third parties. We only share data in the following limited circumstances:
+                  <p className="text-muted-foreground leading-relaxed mb-4">
+                    When you access this service, our web server automatically collects a limited amount of standard information essential to the operation and evaluation of the service. This includes the page from which you arrived, the date and time of your page request, the IP address your computer is using to receive information, the type and version of your browser, and the name and size of the file you request.
                   </p>
-                  <ul className="space-y-2 text-muted-foreground">
-                    <li className="flex items-start gap-2">
-                      <span className="text-primary mt-1">•</span>
-                      With your explicit consent
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-primary mt-1">•</span>
-                      To comply with legal requirements
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-primary mt-1">•</span>
-                      With service providers who help operate our platform (under strict confidentiality agreements)
-                    </li>
-                  </ul>
+                  <p className="text-muted-foreground leading-relaxed">
+                    This information is not used to identify individuals who use the service, nor is it disclosed to other public bodies or individuals.
+                  </p>
+                </div>
+              </div>
+
+              {/* Collection of Personal Information */}
+              <div className="mb-12">
+                <h2 className="text-3xl font-bold tracking-tight mb-6 text-foreground">Collection of Personal Information</h2>
+                
+                <div className="space-y-6">
+                  <div className="rounded-xl border border-border bg-card/20 backdrop-blur-sm p-6">
+                    <p className="text-muted-foreground leading-relaxed mb-4">
+                      Personal information is collected directly from you when you voluntarily register for an account or interact with the service. For example, when creating an account, you will be asked to provide your name and email address.
+                    </p>
+                    <p className="text-muted-foreground leading-relaxed mb-4">
+                      In accordance with Section 5(2) of the Protection of Privacy Act (POPA), we provide the following notice for the collection of your personal information:
+                    </p>
+                    <ul className="space-y-3 text-muted-foreground">
+                      <li className="flex items-start gap-3">
+                        <span className="text-primary font-semibold mt-1">(a)</span>
+                        <div>
+                          <strong>Purpose:</strong> The personal information is collected to process and respond to your requests related to the service, including account creation and management.
+                        </div>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="text-primary font-semibold mt-1">(b)</span>
+                        <div>
+                          <strong>Legal Authority:</strong> This collection is authorized under Section 4(c) of POPA, as the information relates directly to and is necessary for an operating program or activity of the Government of Alberta.
+                        </div>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="text-primary font-semibold mt-1">(c)</span>
+                        <div>
+                          <strong>Contact Information:</strong> If you have questions about the collection of your personal information, please contact us at <a href="mailto:aiacademy@gov.ab.ca" className="text-primary hover:underline">aiacademy@gov.ab.ca</a>.
+                        </div>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="text-primary font-semibold mt-1">(d)</span>
+                        <div>
+                          <strong>Automated System Use:</strong> The personal information, along with any content you create (such as prompts), will be input into an automated system to generate content or provide educational feedback or recommendations.
+                        </div>
+                      </li>
+                    </ul>
+                    <p className="text-muted-foreground leading-relaxed mt-4">
+                      This personal information is disclosed only to authorized personnel who use it for the specified purposes. While the personal information you send is secure once it reaches the government server, it may not be secure in transit between your computer and ours.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Cookies */}
+              <div className="mb-12">
+                <h2 className="text-3xl font-bold tracking-tight mb-6 text-foreground">Cookies</h2>
+                
+                <div className="space-y-6">
+                  <div className="rounded-xl border border-border bg-card/20 backdrop-blur-sm p-6">
+                    <p className="text-muted-foreground leading-relaxed mb-4">
+                      When you visit a website it may deposit a piece of data, called a web cookie, with the temporary web browser files on your computer.
+                    </p>
+                    <p className="text-muted-foreground leading-relaxed mb-4">
+                      If you wish, you can change the settings on your web browser to deny cookies, or to warn you when a site is about to deposit cookies on your hard drive.
+                    </p>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Government of Alberta websites use cookies to collect anonymous statistical information such as browser type, screen size, traffic patterns and pages visited. This information helps us provide you with better service. We do not store personal information in cookies, nor do we collect personal information from you without your knowledge, as you browse the site.
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border border-border bg-card/20 backdrop-blur-sm p-6">
+                    <h3 className="text-xl font-semibold mb-4 text-foreground">Cookies from Third Party Applications</h3>
+                    <p className="text-muted-foreground leading-relaxed mb-4">
+                      This site uses a number of third party products. Read their privacy statements to find out how they track and use your information:
+                    </p>
+                    <ul className="space-y-2 text-muted-foreground">
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">•</span>
+                        <a href="https://www.addthis.com/privacy" className="text-primary hover:underline">AddThis privacy statement</a>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">•</span>
+                        <a href="https://www.crazyegg.com/privacy" className="text-primary hover:underline">Crazy Egg privacy statement</a>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">•</span>
+                        <a href="https://www.facebook.com/policies/cookies/" className="text-primary hover:underline">Facebook cookie policy</a>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">•</span>
+                        <a href="https://policies.google.com/privacy" className="text-primary hover:underline">Google Analytics privacy statement</a>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">•</span>
+                        <a href="https://policies.google.com/technologies/cookies" className="text-primary hover:underline">Google Ads cookie usage</a>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">•</span>
+                        <a href="https://privacy.microsoft.com/" className="text-primary hover:underline">Microsoft privacy policy</a>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">•</span>
+                        <a href="https://www.pattisonmedia.com/privacy-policy/" className="text-primary hover:underline">Pattison Media privacy policy</a>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">•</span>
+                        <a href="https://postmedia.com/privacy-statement/" className="text-primary hover:underline">Postmedia cookie policy</a>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">•</span>
+                        <a href="https://siteimprove.com/privacy/" className="text-primary hover:underline">SiteImprove privacy policy</a>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">•</span>
+                        <a href="https://truconversion.com/privacy-policy/" className="text-primary hover:underline">TruConversion privacy policy</a>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">•</span>
+                        <a href="https://help.twitter.com/en/rules-and-policies/twitter-cookies" className="text-primary hover:underline">Twitter cookie policy</a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Security */}
+              <div className="mb-12">
+                <h2 className="text-3xl font-bold tracking-tight mb-6 text-foreground">Security</h2>
+                
+                <div className="rounded-xl border border-border bg-card/20 backdrop-blur-sm p-6">
+                  <p className="text-muted-foreground leading-relaxed">
+                    The Government of Alberta's computer system uses software to monitor unauthorized attempts to upload or change information, or damage the service we provide. No attempt is made to identify users or their usage patterns except during law enforcement investigations.
+                  </p>
+                </div>
+              </div>
+
+              {/* Data Retention and Deletion */}
+              <div className="mb-12">
+                <h2 className="text-3xl font-bold tracking-tight mb-6 text-foreground">Data Retention and Deletion</h2>
+                
+                <div className="rounded-xl border border-border bg-card/20 backdrop-blur-sm p-6">
+                  <p className="text-muted-foreground leading-relaxed mb-4">
+                    In accordance with Section 6(b) of the Protection of Privacy Act (POPA), we will retain your personal information for the minimum period necessary to fulfill the purposes outlined in this Privacy Statement, and in compliance with the Government of Alberta's established Records Retention and Disposition Schedule. This schedule ensures that personal information is retained and used only to the extent required to meet our legal obligations under POPA and other applicable Alberta laws, after which it will be securely disposed of.
+                  </p>
+                  <p className="text-muted-foreground leading-relaxed">
+                    You may request the deletion of your account and associated data by contacting us at <a href="mailto:aiacademy@gov.ab.ca" className="text-primary hover:underline">aiacademy@gov.ab.ca</a>. We will evaluate such requests in alignment with POPA requirements and the Records Retention and Disposition Schedule, taking reasonable steps to delete your personal information from our records where permissible, except where retention is required for legal purposes under Alberta law.
+                  </p>
                 </div>
               </div>
 
@@ -192,32 +214,18 @@ const Privacy = () => {
               <div className="mb-12">
                 <h2 className="text-3xl font-bold tracking-tight mb-6 text-foreground">Your Rights</h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-6">
                   <div className="rounded-xl border border-border bg-card/20 backdrop-blur-sm p-6">
-                    <h3 className="text-lg font-semibold mb-3 text-foreground">Access & Export</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Request a copy of all personal data we have about you in a portable format.
+                    <h3 className="text-lg font-semibold mb-3 text-foreground">Correction of Personal Information</h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      The Protection of Privacy Act provides the right to request correction of your personal information. Please contact us at <a href="mailto:aiacademy@gov.ab.ca" className="text-primary hover:underline">aiacademy@gov.ab.ca</a> and we will redirect your request to the office authorized to receive such a request.
                     </p>
                   </div>
 
                   <div className="rounded-xl border border-border bg-card/20 backdrop-blur-sm p-6">
-                    <h3 className="text-lg font-semibold mb-3 text-foreground">Correction</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Update or correct any inaccurate personal information in your account.
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border border-border bg-card/20 backdrop-blur-sm p-6">
-                    <h3 className="text-lg font-semibold mb-3 text-foreground">Deletion</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Request deletion of your account and associated data at any time.
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border border-border bg-card/20 backdrop-blur-sm p-6">
-                    <h3 className="text-lg font-semibold mb-3 text-foreground">Portability</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Transfer your learning data to another service if you choose to leave.
+                    <h3 className="text-lg font-semibold mb-3 text-foreground">Access to Information</h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      The Access to Information Act provides the right of access to information, including your own personal information. The ATI request form is available through the <a href="https://www.alberta.ca/eservices.aspx" className="text-primary hover:underline">eServices page</a>.
                     </p>
                   </div>
                 </div>
@@ -225,23 +233,26 @@ const Privacy = () => {
 
               {/* Contact */}
               <div className="rounded-2xl border border-border bg-card/40 backdrop-blur-sm p-8">
-                <h2 className="text-2xl font-bold tracking-tight mb-4 text-foreground">Questions or Concerns?</h2>
+                <h2 className="text-2xl font-bold tracking-tight mb-4 text-foreground">Contact Information</h2>
                 <p className="text-muted-foreground mb-6">
-                  If you have any questions about this privacy policy or how we handle your data, please don't hesitate to contact us.
+                  If you have any questions about this Privacy Statement or the collection, use, or disclosure of your personal information, please contact us at:
                 </p>
+                <div className="space-y-3 mb-6">
+                  <p className="text-muted-foreground">
+                    <strong>Email:</strong> <a href="mailto:aiacademy@gov.ab.ca" className="text-primary hover:underline">aiacademy@gov.ab.ca</a>
+                  </p>
+                  <p className="text-muted-foreground">
+                    <strong>Organization:</strong> Government of Alberta, Ministry of Technology and Innovation
+                  </p>
+                </div>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <a 
-                    href="mailto:privacy@albertaai.academy" 
+                    href="mailto:aiacademy@gov.ab.ca" 
                     className="inline-flex items-center justify-center px-6 py-3 bg-gradient-primary text-white rounded-lg hover:opacity-90 transition-opacity shadow-glow"
                   >
-                    Contact Privacy Team
+                    Contact the Alberta AI Academy
                   </a>
-                  <a 
-                    href="#mentor" 
-                    className="inline-flex items-center justify-center px-6 py-3 border border-border rounded-lg hover:border-primary/50 hover:bg-card/60 transition-all"
-                  >
-                    Ask AI Mentor
-                  </a>
+          
                 </div>
               </div>
             </div>

@@ -19,6 +19,7 @@ import Cohorts from "./pages/Cohorts";
 import Plan from "./pages/Plan";
 import CohortDetail from "./pages/CohortDetail";
 import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import { AdminNews } from "./pages/admin/AdminNews";
@@ -55,6 +56,7 @@ const App = () => (
             <Route path="/ai-mentor" element={<AIMentor />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/my-learning" element={<MyLearning />} />
             <Route path="/cohorts" element={<Cohorts />} />

@@ -10,23 +10,18 @@ export const Footer = () => {
           </div>
           <div className="flex items-center gap-6 text-sm">
             <a 
-              href="#privacy" 
+              href="/privacy" 
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               Privacy
             </a>
             <a 
-              href="#" 
+              href="/terms" 
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               Terms
             </a>
-            <a 
-              href="#mentor" 
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Get help
-            </a>
+         
           </div>
         </div>
       </div>

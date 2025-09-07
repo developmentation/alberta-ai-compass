@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function Auth() {
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
-  const [signupForm, setSignupForm] = useState({ name: '', email: '', password: '', confirmPassword: '', terms: false });
+  const [signupForm, setSignupForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
   const [showPassword, setShowPassword] = useState({ login: false, signup: false, confirm: false });
   const [loading, setLoading] = useState(false);
   
@@ -46,15 +46,6 @@ export default function Auth() {
       toast({
         title: "Password mismatch",
         description: "Passwords don't match. Please try again.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!signupForm.terms) {
-      toast({
-        title: "Terms required",
-        description: "Please accept the terms and conditions.",
         variant: "destructive",
       });
       return;
@@ -229,16 +220,11 @@ export default function Auth() {
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      checked={signupForm.terms}
-                      onCheckedChange={(checked) => setSignupForm(prev => ({ ...prev, terms: checked as boolean }))}
-                    />
-                    <label className="text-sm">
-                      By creating an account, you agree to our{" "}
-                      <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
-                      {" "}and Terms of Service.
-                    </label>
+                  <div className="rounded-lg border border-border bg-card/20 backdrop-blur-sm p-4 mb-4">
+                    <p className="text-sm text-muted-foreground">
+                      The personal information collected through Alberta AI Academy for the purpose of registering for an account. This collection is authorized by section 4 (c) of the Protection of Privacy Act. For questions about the collection of personal information, contact{" "}
+                      <a href="mailto:aiacademy@gov.ab.ca" className="text-primary hover:underline">aiacademy@gov.ab.ca</a>.
+                    </p>
                   </div>
 
                   <Button type="submit" className="w-full bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow" disabled={loading}>
@@ -252,7 +238,7 @@ export default function Auth() {
         </Card>
 
         <div className="text-center mt-8 text-xs text-muted-foreground">
-          Need help? <a href="#mentor" className="text-primary hover:underline">Contact Support</a>
+          Need help? <a href="mailto:aiacademy@gov.ab.ca"  className="text-primary hover:underline">Contact Alberta AI Academy</a>
         </div>
       </div>
     </div>
