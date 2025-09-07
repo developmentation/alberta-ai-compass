@@ -1929,6 +1929,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                       <CardTitle className="text-2xl">{currentSection?.title}</CardTitle>
                       <div className="flex gap-2">
                         <Button
+                          disabled={!user}
                           variant="outline"
                           size="sm"
                           onClick={() => setIsAskAIOpen(true)}
@@ -2028,12 +2029,19 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
         onClose={() => setIsAskAIOpen(false)}
         moduleTitle={editingData.title}
         currentSection={currentSection?.title || ''}
-        context={Array.isArray(currentSection?.content) ? currentSection.content.map(c => {
-          if (c.type === 'text') return c.value;
-          if (c.type === 'quiz') return `Quiz: ${c.question}`;
-          if (c.type === 'list') return `List: ${(c.value as string[]).join(', ')}`;
-          return `${c.type} content`;
-        }).join('\n') : ''}
+        context={Array.isArray(currentSection?.content) ? 
+          `Section ${currentSectionIndex + 1} of ${editingData.sections.length}: ${currentSection?.title}\n\n` +
+          currentSection.content.map((c, index) => {
+            if (c.type === 'text') return `${index + 1}. Text Content:\n${c.value}\n`;
+            if (c.type === 'quiz') return `${index + 1}. Quiz Question: ${c.question}\n${c.options ? `Options: ${c.options.join(', ')}` : ''}\n`;
+            if (c.type === 'list') return `${index + 1}. List Items:\n${(c.value as string[]).map(item => `• ${item}`).join('\n')}\n`;
+            if (c.type === 'image') return `${index + 1}. Image: ${c.caption || c.alt || 'Visual content'}\n`;
+            if (c.type === 'video') return `${index + 1}. Video: ${c.caption || 'Video content'}\n`;
+            if (c.type === 'audio') return `${index + 1}. Audio: ${c.caption || 'Audio content'}\n`;
+            return `${index + 1}. ${c.type} content\n`;
+          }).join('\n') : 
+          'No content available for this section'
+        }
       />
       </div>
     </div>
