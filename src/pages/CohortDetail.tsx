@@ -595,27 +595,43 @@ export default function CohortDetail() {
                         {currentDay.content_items.map((content) => (
                           <Card 
                             key={content.id} 
-                            className="cursor-pointer hover:shadow-md transition-shadow"
+                            className="cursor-pointer hover:shadow-md transition-shadow overflow-hidden"
                             onClick={() => handleContentClick(content)}
                           >
-                            <CardHeader className="pb-3">
+                            {/* Media Preview Section */}
+                            {(content.image_url || content.video_url) && (
+                              <div className="relative w-full h-32 bg-muted">
+                                <MediaDisplay
+                                  imageUrl={content.image_url}
+                                  videoUrl={content.video_url}
+                                  title={content.name}
+                                  className="w-full h-full object-cover"
+                                />
+                                {content.video_url && (
+                                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                    <div className="bg-white/90 rounded-full p-2">
+                                      <Play className="w-6 h-6 text-gray-800" />
+                                    </div>
+                                  </div>
+                                )}
+                                <Badge variant="secondary" className="absolute top-2 left-2 text-xs">
+                                  {content.type}
+                                </Badge>
+                              </div>
+                            )}
+                            
+                            <CardHeader className={`pb-3 ${!(content.image_url || content.video_url) ? 'pt-4' : 'pt-3'}`}>
                               <div className="flex items-start justify-between">
                                 <div className="flex-1">
-                                  <Badge variant="secondary" className="text-xs mb-2">
-                                    {content.type}
-                                  </Badge>
+                                  {!(content.image_url || content.video_url) && (
+                                    <Badge variant="secondary" className="text-xs mb-2">
+                                      {content.type}
+                                    </Badge>
+                                  )}
                                   <CardTitle className="text-sm line-clamp-2">
                                     {content.name}
                                   </CardTitle>
                                 </div>
-                                {content.image_url && (
-                                  <MediaDisplay
-                                    imageUrl={content.image_url}
-                                    videoUrl={content.video_url}
-                                    title={content.name}
-                                    className="w-12 h-12 rounded object-cover ml-2"
-                                  />
-                                )}
                               </div>
                             </CardHeader>
                             {content.description && (

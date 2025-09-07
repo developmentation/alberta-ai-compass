@@ -281,6 +281,29 @@ export function ImageVideoViewer({
               </div>
             )}
           </div>
+          
+          {/* Fullscreen modal for YouTube videos */}
+          {allowFullscreen && (
+            <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
+              <DialogContent className="max-w-[95vw] max-h-[95vh] w-fit h-fit p-4 overflow-hidden">
+                <div className="relative w-full h-full max-w-[90vw] max-h-[90vh] flex items-center justify-center">
+                  <div className="w-full h-full" style={{ aspectRatio: '16/9', maxWidth: '90vw', maxHeight: '90vh' }}>
+                    <iframe
+                      src={convertToEmbedUrl(validVideoUrl)}
+                      title={title || "YouTube video player"}
+                      width="100%"
+                      height="100%"
+                      className="w-full h-full rounded-lg"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      allowFullScreen
+                    />
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       );
     } else {
@@ -359,6 +382,27 @@ export function ImageVideoViewer({
               </div>
             )}
           </div>
+          
+          {/* Fullscreen modal for regular videos */}
+          {allowFullscreen && (
+            <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
+              <DialogContent className="max-w-[95vw] max-h-[95vh] w-fit h-fit p-4 overflow-hidden">
+                <div className="relative w-full h-full max-w-[90vw] max-h-[90vh] flex items-center justify-center">
+                  <video
+                    src={validVideoUrl}
+                    className="max-w-full max-h-full w-auto h-auto object-contain"
+                    poster={validImageUrl}
+                    controls
+                    title={title}
+                    style={{
+                      maxWidth: '90vw',
+                      maxHeight: '90vh'
+                    }}
+                  />
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       );
     }
