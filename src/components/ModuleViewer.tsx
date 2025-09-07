@@ -1379,144 +1379,174 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
     const isEditing = isAdminMode && isEditable && editingContentIndex === index;
 
     switch (content.type) {
-      case 'text':
-        return (
-          <div key={index} className="space-y-2">
-            {isEditing ? (
-              <Textarea
-                value={content.value as string}
-                onChange={(e) => handleEditContent(index, 'value', e.target.value)}
-                className="min-h-[100px]"
+ case 'text':
+  return (
+    <div key={index} className="space-y-2">
+      {isEditing ? (
+        <Textarea
+          value={content.value as string}
+          onChange={(e) => handleEditContent(index, 'value', e.target.value)}
+          className="min-h-[100px]"
+        />
+      ) : (
+        <div className="text-foreground leading-relaxed">
+          <ReactMarkdown
+            components={{
+              a: ({ href, children, ...props }) => (
+                <a
+                  href={href}
+                  target="_blank"
+                  style={{ color: '#3b82f6' }} // Tailwind's blue-500
+                  className="text-blue-500 hover:underline"
+                  {...props}
+                >
+                  {children}
+                </a>
+              ),
+            }}
+          >
+            {content.value as string}
+          </ReactMarkdown>
+        </div>
+      )}
+      {isAdminMode && isEditable && (
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleMoveContentUp(index)}
+            disabled={index === 0}
+            title="Move up"
+          >
+            <ChevronUp className="h-4 w-4" />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleMoveContentDown(index)}
+            disabled={index === (currentSection?.content?.length || 1) - 1}
+            title="Move down"
+          >
+            <ChevronDown className="h-4 w-4" />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setEditingContentIndex(isEditing ? null : index)}
+          >
+            {isEditing ? <Save className="h-4 w-4" /> : <Edit2 className="h-4 w-4" />}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleDeleteContent(index)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+case 'list':
+  return (
+    <div key={index} className="space-y-2">
+      {isEditing ? (
+        <div className="space-y-2">
+          {(content.value as string[]).map((item, itemIndex) => (
+            <div key={itemIndex} className="flex gap-2">
+              <Input
+                value={item}
+                onChange={(e) => {
+                  const newList = [...(content.value as string[])];
+                  newList[itemIndex] = e.target.value;
+                  handleEditContent(index, 'value', newList);
+                }}
               />
-            ) : (
-            <div className="text-foreground leading-relaxed">
-              <ReactMarkdown>{content.value as string}</ReactMarkdown>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  const newList = (content.value as string[]).filter((_, i) => i !== itemIndex);
+                  handleEditContent(index, 'value', newList);
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </div>
-            )}
-            {isAdminMode && isEditable && (
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleMoveContentUp(index)}
-                  disabled={index === 0}
-                  title="Move up"
+          ))}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              const newList = [...(content.value as string[]), 'New item'];
+              handleEditContent(index, 'value', newList);
+            }}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Item
+          </Button>
+        </div>
+      ) : (
+        <div className="text-foreground leading-relaxed">
+          <ReactMarkdown
+            components={{
+              a: ({ href, children, ...props }) => (
+                <a
+                  href={href}
+                  target="_blank"
+                  style={{ color: '#3b82f6' }} // Tailwind's blue-500
+                  className="text-blue-500 hover:underline"
+                  {...props}
                 >
-                  <ChevronUp className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleMoveContentDown(index)}
-                  disabled={index === (currentSection?.content?.length || 1) - 1}
-                  title="Move down"
-                >
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setEditingContentIndex(isEditing ? null : index)}
-                >
-                  {isEditing ? <Save className="h-4 w-4" /> : <Edit2 className="h-4 w-4" />}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleDeleteContent(index)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-          </div>
-        );
-
-      case 'list':
-        return (
-          <div key={index} className="space-y-2">
-            {isEditing ? (
-              <div className="space-y-2">
-                {(content.value as string[]).map((item, itemIndex) => (
-                  <div key={itemIndex} className="flex gap-2">
-                    <Input
-                      value={item}
-                      onChange={(e) => {
-                        const newList = [...(content.value as string[])];
-                        newList[itemIndex] = e.target.value;
-                        handleEditContent(index, 'value', newList);
-                      }}
-                    />
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        const newList = (content.value as string[]).filter((_, i) => i !== itemIndex);
-                        handleEditContent(index, 'value', newList);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    const newList = [...(content.value as string[]), 'New item'];
-                    handleEditContent(index, 'value', newList);
-                  }}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Item
-                </Button>
-              </div>
-            ) : (
-              <ul className="list-disc list-inside space-y-1 ml-4">
-                {(content.value as string[]).map((item, itemIndex) => (
-                  <li key={itemIndex}>{item}</li>
-                ))}
-              </ul>
-            )}
-            {isAdminMode && isEditable && (
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleMoveContentUp(index)}
-                  disabled={index === 0}
-                  title="Move up"
-                >
-                  <ChevronUp className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleMoveContentDown(index)}
-                  disabled={index === (currentSection?.content?.length || 1) - 1}
-                  title="Move down"
-                >
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setEditingContentIndex(isEditing ? null : index)}
-                >
-                  {isEditing ? <Save className="h-4 w-4" /> : <Edit2 className="h-4 w-4" />}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleDeleteContent(index)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-          </div>
-        );
-
+                  {children}
+                </a>
+              ),
+            }}
+          >
+            {(content.value as string[])
+              .map((item) => `- ${item}`)
+              .join('\n')}
+          </ReactMarkdown>
+        </div>
+      )}
+      {isAdminMode && isEditable && (
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleMoveContentUp(index)}
+            disabled={index === 0}
+            title="Move up"
+          >
+            <ChevronUp className="h-4 w-4" />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleMoveContentDown(index)}
+            disabled={index === (currentSection?.content?.length || 1) - 1}
+            title="Move down"
+          >
+            <ChevronDown className="h-4 w-4" />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setEditingContentIndex(isEditing ? null : index)}
+          >
+            {isEditing ? <Save className="h-4 w-4" /> : <Edit2 className="h-4 w-4" />}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleDeleteContent(index)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+    </div>
+  );
       case 'image':
       case 'video':
       case 'audio':
