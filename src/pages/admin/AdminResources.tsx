@@ -266,7 +266,7 @@ export const AdminResources = () => {
       )}
 
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add New Resource</DialogTitle>
           </DialogHeader>
@@ -281,7 +281,7 @@ export const AdminResources = () => {
       </Dialog>
 
       <Dialog open={!!editingResource} onOpenChange={() => setEditingResource(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Resource</DialogTitle>
           </DialogHeader>

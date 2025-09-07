@@ -471,7 +471,7 @@ export function AdminPrompts() {
 
         {/* Test Prompt Dialog */}
         <Dialog open={isTestDialogOpen} onOpenChange={setIsTestDialogOpen}>
-          <DialogContent className="max-w-4xl">
+          <DialogContent className="max-w-6xl">
             <DialogHeader>
               <DialogTitle>Test Prompt: {testingPrompt?.name}</DialogTitle>
               <DialogDescription>

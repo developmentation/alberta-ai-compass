@@ -263,7 +263,7 @@ export function EnhancedContentBuilder({ title, contentItems, onUpdateContent }:
 
       {/* Edit Content Item Dialog */}
       <Dialog open={!!editingItem} onOpenChange={() => setEditingItem(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Customize Content Item</DialogTitle>
           </DialogHeader>

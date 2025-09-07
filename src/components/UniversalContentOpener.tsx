@@ -344,7 +344,7 @@ export function UniversalContentOpener({ isOpen, onClose, content }: UniversalCo
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         {renderViewer()}
       </DialogContent>
     </Dialog>

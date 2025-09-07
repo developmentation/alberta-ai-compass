@@ -187,7 +187,7 @@ export function ContentSelector({ isOpen, onClose, onSelect, selectedIds = [] }:
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-6xl max-h-[80vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>Add Content to Collection</DialogTitle>
         </DialogHeader>

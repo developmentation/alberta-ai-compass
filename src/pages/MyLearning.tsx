@@ -367,7 +367,7 @@ export default function MyLearning() {
       
       {/* Content Viewers */}
       <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           {selectedContent && viewerType === 'news' && (
             <NewsViewer
               news={selectedContent}

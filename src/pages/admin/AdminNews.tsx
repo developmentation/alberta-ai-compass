@@ -287,7 +287,7 @@ export function AdminNews() {
                 Add News Item
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
                   {editingItem ? "Edit News Item" : "Create News Item"}

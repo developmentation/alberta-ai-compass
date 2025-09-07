@@ -83,7 +83,26 @@ export const ArticleViewer = ({ article, onClose, className = "" }: ArticleViewe
     );
   };
 
+  // Enhanced helper function to clean and validate URLs
+  const cleanUrl = (url?: string): string | undefined => {
+    if (!url) return undefined;
+    const cleaned = url.trim();
+    if (!cleaned || cleaned === "/placeholder.svg") return undefined;
+    return cleaned;
+  };
+
   const renderSection = (section: ArticleSection, index: number) => {
+    // Enhanced logging for debugging video sections
+    if (section.type === 'video') {
+      console.log(`Rendering video section ${index}:`, {
+        title: section.title,
+        content: section.content,
+        contentLength: section.content?.length,
+        hasWhitespace: section.content !== section.content?.trim(),
+        trimmedContent: section.content?.trim()
+      });
+    }
+
     switch (section.type) {
       case 'header':
         return (
@@ -100,10 +119,11 @@ export const ArticleViewer = ({ article, onClose, className = "" }: ArticleViewe
         );
       
       case 'image':
+        const cleanImageUrl = cleanUrl(section.content);
         return (
           <div key={index} className="mb-6">
             <ImageVideoViewer
-              image={section.content}
+              image={cleanImageUrl}
               alt={section.title || 'Article image'}
               title={section.title || 'Article image'}
               className="w-full max-h-96 object-cover rounded-lg"
@@ -117,14 +137,42 @@ export const ArticleViewer = ({ article, onClose, className = "" }: ArticleViewe
         );
       
       case 'video':
+        const cleanVideoUrl = cleanUrl(section.content);
+        
+        // Additional validation and logging for video URLs
+        if (!cleanVideoUrl) {
+          console.warn(`Video section ${index} has invalid URL:`, section.content);
+          return (
+            <div key={index} className="mb-6 p-4 border border-red-200 rounded-lg bg-red-50">
+              <p className="text-red-600 text-sm">
+                Invalid video URL: {section.content}
+              </p>
+            </div>
+          );
+        }
+
+        console.log(`Passing to ImageVideoViewer:`, {
+          video: cleanVideoUrl,
+          title: section.title || 'Article video'
+        });
+
         return (
           <div key={index} className="mb-6">
-            <ImageVideoViewer
-              video={section.content}
-              title={section.title || 'Article video'}
-              className="w-full max-h-96 rounded-lg"
-              showControls={true}
-            />
+            <div className="relative">
+              <ImageVideoViewer
+                video={cleanVideoUrl}
+                title={section.title || 'Article video'}
+                className="w-full rounded-lg"
+                showControls={true}
+                aspectRatio="video" // Force video aspect ratio for consistency
+              />
+              {/* Debug info - remove in production */}
+              {process.env.NODE_ENV === 'development' && (
+                <div className="mt-2 text-xs text-gray-500 font-mono">
+                  Debug: {cleanVideoUrl}
+                </div>
+              )}
+            </div>
             {section.title && (
               <p className="text-sm text-muted-foreground text-center mt-2 italic">
                 {section.title}
@@ -134,23 +182,39 @@ export const ArticleViewer = ({ article, onClose, className = "" }: ArticleViewe
         );
       
       case 'hyperlink':
+        const cleanLinkUrl = cleanUrl(section.content);
+        if (!cleanLinkUrl) return null;
+        
         return (
           <div key={index} className="mb-4">
             <a
-              href={section.content}
+              href={cleanLinkUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center text-primary hover:text-primary/80 underline font-medium"
             >
-              {section.title || section.content}
+              {section.title || cleanLinkUrl}
             </a>
           </div>
         );
       
       default:
+        console.warn(`Unknown section type: ${section.type}`);
         return null;
     }
   };
+
+  // Enhanced logging for article data
+  console.log('ArticleViewer rendering article:', {
+    id: article.id,
+    title: article.title,
+    hasVideoUrl: !!article.video_url,
+    videoUrl: article.video_url,
+    hasImageUrl: !!article.image_url,
+    imageUrl: article.image_url,
+    jsonDataSections: article.json_data?.length || 0,
+    videoSections: article.json_data?.filter(s => s.type === 'video').length || 0
+  });
 
   return (
     <div className={className}>
@@ -185,17 +249,24 @@ export const ArticleViewer = ({ article, onClose, className = "" }: ArticleViewe
         </div>
       </div>
 
-      {/* Header Media */}
+      {/* Header Media - Enhanced with better URL cleaning */}
       {(article.image_url || article.video_url) && (
         <div className="mb-8">
           <ImageVideoViewer
-            image={article.image_url}
-            video={article.video_url}
+            image={cleanUrl(article.image_url)}
+            video={cleanUrl(article.video_url)}
             alt={article.title}
             title={article.title}
             className="w-full max-h-96 object-cover rounded-lg"
             showControls={true}
+            aspectRatio="video"
           />
+          {/* Debug info for header media */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-2 text-xs text-gray-500">
+              Header - Image: {cleanUrl(article.image_url) || 'none'}, Video: {cleanUrl(article.video_url) || 'none'}
+            </div>
+          )}
         </div>
       )}
 
@@ -208,12 +279,30 @@ export const ArticleViewer = ({ article, onClose, className = "" }: ArticleViewe
         </CardContent>
       </Card>
 
-      {/* Article Content Sections */}
-      {article.json_data && article.json_data.length > 0 && (
+      {/* Article Content Sections - Enhanced error handling */}
+      {article.json_data && article.json_data.length > 0 ? (
         <div className="space-y-4">
-          {article.json_data.map((section, index) => renderSection(section, index))}
+          {article.json_data.map((section, index) => {
+            try {
+              return renderSection(section, index);
+            } catch (error) {
+              console.error(`Error rendering section ${index}:`, error, section);
+              return (
+                <div key={index} className="mb-6 p-4 border border-red-200 rounded-lg bg-red-50">
+                  <p className="text-red-600 text-sm">
+                    Error rendering section {index + 1} ({section.type})
+                  </p>
+                </div>
+              );
+            }
+          })}
+        </div>
+      ) : (
+        <div className="text-center text-muted-foreground py-8">
+          No additional content sections available.
         </div>
       )}
     </div>
   );
 };
+

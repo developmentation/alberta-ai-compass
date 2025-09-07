@@ -377,7 +377,7 @@ const Index = () => {
 
       {/* News Viewer Dialog */}
       <Dialog open={isNewsViewerOpen} onOpenChange={setIsNewsViewerOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           {selectedNews && (
             <NewsViewer
               news={selectedNews}
@@ -388,7 +388,7 @@ const Index = () => {
       </Dialog>
       {/* Article Viewer Dialog */}
       <Dialog open={isArticleViewerOpen} onOpenChange={setIsArticleViewerOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           {selectedArticle && (
             <ArticleViewer
               article={selectedArticle}
