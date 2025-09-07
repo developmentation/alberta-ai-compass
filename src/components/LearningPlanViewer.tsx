@@ -170,11 +170,11 @@ export function LearningPlanViewer({ contentItems, planName, onViewContent }: Le
           </div>
         </div>
 
-        {/* Current Content Item */}
+        {/* Current Content Item - Enhanced with better height management */}
         <div className="lg:col-span-2">
           <ContentCard
             content={currentItem}
-            className="h-[500px]"
+            className="min-h-[500px] max-h-[600px]" // More flexible height
             onView={onViewContent}
           />
         </div>
@@ -182,3 +182,29 @@ export function LearningPlanViewer({ contentItems, planName, onViewContent }: Le
     </div>
   );
 }
+
+/*
+NOTE: The ContentCard component would also need to be updated to use the new ImageVideoViewer.
+The key changes would be:
+
+1. Replace any fixed height image containers with the new ImageVideoViewer
+2. Use displayMode="adaptive" for better image handling
+3. Add allowFullscreen and showDisplayModeToggle where appropriate
+4. Use maxHeight instead of fixed heights
+
+Example ContentCard image section update:
+{(content.image_url || content.video_url) && (
+  <ImageVideoViewer
+    image={content.image_url}
+    video={content.video_url}
+    alt={content.name}
+    title={content.name}
+    displayMode="adaptive"
+    maxHeight="16rem"
+    allowFullscreen={true}
+    showDisplayModeToggle={true}
+    className="w-full rounded-lg shadow-sm"
+  />
+)}
+*/
+

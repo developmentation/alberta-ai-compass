@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -46,6 +46,7 @@ import ReactMarkdown from 'react-markdown';
 import { LanguageSelector, SUPPORTED_LANGUAGES } from '@/components/LanguageSelector';
 import { AIExplanationModal } from '@/components/AIExplanationModal';
 import { UnifiedMediaUpload } from '@/components/admin/UnifiedMediaUpload';
+import { useCompletions } from '@/hooks/useCompletions';
 
 // YouTube helper functions
 const extractYouTubeVideoId = (url: string): string | null => {
@@ -146,13 +147,16 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
   const [hasStartedModule, setHasStartedModule] = useState(false);
   const [hasBegunModule, setHasBegunModule] = useState(false); // New state for tracking if user clicked Begin
   const [activeTab, setActiveTab] = useState("info"); // State for tab management
-  
-  // Separate state variables for media URLs - exactly like ModuleCreator
   const [imageUrl, setImageUrl] = useState(moduleData.imageUrl || '');
   const [videoUrl, setVideoUrl] = useState(moduleData.videoUrl || '');
   
+  // Add completion lock to prevent race conditions
+  const completionInProgress = useRef(false);
+  const completionProcessed = useRef(false); // Track if completion has been processed for this session
+  
   const { toast } = useToast();
   const { user } = useAuth();
+  const { isCompleted, markAsCompleted, completionCount, latestScore, completionHistory, refetch, forceRefresh } = useCompletions(moduleId, 'module');
 
   const currentSection = editingData.sections?.[currentSectionIndex];
   const progress = editingData.sections && editingData.sections.length > 0 
@@ -182,6 +186,14 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
       setHasStartedModule(true);
     }
   }, [user, moduleId, hasStartedModule, hasBegunModule]);
+
+  // Refresh completion data when module opens
+  useEffect(() => {
+    if (user && moduleId) {
+      console.log('ModuleViewer opened, force refreshing completion data for:', moduleId);
+      forceRefresh();
+    }
+  }, [user, moduleId]); // Removed forceRefresh from dependencies to prevent infinite loop
 
   const trackProgress = async (status: 'started' | 'completed', completion: number) => {
     if (!user || !moduleId) return;
@@ -415,6 +427,35 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
               <ReactMarkdown>{editingData.description}</ReactMarkdown>
             </div>
           </div>
+
+          {/* Completion Status Banner */}
+          {isCompleted && completionCount > 0 && (
+            <Card className="border-green-200 bg-green-50 dark:bg-green-950 dark:border-green-800">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0">
+                    <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-green-800 dark:text-green-200">
+                      Module Completed {completionCount} time{completionCount !== 1 ? 's' : ''}
+                    </div>
+                    <div className="text-sm text-green-700 dark:text-green-300">
+                      {latestScore && (
+                        <>Latest score: {latestScore}%</>
+                      )}
+                      {completionCount > 1 && completionHistory?.previousScores && (
+                        <> • Best score: {Math.max(...completionHistory.previousScores)}%</>
+                      )}
+                      {completionHistory?.lastCompletedAt && (
+                        <> • Last completed: {new Date(completionHistory.lastCompletedAt).toLocaleDateString()}</>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Module Details */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1069,15 +1110,114 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
     return Math.round((correctAnswers / totalQuizzes) * 100);
   };
 
-  // Track completion when results are shown and score is 70%+
+  // SIMPLIFIED COMPLETION TRACKING - Track completion when results are shown
   useEffect(() => {
-    if (showResults && user && moduleId) {
-      const score = calculateScore();
-      if (score >= 70) {
-        trackProgress('completed', score);
-      }
+    console.log('=== COMPLETION USEEFFECT TRIGGERED ===');
+    console.log('showResults:', showResults);
+    console.log('user:', !!user);
+    console.log('moduleId:', moduleId);
+    console.log('completionInProgress:', completionInProgress.current);
+    console.log('completionProcessed:', completionProcessed.current);
+    
+    if (!showResults || !user || !moduleId) {
+      console.log('=== COMPLETION SKIPPED - CONDITIONS NOT MET ===');
+      return;
     }
-  }, [showResults, user, moduleId]);
+    
+    if (completionInProgress.current) {
+      console.log('=== COMPLETION SKIPPED - ALREADY IN PROGRESS ===');
+      return;
+    }
+    
+    if (completionProcessed.current) {
+      console.log('=== COMPLETION SKIPPED - ALREADY PROCESSED ===');
+      return;
+    }
+    
+    console.log('=== STARTING COMPLETION PROCESS ===');
+    
+    const processCompletion = async () => {
+      completionInProgress.current = true;
+      completionProcessed.current = true;
+      
+      try {
+        const score = calculateScore();
+        const hasQuizzes = Object.keys(quizResults).length > 0;
+        const finalScore = hasQuizzes ? score : 100;
+        
+        console.log('=== COMPLETION DATA ===');
+        console.log('score:', score);
+        console.log('hasQuizzes:', hasQuizzes);
+        console.log('finalScore:', finalScore);
+        console.log('quizResults:', quizResults);
+        
+        // Track progress first
+        console.log('=== CALLING TRACK PROGRESS ===');
+        await trackProgress('completed', finalScore);
+        console.log('=== TRACK PROGRESS COMPLETED ===');
+        
+        // Mark as completed with extensive logging
+        console.log('=== CALLING MARK AS COMPLETED ===');
+        console.log('Parameters:', {
+          moduleId,
+          type: 'module',
+          score: finalScore,
+          metadata: {
+            sectionsCompleted: completedSections.size,
+            totalSections: editingData.sections.length,
+            quizResults: quizResults,
+            hasQuizzes: hasQuizzes
+          }
+        });
+        
+        await markAsCompleted(moduleId, 'module', finalScore, {
+          sectionsCompleted: completedSections.size,
+          totalSections: editingData.sections.length,
+          quizResults: quizResults,
+          hasQuizzes: hasQuizzes
+        });
+        
+        console.log('=== MARK AS COMPLETED SUCCESS ===');
+        
+        // Don't force immediate refresh - this causes read-after-write consistency issues
+        // The markAsCompleted function already updates local state with the returned data
+        console.log('=== SKIPPING IMMEDIATE REFRESH TO AVOID CONSISTENCY ISSUES ===');
+        
+        // Add a longer delayed refresh to ensure eventual consistency (optional backup)
+        setTimeout(() => {
+          console.log('=== PERFORMING DELAYED REFRESH FOR CONSISTENCY ===');
+          forceRefresh().then(() => {
+            console.log('=== DELAYED REFRESH COMPLETED ===');
+          }).catch(error => {
+            console.error('=== DELAYED REFRESH FAILED ===', error);
+          });
+        }, 2000); // 2 second delay to allow database consistency
+        
+      } catch (error) {
+        console.error('=== COMPLETION PROCESS FAILED ===', error);
+        completionProcessed.current = false; // Allow retry on error
+        
+        toast({
+          title: "Completion Error",
+          description: `Failed to save completion: ${error.message}`,
+          variant: "destructive",
+        });
+      } finally {
+        completionInProgress.current = false;
+        console.log('=== COMPLETION PROCESS FINISHED ===');
+      }
+    };
+    
+    processCompletion();
+  }, [showResults, user, moduleId]); // Keep minimal dependencies
+  
+  // Debug completion state changes
+  useEffect(() => {
+    console.log('=== COMPLETION STATE CHANGE ===');
+    console.log('isCompleted:', isCompleted);
+    console.log('completionCount:', completionCount);
+    console.log('latestScore:', latestScore);
+  }, [isCompleted, completionCount, latestScore]);
 
   // Load available translations - simplified for now
   const loadAvailableTranslations = async () => {
@@ -1138,12 +1278,21 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
     }
   }, [moduleId]);
 
-  const handleRetakeModule = () => {
+  const handleRetakeModule = async () => {
+    console.log('Retake module clicked, resetting state and refreshing completion data');
     setCurrentSectionIndex(0);
     setCompletedSections(new Set());
     setQuizAnswers({});
     setQuizResults({});
     setShowResults(false);
+    
+    // Reset completion flags
+    completionInProgress.current = false;
+    completionProcessed.current = false; // Allow completion to be processed again
+    
+    // Force refresh completion data when retaking module
+    await forceRefresh();
+    console.log('Retake module setup complete');
   };
 
   const renderContent = (content: ContentItem, index: number) => {
@@ -1875,6 +2024,24 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6 text-center">
+                    {/* ALWAYS SHOW COMPLETION COUNT REGARDLESS OF SCORE */}
+                    <div className="mb-4">
+                      <Badge variant="default" className="bg-blue-100 text-blue-800 border-blue-300">
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        Completed {completionCount || 1} time{(completionCount || 1) !== 1 ? 's' : ''}
+                      </Badge>
+                      {completionCount > 1 && latestScore && (
+                        <div className="text-sm text-muted-foreground mt-1">
+                          Latest: {latestScore}% • Best: {Math.max(...(completionHistory?.previousScores || [latestScore]))}%
+                        </div>
+                      )}
+                      {completionCount > 1 && (
+                        <div className="text-sm text-muted-foreground mt-1">
+                          First completed: {completionHistory?.firstCompletedAt ? new Date(completionHistory.firstCompletedAt).toLocaleDateString() : 'N/A'}
+                        </div>
+                      )}
+                    </div>
+                    
                     {Object.keys(quizResults).length > 0 ? (
                       <>
                         <div className="text-6xl font-bold text-primary">
@@ -1887,7 +2054,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                             </div>
                           ) : (
                             <div className="text-orange-600">
-                              Good attempt! Would you like to try again?
+                              Good attempt! Your completion has been recorded.
                             </div>
                           )}
                         </div>
@@ -1907,14 +2074,13 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                         🎉 Module Complete! You've successfully finished all the content.
                       </div>
                     )}
+                    
                     <div className="flex gap-4 justify-center">
-                      {Object.keys(quizResults).length > 0 && (
-                        <Button onClick={handleRetakeModule} variant="outline">
-                          <RotateCcw className="mr-2 h-4 w-4" />
-                          Retake Module
-                        </Button>
-                      )}
-                      {(Object.keys(quizResults).length === 0 || calculateScore() >= 70) && !isAdminMode && (
+                      <Button onClick={handleRetakeModule} variant="outline">
+                        <RotateCcw className="mr-2 h-4 w-4" />
+                        Retake Module
+                      </Button>
+                      {!isAdminMode && (
                         <Button onClick={onClose || (() => window.location.href = '/modules')}>
                           Continue Learning
                         </Button>

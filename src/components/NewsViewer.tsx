@@ -124,7 +124,7 @@ export function NewsViewer({ news, onClose, className = "", showCloseButton = tr
         )}
       </div>
 
-      {/* Media */}
+      {/* Media - Enhanced with improved display modes */}
       {(news.image_url || news.video_url) && (
         <Card>
           <CardContent className="p-6">
@@ -133,7 +133,11 @@ export function NewsViewer({ news, onClose, className = "", showCloseButton = tr
               video={news.video_url}
               alt={news.title}
               title={news.title}
-              aspectRatio="video"
+              displayMode="adaptive"
+              maxHeight="24rem"
+              allowFullscreen={true}
+              showDisplayModeToggle={true}
+              className="w-full rounded-lg shadow-sm"
             />
           </CardContent>
         </Card>
@@ -212,3 +216,4 @@ export function NewsViewer({ news, onClose, className = "", showCloseButton = tr
     </div>
   );
 }
+

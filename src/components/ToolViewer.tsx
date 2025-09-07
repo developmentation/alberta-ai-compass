@@ -94,7 +94,7 @@ export function ToolViewer({ tool, onClose, className = "", showCloseButton = tr
         )}
       </div>
 
-      {/* Media */}
+      {/* Media - Enhanced with improved display modes */}
       {(tool.image_url || tool.video_url) && (
         <Card>
           <CardContent className="p-6">
@@ -103,7 +103,11 @@ export function ToolViewer({ tool, onClose, className = "", showCloseButton = tr
               video={tool.video_url}
               alt={tool.name}
               title={tool.name}
-              aspectRatio="video"
+              displayMode="adaptive"
+              maxHeight="24rem"
+              allowFullscreen={true}
+              showDisplayModeToggle={true}
+              className="w-full rounded-lg shadow-sm"
             />
           </CardContent>
         </Card>
@@ -158,3 +162,4 @@ export function ToolViewer({ tool, onClose, className = "", showCloseButton = tr
     </div>
   );
 }
+
