@@ -14,7 +14,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   ChevronLeft, 
-  ChevronRight, 
+  ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Menu, 
   CheckCircle, 
   Circle,
@@ -46,6 +48,7 @@ import ReactMarkdown from 'react-markdown';
 import { LanguageSelector, SUPPORTED_LANGUAGES } from '@/components/LanguageSelector';
 import { AIExplanationModal } from '@/components/AIExplanationModal';
 import { UnifiedMediaUpload } from '@/components/admin/UnifiedMediaUpload';
+import { ImageVideoViewer } from '@/components/ImageVideoViewer';
 import { useCompletions } from '@/hooks/useCompletions';
 
 // YouTube helper functions
@@ -395,26 +398,18 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
       ) : (
         <>
           {/* Hero Section with Media */}
-          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-primary/5 to-muted border border-border">
+          <div className="relative h-64 sm:h-80 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/5 to-muted border border-border">
             {editingData.videoUrl || editingData.imageUrl || videoUrl || imageUrl ? (
-              <div className="relative h-64 sm:h-80">
-                {editingData.videoUrl || videoUrl ? (
-                  <video
-                    src={editingData.videoUrl || videoUrl}
-                    className="w-full h-full object-cover"
-                    controls
-                    poster={editingData.imageUrl || imageUrl}
-                  />
-                ) : (
-                  <img
-                    src={editingData.imageUrl || imageUrl}
-                    alt={editingData.title}
-                    className="w-full h-full object-cover"
-                  />
-                )}
-              </div>
+              <ImageVideoViewer
+                image={editingData.imageUrl || imageUrl}
+                video={editingData.videoUrl || videoUrl}
+                alt={editingData.title}
+                title={editingData.title}
+                className="h-full"
+                showControls={true}
+              />
             ) : (
-              <div className="h-64 sm:h-80 flex items-center justify-center">
+              <div className="h-full flex items-center justify-center">
                 <BookOpen className="w-16 h-16 text-muted-foreground" />
               </div>
             )}
@@ -1018,6 +1013,62 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
     }
   };
 
+  const handleMoveContentUp = (contentIndex: number) => {
+    if (contentIndex <= 0) return;
+    
+    const updatedSections = [...editingData.sections];
+    const currentSection = updatedSections[currentSectionIndex];
+    
+    // Ensure content is an array
+    if (!Array.isArray(currentSection.content)) {
+      currentSection.content = [];
+      return;
+    }
+    
+    const updatedContent = [...currentSection.content];
+    const temp = updatedContent[contentIndex];
+    updatedContent[contentIndex] = updatedContent[contentIndex - 1];
+    updatedContent[contentIndex - 1] = temp;
+    
+    updatedSections[currentSectionIndex] = {
+      ...currentSection,
+      content: updatedContent
+    };
+    
+    setEditingData({
+      ...editingData,
+      sections: updatedSections
+    });
+  };
+
+  const handleMoveContentDown = (contentIndex: number) => {
+    const updatedSections = [...editingData.sections];
+    const currentSection = updatedSections[currentSectionIndex];
+    
+    // Ensure content is an array
+    if (!Array.isArray(currentSection.content)) {
+      currentSection.content = [];
+      return;
+    }
+    
+    if (contentIndex >= currentSection.content.length - 1) return;
+    
+    const updatedContent = [...currentSection.content];
+    const temp = updatedContent[contentIndex];
+    updatedContent[contentIndex] = updatedContent[contentIndex + 1];
+    updatedContent[contentIndex + 1] = temp;
+    
+    updatedSections[currentSectionIndex] = {
+      ...currentSection,
+      content: updatedContent
+    };
+    
+    setEditingData({
+      ...editingData,
+      sections: updatedSections
+    });
+  };
+
   const handleFileUpload = async (file: File, contentIndex: number) => {
     try {
       const fileExt = file.name.split('.').pop();
@@ -1318,6 +1369,24 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                 <Button
                   size="sm"
                   variant="outline"
+                  onClick={() => handleMoveContentUp(index)}
+                  disabled={index === 0}
+                  title="Move up"
+                >
+                  <ChevronUp className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleMoveContentDown(index)}
+                  disabled={index === (currentSection?.content?.length || 1) - 1}
+                  title="Move down"
+                >
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
                   onClick={() => setEditingContentIndex(isEditing ? null : index)}
                 >
                   {isEditing ? <Save className="h-4 w-4" /> : <Edit2 className="h-4 w-4" />}
@@ -1385,6 +1454,24 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                 <Button
                   size="sm"
                   variant="outline"
+                  onClick={() => handleMoveContentUp(index)}
+                  disabled={index === 0}
+                  title="Move up"
+                >
+                  <ChevronUp className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleMoveContentDown(index)}
+                  disabled={index === (currentSection?.content?.length || 1) - 1}
+                  title="Move down"
+                >
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
                   onClick={() => setEditingContentIndex(isEditing ? null : index)}
                 >
                   {isEditing ? <Save className="h-4 w-4" /> : <Edit2 className="h-4 w-4" />}
@@ -1431,36 +1518,25 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                        Preview:
                      </label>
                      {content.type === 'image' && (
-                       <img 
-                         src={content.url} 
-                         alt="Preview" 
-                         className="max-w-full h-auto max-h-32 rounded"
-                       />
+                       <div className="relative h-32 rounded overflow-hidden">
+                         <ImageVideoViewer
+                           image={content.url}
+                           alt="Preview"
+                           title="Preview"
+                           className="h-full"
+                           showControls={true}
+                         />
+                       </div>
                      )}
                      {content.type === 'video' && (
-                       <>
-                         {isYouTubeUrl(content.url) ? (
-                           <div className="relative aspect-video max-w-full max-h-32 rounded overflow-hidden">
-                             <iframe
-                               src={convertToEmbedUrl(content.url)}
-                               title="Video preview"
-                               width="100%"
-                               height="100%"
-                               className="absolute inset-0 w-full h-full"
-                               frameBorder="0"
-                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                               referrerPolicy="strict-origin-when-cross-origin"
-                               allowFullScreen
-                             />
-                           </div>
-                         ) : (
-                           <video 
-                             src={content.url} 
-                             controls 
-                             className="max-w-full h-auto max-h-32 rounded"
-                           />
-                         )}
-                       </>
+                       <div className="relative h-32 rounded overflow-hidden">
+                         <ImageVideoViewer
+                           video={content.url}
+                           title="Video preview"
+                           className="h-full"
+                           showControls={true}
+                         />
+                       </div>
                      )}
                      {content.type === 'audio' && (
                        <audio 
@@ -1489,55 +1565,62 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
              ) : (
               <div className="space-y-2">
                 {content.type === 'image' && content.url && (
-                  <img 
-                    key={content.url} // Force re-render when URL changes
-                    src={content.url} 
-                    alt={content.alt || 'Module image'} 
-                    className="max-w-full h-auto rounded"
-                  />
+                  <div className="relative h-64 rounded-lg overflow-hidden">
+                    <ImageVideoViewer
+                      image={content.url}
+                      alt={content.alt || 'Module image'}
+                      title={content.caption || 'Module image'}
+                      className="h-full"
+                      showControls={true}
+                    />
+                  </div>
                 )}
                 {content.type === 'video' && content.url && (
-                  <>
-                    {isYouTubeUrl(content.url) ? (
-                      <div className="relative aspect-video max-w-full rounded overflow-hidden">
-                        <iframe
-                          src={convertToEmbedUrl(content.url)}
-                          title={content.caption || 'Module video'}
-                          width="100%"
-                          height="100%"
-                          className="absolute inset-0 w-full h-full"
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                          referrerPolicy="strict-origin-when-cross-origin"
-                          allowFullScreen
-                        />
-                      </div>
-                    ) : (
-                      <video 
-                        key={content.url}
-                        src={content.url} 
-                        controls 
-                        className="max-w-full h-auto rounded"
-                        aria-label={content.caption || 'Module video'}
-                      />
-                    )}
-                  </>
+                  <div className="relative h-64 rounded-lg overflow-hidden">
+                    <ImageVideoViewer
+                      video={content.url}
+                      title={content.caption || 'Module video'}
+                      className="h-full"
+                      showControls={true}
+                    />
+                  </div>
                 )}
                 {content.type === 'audio' && content.url && (
                   <audio 
+                    key={content.url}
                     src={content.url} 
                     controls 
-                    className="w-full"
-                    aria-label={content.alt || 'Module audio'}
+                    className="w-full rounded-lg"
+                    aria-label={content.caption || 'Module audio'}
                   />
                 )}
                 {content.caption && (
-                  <p className="text-sm text-muted-foreground italic">{content.caption}</p>
+                  <p className="text-sm text-muted-foreground text-center mt-2 italic">
+                    {content.caption}
+                  </p>
                 )}
               </div>
             )}
             {isAdminMode && isEditable && (
               <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleMoveContentUp(index)}
+                  disabled={index === 0}
+                  title="Move up"
+                >
+                  <ChevronUp className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleMoveContentDown(index)}
+                  disabled={index === (currentSection?.content?.length || 1) - 1}
+                  title="Move down"
+                >
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
                 <Button
                   size="sm"
                   variant="outline"
@@ -1760,6 +1843,24 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
               )}
               {isAdminMode && isEditable && (
                 <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleMoveContentUp(index)}
+                    disabled={index === 0}
+                    title="Move up"
+                  >
+                    <ChevronUp className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleMoveContentDown(index)}
+                    disabled={index === (currentSection?.content?.length || 1) - 1}
+                    title="Move down"
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
                   <Button
                     size="sm"
                     variant="outline"
