@@ -152,7 +152,8 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
   const [activeTab, setActiveTab] = useState("info"); // State for tab management
   const [imageUrl, setImageUrl] = useState(moduleData.imageUrl || '');
   const [videoUrl, setVideoUrl] = useState(moduleData.videoUrl || '');
-  
+  const [selectedContentType, setSelectedContentType] = useState<string>('text');
+
   // Add completion lock to prevent race conditions
   const completionInProgress = useRef(false);
   const completionProcessed = useRef(false); // Track if completion has been processed for this session
@@ -822,7 +823,7 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
       sections: updatedSections
     });
   };
-
+  
   const handleAddContent = () => {
     // Check if current section exists
     if (!editingData.sections || !editingData.sections[currentSectionIndex]) {
@@ -838,8 +839,34 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
     }
     
     const newContent: ContentItem = {
-      type: 'text',
-      value: 'New content item'
+      type: selectedContentType as any,
+      ...(selectedContentType === 'text' && { value: 'New text content' }),
+      ...(selectedContentType === 'list' && { value: ['Item 1', 'Item 2'] }),
+      ...(selectedContentType === 'quiz' && { 
+        question: 'New quiz question',
+        quizType: 'multiple-choice' as any,
+        options: ['Option 1', 'Option 2', 'Option 3'],
+        correctAnswer: 'Option 1',
+        feedback: {
+          correct: 'Correct!',
+          incorrect: 'Try again.'
+        }
+      }),
+      ...(selectedContentType === 'image' && { 
+        url: 'https://via.placeholder.com/400x300',
+        alt: 'Placeholder image',
+        caption: 'Image caption'
+      }),
+      ...(selectedContentType === 'video' && { 
+        url: 'https://example.com/video.mp4',
+        caption: 'Video caption',
+        duration: 60
+      }),
+      ...(selectedContentType === 'audio' && { 
+        url: 'https://example.com/audio.mp3',
+        caption: 'Audio caption',
+        duration: 30
+      })
     };
     updatedSections[currentSectionIndex].content.push(newContent);
     setEditingData({
@@ -849,6 +876,8 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
   };
 
   const handleAddContentByType = (type: string) => {
+    // Update the selected content type
+    setSelectedContentType(type); 
     // Check if current section exists
     if (!editingData.sections || !editingData.sections[currentSectionIndex]) {
       console.error('Current section not found for type:', type, currentSectionIndex, editingData.sections);
@@ -2214,7 +2243,13 @@ export function ModuleViewer({ moduleData, isAdminMode = false, isEditable = tru
                               <Plus className="mr-2 h-4 w-4" />
                               Add Content
                             </Button>
-                            <Select onValueChange={handleAddContentByType}>
+                              <Select 
+                                value={selectedContentType} 
+                                onValueChange={(value) => {
+                                  setSelectedContentType(value);
+                                  handleAddContentByType(value);
+                                }}
+                              >
                               <SelectTrigger className="w-[140px]">
                                 <SelectValue placeholder="Content type" />
                               </SelectTrigger>
