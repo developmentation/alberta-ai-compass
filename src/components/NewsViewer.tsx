@@ -127,18 +127,17 @@ export function NewsViewer({ news, onClose, className = "", showCloseButton = tr
       {/* Media - Enhanced with improved display modes */}
       {(news.image_url || news.video_url) && (
         <Card>
-          <CardContent className="p-6">
-            <ImageVideoViewer
-              image={news.image_url}
-              video={news.video_url}
-              alt={news.title}
-              title={news.title}
-              displayMode="adaptive"
-              maxHeight="24rem"
-              allowFullscreen={true}
-              showDisplayModeToggle={true}
-              className="w-full rounded-lg shadow-sm"
-            />
+          <CardContent className="p-6 h-64 sm:h-80">
+            <div className="relative h-full rounded-lg overflow-hidden">
+              <ImageVideoViewer
+                image={news.image_url}
+                video={news.video_url}
+                alt={news.title}
+                title={news.title}
+                className="h-full"
+                showControls={true}
+              />
+            </div>
           </CardContent>
         </Card>
       )}

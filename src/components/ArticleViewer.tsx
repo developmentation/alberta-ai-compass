@@ -122,16 +122,15 @@ export const ArticleViewer = ({ article, onClose, className = "" }: ArticleViewe
         const cleanImageUrl = cleanUrl(section.content);
         return (
           <div key={index} className="mb-6">
-            <ImageVideoViewer
-              image={cleanImageUrl}
-              alt={section.title || 'Article image'}
-              title={section.title || 'Article image'}
-              displayMode="adaptive"
-              maxHeight="32rem"
-              allowFullscreen={true}
-              showDisplayModeToggle={true}
-              className="w-full rounded-lg shadow-sm"
-            />
+            <div className="relative h-64 rounded-lg overflow-hidden">
+              <ImageVideoViewer
+                image={cleanImageUrl}
+                alt={section.title || 'Article image'}
+                title={section.title || 'Article image'}
+                className="h-full"
+                showControls={true}
+              />
+            </div>
             {section.title && (
               <p className="text-sm text-muted-foreground text-center mt-3 italic">
                 {section.title}
@@ -162,15 +161,12 @@ export const ArticleViewer = ({ article, onClose, className = "" }: ArticleViewe
 
         return (
           <div key={index} className="mb-6">
-            <div className="relative">
+            <div className="relative h-64 rounded-lg overflow-hidden">
               <ImageVideoViewer
                 video={cleanVideoUrl}
                 title={section.title || 'Article video'}
-                displayMode="contain"
-                aspectRatio="video"
+                className="h-full"
                 showControls={true}
-                allowFullscreen={true}
-                className="w-full rounded-lg shadow-sm"
               />
               {/* Debug info - remove in production */}
               {process.env.NODE_ENV === 'development' && (
@@ -257,18 +253,14 @@ export const ArticleViewer = ({ article, onClose, className = "" }: ArticleViewe
 
       {/* Header Media - Enhanced with better display modes */}
       {(article.image_url || article.video_url) && (
-        <div className="mb-8">
+        <div className="mb-8 h-64 sm:h-80 rounded-lg overflow-hidden">
           <ImageVideoViewer
             image={cleanUrl(article.image_url)}
             video={cleanUrl(article.video_url)}
             alt={article.title}
             title={article.title}
-            displayMode="adaptive"
-            maxHeight="28rem"
+            className="h-full"
             showControls={true}
-            allowFullscreen={true}
-            showDisplayModeToggle={true}
-            className="w-full rounded-lg shadow-md"
           />
           {/* Debug info for header media */}
           {process.env.NODE_ENV === 'development' && (
