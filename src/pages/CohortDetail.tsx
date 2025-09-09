@@ -472,29 +472,41 @@ export default function CohortDetail() {
                   )}
                 </div>
                 {cohort.description && (
-                  <p className="text-muted-foreground mb-4">{cohort.description}</p>
+                  <p className="text-muted-foreground">{cohort.description}</p>
                 )}
-                <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>Started {formatDistanceToNow(new Date(cohort.start_date), { addSuffix: true })}</span>
-                  </div>
-                  {cohort.end_date && (
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      <span>Ends {new Date(cohort.end_date).toLocaleDateString()}</span>
-                    </div>
-                  )}
-                </div>
               </div>
               {(cohort.image_url || cohort.video_url) && (
-                <div className="ml-6">
+                <div className="ml-6 flex-shrink-0">
                   <MediaDisplay
                     imageUrl={cohort.image_url}
                     videoUrl={cohort.video_url}
                     title={cohort.name}
                     className="w-32 h-24 rounded-lg overflow-hidden"
                   />
+                </div>
+              )}
+            </div>
+            
+            {/* Cohort Stats */}
+            <div className="flex items-center gap-6 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                <span>
+                  Started {cohort.start_date && !isNaN(Date.parse(cohort.start_date)) 
+                    ? formatDistanceToNow(new Date(cohort.start_date), { addSuffix: true })
+                    : 'Date not available'
+                  }
+                </span>
+              </div>
+              {cohort.end_date && (
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  <span>
+                    Ends {!isNaN(Date.parse(cohort.end_date)) 
+                      ? formatDistanceToNow(new Date(cohort.end_date), { addSuffix: true })
+                      : 'Date not available'
+                    }
+                  </span>
                 </div>
               )}
             </div>
@@ -665,13 +677,26 @@ export default function CohortDetail() {
       </main>
       <Footer />
 
-      {/* Content Viewers */}
+      {/* Content Viewers - All properly wrapped in Dialog components */}
+      
+      {/* NewsViewer - Wrapped in Dialog */}
       {selectedViewer === 'news' && selectedContent && (
-        <NewsViewer 
-          news={selectedContent} 
-          onClose={handleCloseViewer}
-        />
+        <Dialog open={!!selectedContent && selectedViewer === 'news'} onOpenChange={(open) => {
+          if (!open) {
+            handleCloseViewer();
+          }
+        }}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+            <NewsViewer 
+              news={selectedContent} 
+              onClose={handleCloseViewer}
+              showCloseButton={false}
+            />
+          </DialogContent>
+        </Dialog>
       )}
+      
+      {/* ArticleViewer - Wrapped in Dialog */}
       {selectedViewer === 'article' && selectedContent && (
         <Dialog open={!!selectedContent && selectedViewer === 'article'} onOpenChange={(open) => {
           if (!open) {
@@ -686,12 +711,25 @@ export default function CohortDetail() {
           </DialogContent>
         </Dialog>
       )}
+      
+      {/* ToolViewer - Now properly wrapped in Dialog */}
       {selectedViewer === 'tool' && selectedContent && (
-        <ToolViewer 
-          tool={selectedContent} 
-          onClose={handleCloseViewer}
-        />
+        <Dialog open={!!selectedContent && selectedViewer === 'tool'} onOpenChange={(open) => {
+          if (!open) {
+            handleCloseViewer();
+          }
+        }}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+            <ToolViewer 
+              tool={selectedContent} 
+              onClose={handleCloseViewer}
+              showCloseButton={false}
+            />
+          </DialogContent>
+        </Dialog>
       )}
+      
+      {/* ModuleViewer - Wrapped in Dialog */}
       {(selectedViewer === 'module' || selectedViewer === 'learning_module') && selectedContent && (
         <Dialog open={!!selectedContent && (selectedViewer === 'module' || selectedViewer === 'learning_module')} onOpenChange={(open) => {
           if (!open) {
@@ -707,7 +745,7 @@ export default function CohortDetail() {
         </Dialog>
       )}
 
-      {/* Prompt Viewer - Uses its own modal system */}
+      {/* PromptViewer - Has its own built-in Dialog system */}
       {selectedViewer === 'prompt' && selectedContent && (
         <PromptViewer 
           prompt={selectedContent}
@@ -727,3 +765,4 @@ export default function CohortDetail() {
     </>
   );
 }
+
