@@ -8,12 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Calendar, Clock, Users, BookOpen, MessageSquare, Play, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, Users, BookOpen, MessageSquare, Play, ChevronLeft, ChevronRight, Upload } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useCohortMembership } from '@/hooks/useCohortMembership';
 import { MediaDisplay } from '@/components/admin/MediaDisplay';
 import { CohortDiscussions } from '@/components/CohortDiscussions';
+import { CohortAssignments } from '@/components/CohortAssignments';
 import { NewsViewer } from '@/components/NewsViewer';
 import { ToolViewer } from '@/components/ToolViewer';
 import { ModuleViewer } from '@/components/ModuleViewer';
@@ -523,6 +524,10 @@ export default function CohortDetail() {
                 <MessageSquare className="w-4 h-4" />
                 Discussion
               </TabsTrigger>
+              <TabsTrigger value="assignments" className="flex items-center gap-2">
+                <Upload className="w-4 h-4" />
+                Assignments
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="content" className="space-y-6">
@@ -671,6 +676,10 @@ export default function CohortDetail() {
 
             <TabsContent value="discussion">
               <CohortDiscussions cohortId={cohort.id} isActive={activeTab === "discussion"} />
+            </TabsContent>
+
+            <TabsContent value="assignments">
+              <CohortAssignments cohortId={cohort.id} />
             </TabsContent>
           </Tabs>
         </div>
