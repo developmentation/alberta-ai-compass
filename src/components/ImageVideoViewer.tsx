@@ -222,7 +222,6 @@ export function ImageVideoViewer({
         <div className={getContainerClasses()}>
           <div 
             className="relative w-full h-full"
-            style={getContainerStyle()}
             onPointerDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -240,6 +239,7 @@ export function ImageVideoViewer({
               e.stopPropagation();
             }}
             style={{ 
+              ...getContainerStyle(),
               pointerEvents: 'auto',
               isolation: 'isolate',
               zIndex: 10

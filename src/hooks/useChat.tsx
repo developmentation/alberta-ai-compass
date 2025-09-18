@@ -65,8 +65,8 @@ export function useChat() {
         role: msg.role as 'user' | 'assistant',
         content: msg.content,
         timestamp: msg.created_at,
-        images: msg.images ? JSON.parse(msg.images) : undefined,
-        files: msg.files ? JSON.parse(msg.files) : undefined,
+        images: msg.images ? JSON.parse(String(msg.images)) : undefined,
+        files: msg.files ? JSON.parse(String(msg.files)) : undefined,
       })) || [];
 
       console.log('✅ Formatted messages:', formattedMessages);

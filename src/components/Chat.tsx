@@ -383,7 +383,7 @@ export function Chat() {
         console.log('Processing PDF file:', file.name);
         const pdfData = await processPDFFile(file);
         console.log('PDF processed successfully:', pdfData.file.name, 'Thumbnails:', pdfData.thumbnails?.length);
-        setPendingPdfs(prev => [...prev, pdfData]);
+        setPendingPdfs(prev => [...prev, pdfData as any]);
         toast.success(`PDF processed: ${file.name}`);
       } catch (error) {
         console.error('Error processing PDF:', error);
@@ -768,8 +768,9 @@ export function Chat() {
                                         {children}
                                       </blockquote>
                                     ),
-                                    code: ({ inline, children }) => {
-                                      if (inline) {
+                                    code: ({ children, ...props }) => {
+                                      const isInline = !props.className?.includes('language-');
+                                      if (isInline) {
                                         return (
                                           <code className="bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded text-sm font-mono text-gray-900 dark:text-gray-100">
                                             {children}

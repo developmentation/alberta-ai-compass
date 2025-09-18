@@ -68,7 +68,7 @@ const extractCellValue = (cellValue: any): string | number | null => {
   }
   
   if (typeof cellValue === 'boolean') {
-    return cellValue;
+    return cellValue ? 'TRUE' : 'FALSE';
   }
   
   // Convert other types to string

@@ -125,13 +125,14 @@ export function useCompletions(contentId?: string, contentType?: string) {
 
       if (existingCompletion) {
         // Get the current completion count and increment it
-        const currentCount = existingCompletion.metadata?.completionCount || 1;
+        const currentMetadata = existingCompletion.metadata as any;
+        const currentCount = currentMetadata?.completionCount || 1;
         completionCount = currentCount + 1;
         console.log('Incrementing completion count from', currentCount, 'to', completionCount);
         
         // Get previous scores, ensuring we have an array
-        const previousScores = Array.isArray(existingCompletion.metadata?.previousScores) 
-          ? existingCompletion.metadata.previousScores 
+        const previousScores = Array.isArray(currentMetadata?.previousScores) 
+          ? currentMetadata.previousScores 
           : [existingCompletion.score].filter(score => score !== null);
         
         console.log('Previous scores:', previousScores);
@@ -140,7 +141,7 @@ export function useCompletions(contentId?: string, contentType?: string) {
           ...metadata,
           completionCount: completionCount,
           previousScores: [...previousScores, score],
-          firstCompletedAt: existingCompletion.metadata?.firstCompletedAt || existingCompletion.completed_at,
+          firstCompletedAt: (currentMetadata?.firstCompletedAt as string) || existingCompletion.completed_at,
           lastCompletedAt: new Date().toISOString()
         };
       } else {
