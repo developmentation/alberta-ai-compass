@@ -74,29 +74,42 @@ export const useCohortAssignments = (cohortId: string) => {
       // Get all assignments for this cohort
       const { data: assignmentsData, error: assignmentsError } = await supabase
         .from('cohort_assignments')
-        .select(`
-          *,
-          profiles!cohort_assignments_user_id_fkey (
-            full_name,
-            email
-          )
-        `)
+        .select('*')
         .eq('cohort_id', cohortId)
         .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       if (assignmentsError) throw assignmentsError;
 
+      // Get unique user IDs
+      const userIds = [...new Set((assignmentsData || []).map(a => a.user_id))];
+      
+      // Get user profiles separately
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .in('id', userIds);
+
+      if (profilesError) throw profilesError;
+
+      // Create a map of profiles by user_id
+      const profileMap = new Map();
+      (profilesData || []).forEach(profile => {
+        profileMap.set(profile.id, profile);
+      });
+
       // Group by user
       const submissionMap = new Map<string, AssignmentSubmission>();
       
       (assignmentsData || []).forEach((assignment: any) => {
         const userId = assignment.user_id;
+        const profile = profileMap.get(userId);
+        
         if (!submissionMap.has(userId)) {
           submissionMap.set(userId, {
             user_id: userId,
-            user_name: assignment.profiles?.full_name || 'Unknown User',
-            user_email: assignment.profiles?.email || '',
+            user_name: profile?.full_name || 'Unknown User',
+            user_email: profile?.email || '',
             assignment_count: 0,
             assignments: []
           });
