@@ -247,6 +247,84 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_history: {
+        Row: {
+          content: string
+          created_at: string | null
+          files: Json | null
+          id: string
+          images: Json | null
+          role: string
+          user_email: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          files?: Json | null
+          id: string
+          images?: Json | null
+          role: string
+          user_email: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          files?: Json | null
+          id?: string
+          images?: Json | null
+          role?: string
+          user_email?: string
+        }
+        Relationships: []
+      }
+      cohort_assignments: {
+        Row: {
+          cohort_id: string
+          content_type: string | null
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          description: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cohort_id: string
+          content_type?: string | null
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          description?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cohort_id?: string
+          content_type?: string | null
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          description?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cohort_content: {
         Row: {
           cohort_id: string
