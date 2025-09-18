@@ -515,7 +515,7 @@ export default function CohortDetail() {
 
           {/* Main Content */}
           <Tabs defaultValue="content" value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="content" className="flex items-center gap-2">
                 <BookOpen className="w-4 h-4" />
                 Learning Content
