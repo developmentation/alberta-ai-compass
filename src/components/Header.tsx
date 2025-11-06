@@ -62,9 +62,9 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
                   Cohorts
                 </Link>
               )}
-              <Link to="/ai-mentor" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                AI Mentor
-              </Link>
+              <a href="https://masterclass.albertaaiacademy.com" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Masterclass
+              </a>
               <Link to="/chat" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Chat
               </Link>
@@ -181,13 +181,15 @@ export const Header = ({ onLoginClick }: HeaderProps) => {
                 </>
               )}
               
-              <Link 
-                to="/ai-mentor" 
+              <a 
+                href="https://masterclass.albertaaiacademy.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
                 className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                AI Mentor
-              </Link>
+                Masterclass
+              </a>
 
 
               <Link 
