@@ -30,6 +30,12 @@ Deno.serve(async (req) => {
       }
     );
 
+    // Create admin client for auth operations
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
     // Verify admin user
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
     if (userError || !user) {
@@ -70,6 +76,22 @@ Deno.serve(async (req) => {
     // Set expiration to 48 hours from now
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 48);
+
+    // CRITICAL: Invalidate the old auth password by setting it to a random unusable value
+    // This forces the user to use the temporary password
+    const randomPassword = generateStrongPassword() + generateStrongPassword(); // Extra long and random
+    const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(
+      user_id,
+      { password: randomPassword }
+    );
+
+    if (authError) {
+      console.error('Error invalidating auth password:', authError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to invalidate old password' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Update user profile with temporary password
     const { error: updateError } = await supabaseClient
