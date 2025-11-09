@@ -154,11 +154,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq('email', email)
         .maybeSingle();
 
+      console.log('Profile check for login:', { 
+        email, 
+        profile,
+        requires_reset: profile?.requires_password_reset,
+        has_temp_hash: !!profile?.temporary_password_hash 
+      });
+
       // If user requires password reset, ONLY allow temporary password
       if (profile?.requires_password_reset && profile?.temporary_password_hash) {
+        console.log('User requires password reset, calling verify-login');
         const { data, error } = await supabase.functions.invoke('verify-login', {
           body: { email, password },
         });
+
+        console.log('verify-login response:', { data, error });
 
         if (error || data.error) {
           toast({
@@ -188,12 +198,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // Normal login with regular Supabase auth (only if no temp password required)
+      console.log('Attempting normal auth login');
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
+        console.error('Normal auth login failed:', error);
         toast({
           title: "Sign in failed",
           description: error.message,
@@ -204,6 +216,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       return { error: null };
     } catch (error: any) {
+      console.error('signIn catch error:', error);
       return { error };
     }
   };
