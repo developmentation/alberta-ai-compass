@@ -151,25 +151,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // ALWAYS try verify-login first - it will check for temp password server-side
       // This prevents any information leakage about account status
-      const { data, error: verifyError } = await supabase.functions.invoke('verify-login', {
+      const verifyResponse = await supabase.functions.invoke('verify-login', {
         body: { email, password },
       });
 
-      console.log('verify-login response:', { data, error: verifyError });
+      console.log('verify-login full response:', verifyResponse);
+      console.log('verify-login data:', verifyResponse.data);
+      console.log('verify-login error:', verifyResponse.error);
 
       // If verify-login succeeded and requires reset, trigger the reset flow
-      if (data?.requires_reset && data?.user_id && data?.email) {
+      if (verifyResponse.data?.requires_reset && verifyResponse.data?.user_id && verifyResponse.data?.email) {
+        console.log('Temp password detected, triggering reset flow');
         return { 
           error: null, 
           requires_reset: true, 
-          user_id: data.user_id,
-          email: data.email 
+          user_id: verifyResponse.data.user_id,
+          email: verifyResponse.data.email 
         };
       }
 
       // If verify-login says to try normal auth, or if it failed, try normal login
       // This handles cases where user doesn't have temp password requirement
-      console.log('Attempting normal auth login');
+      console.log('No temp password, proceeding with normal auth');
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -185,6 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error };
       }
 
+      console.log('Normal auth login succeeded');
       return { error: null };
     } catch (error: any) {
       console.error('signIn catch error:', error);
