@@ -81,12 +81,21 @@ Deno.serve(async (req) => {
     // This immediately logs out the user from all devices
     const randomPassword = generateStrongPassword() + generateStrongPassword(); // Extra long and random
     
-    // Sign out all sessions for this user
-    const { error: signOutError } = await supabaseAdmin.auth.admin.signOut(user_id, 'global');
-    if (signOutError) {
-      console.error('Error signing out user sessions:', signOutError);
-      // Continue anyway - password change is more critical
+    // Delete all sessions and refresh tokens for this user using our custom RPC
+    const { data: sessionsDeleted, error: deleteSessionsError } = await supabaseAdmin.rpc(
+      'delete_user_sessions',
+      { target_user_id: user_id }
+    );
+    
+    if (deleteSessionsError || !sessionsDeleted) {
+      console.error('Error deleting user sessions:', deleteSessionsError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to invalidate user sessions' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
+    
+    console.log(`Successfully deleted all sessions for user ${user_id}`);
     
     // Change the auth password to random value
     const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(

@@ -1496,6 +1496,10 @@ export type Database = {
       }
     }
     Functions: {
+      delete_user_sessions: {
+        Args: { target_user_id: string }
+        Returns: boolean
+      }
       get_current_user_role: { Args: never; Returns: string }
       get_platform_statistics: {
         Args: never
