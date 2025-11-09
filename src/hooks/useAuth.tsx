@@ -56,6 +56,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               
               setProfile(profile);
               
+              // CRITICAL SECURITY CHECK: If user is inactive, force logout immediately
+              if (profile?.is_active === false) {
+                console.log('User account is inactive - forcing logout');
+                // Clear everything immediately
+                localStorage.clear();
+                await supabase.auth.signOut({ scope: 'local' });
+                setSession(null);
+                setUser(null);
+                setProfile(null);
+                toast({
+                  title: "Account inactive",
+                  description: "Your account has been deactivated. Please contact an administrator.",
+                  variant: "destructive",
+                });
+                navigate('/');
+                return;
+              }
+
               // CRITICAL SECURITY CHECK: If user requires password reset, force logout immediately
               if (profile?.requires_password_reset && profile?.temporary_password_hash) {
                 console.log('User requires password reset - forcing logout');

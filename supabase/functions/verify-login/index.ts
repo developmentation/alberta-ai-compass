@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
     // Get user profile by email using admin client (bypasses RLS)
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
-      .select('id, email, requires_password_reset, temporary_password_hash, temp_password_expires_at')
+      .select('id, email, requires_password_reset, temporary_password_hash, temp_password_expires_at, is_active')
       .eq('email', email)
       .maybeSingle();
 
@@ -65,6 +65,15 @@ Deno.serve(async (req) => {
       console.log('No profile found for email');
       return new Response(
         JSON.stringify({ error: 'Invalid login credentials' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check if user account is active
+    if (profile.is_active === false) {
+      console.log('User account is inactive');
+      return new Response(
+        JSON.stringify({ error: 'Your account has been deactivated. Please contact an administrator.' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
