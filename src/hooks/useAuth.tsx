@@ -56,6 +56,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               
               setProfile(profile);
               
+              // CRITICAL SECURITY CHECK: If user requires password reset, force logout immediately
+              if (profile?.requires_password_reset && profile?.temporary_password_hash) {
+                console.log('User requires password reset - forcing logout');
+                // Clear everything immediately
+                localStorage.clear();
+                await supabase.auth.signOut({ scope: 'local' });
+                setSession(null);
+                setUser(null);
+                setProfile(null);
+                toast({
+                  title: "Password reset required",
+                  description: "You must complete the password reset process to access your account.",
+                  variant: "destructive",
+                });
+                navigate('/auth');
+                return;
+              }
+              
               if (profile) {
                 // Update last login
                 await supabase
@@ -85,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate, toast]);
 
   const signUp = async (email: string, password: string, fullName?: string) => {
     try {
@@ -242,8 +260,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile(null);
       setSession(null);
       
-      // Then sign out from Supabase
-      await supabase.auth.signOut();
+      // CRITICAL: Force clear localStorage to remove any cached tokens
+      // This prevents auto-login from cached JWTs after password reset
+      localStorage.clear();
+      
+      // Then sign out from Supabase (both globally and locally)
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (signOutError) {
+        // If global sign out fails (session already deleted), try local only
+        console.warn('Global signout failed, clearing local session:', signOutError);
+        await supabase.auth.signOut({ scope: 'local' });
+      }
       
       // Navigate to home
       navigate('/');
@@ -254,10 +282,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     } catch (error) {
       console.error('Sign out error:', error);
+      // Even if sign out fails, clear everything locally
+      localStorage.clear();
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+      navigate('/');
       toast({
-        title: "Sign out failed",
-        description: "There was an issue signing out. Please try again.",
-        variant: "destructive",
+        title: "Signed out",
+        description: "You have been signed out locally.",
       });
     }
   };
