@@ -42,6 +42,16 @@ Deno.serve(async (req) => {
       .eq('email', email)
       .maybeSingle();
 
+    console.log('Profile lookup for:', email);
+    console.log('Profile found:', profile ? 'yes' : 'no');
+    if (profile) {
+      console.log('Profile details:', {
+        has_temp_hash: !!profile.temporary_password_hash,
+        requires_reset: profile.requires_password_reset,
+        expires_at: profile.temp_password_expires_at
+      });
+    }
+
     if (profileError) {
       console.error('Error fetching profile:', profileError);
       return new Response(
@@ -52,6 +62,7 @@ Deno.serve(async (req) => {
 
     if (!profile) {
       // Don't reveal whether user exists - return generic error
+      console.log('No profile found for email');
       return new Response(
         JSON.stringify({ error: 'Invalid login credentials' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -59,7 +70,9 @@ Deno.serve(async (req) => {
     }
 
     // Check if user requires password reset with temp password
+    console.log('Checking temp password requirement...');
     if (profile.requires_password_reset && profile.temporary_password_hash) {
+      console.log('User has temp password requirement');
       // Check if temp password has expired
       if (profile.temp_password_expires_at) {
         const expiresAt = new Date(profile.temp_password_expires_at);
@@ -84,8 +97,10 @@ Deno.serve(async (req) => {
       // Verify temporary password
       const passwordHash = await hashPassword(password);
       const isValid = passwordHash === profile.temporary_password_hash;
+      console.log('Temp password match:', isValid);
       
       if (isValid) {
+        console.log('Temp password verified, returning requires_reset=true');
         return new Response(
           JSON.stringify({ 
             success: true, 
@@ -106,6 +121,7 @@ Deno.serve(async (req) => {
 
     // User doesn't require password reset - return error indicating normal auth should be used
     // We don't create sessions here, just validate temp passwords
+    console.log('No temp password requirement, indicating to try normal auth');
     return new Response(
       JSON.stringify({ error: 'Invalid login credentials', try_normal_auth: true }),
       { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
