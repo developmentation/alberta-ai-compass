@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
     }
 
     // Update user profile with temporary password
-    const { error: updateError } = await supabaseClient
+    const { error: updateError } = await supabaseAdmin
       .from('profiles')
       .update({
         temporary_password_hash: hash,
