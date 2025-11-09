@@ -20,9 +20,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
+    // Use service role key for elevated privileges
+    const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
     const { email, password } = await req.json();
@@ -34,37 +35,37 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get user profile by email
-    const { data: profile, error: profileError } = await supabaseClient
+    // Get user profile by email using admin client (bypasses RLS)
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('id, email, requires_password_reset, temporary_password_hash, temp_password_expires_at')
       .eq('email', email)
       .maybeSingle();
 
-    if (profileError || !profile) {
+    if (profileError) {
+      console.error('Error fetching profile:', profileError);
       return new Response(
-        JSON.stringify({ error: 'User not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Invalid login credentials' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // CRITICAL: This function only handles temporary password verification
-    // It should NEVER create auth sessions or allow normal logins
-    if (!profile.requires_password_reset || !profile.temporary_password_hash) {
+    if (!profile) {
+      // Don't reveal whether user exists - return generic error
       return new Response(
-        JSON.stringify({ error: 'No password reset required for this account' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Invalid login credentials' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Check if user requires password reset
+    // Check if user requires password reset with temp password
     if (profile.requires_password_reset && profile.temporary_password_hash) {
       // Check if temp password has expired
       if (profile.temp_password_expires_at) {
         const expiresAt = new Date(profile.temp_password_expires_at);
         if (expiresAt < new Date()) {
-          // Clear expired temp password
-          await supabaseClient
+          // Clear expired temp password using admin client
+          await supabaseAdmin
             .from('profiles')
             .update({
               temporary_password_hash: null,
@@ -96,23 +97,24 @@ Deno.serve(async (req) => {
         );
       }
       
-      // Temp password was wrong
+      // Temp password was wrong - return generic error
       return new Response(
-        JSON.stringify({ error: 'Invalid temporary password' }),
+        JSON.stringify({ error: 'Invalid login credentials' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // This should never be reached
+    // User doesn't require password reset - return error indicating normal auth should be used
+    // We don't create sessions here, just validate temp passwords
     return new Response(
-      JSON.stringify({ error: 'Invalid request' }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: 'Invalid login credentials', try_normal_auth: true }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Error in verify-login:', error);
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: 'Invalid login credentials' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

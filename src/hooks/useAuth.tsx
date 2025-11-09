@@ -147,57 +147,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      // First check if user has temp password requirement
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id, requires_password_reset, temporary_password_hash, temp_password_expires_at')
-        .eq('email', email)
-        .maybeSingle();
-
-      console.log('Profile check for login:', { 
-        email, 
-        profile,
-        requires_reset: profile?.requires_password_reset,
-        has_temp_hash: !!profile?.temporary_password_hash 
+      console.log('Starting sign-in for:', email);
+      
+      // ALWAYS try verify-login first - it will check for temp password server-side
+      // This prevents any information leakage about account status
+      const { data, error: verifyError } = await supabase.functions.invoke('verify-login', {
+        body: { email, password },
       });
 
-      // If user requires password reset, ONLY allow temporary password
-      if (profile?.requires_password_reset && profile?.temporary_password_hash) {
-        console.log('User requires password reset, calling verify-login');
-        const { data, error } = await supabase.functions.invoke('verify-login', {
-          body: { email, password },
-        });
+      console.log('verify-login response:', { data, error: verifyError });
 
-        console.log('verify-login response:', { data, error });
-
-        if (error || data.error) {
-          toast({
-            title: "Password reset required",
-            description: "You must use the temporary password provided by your administrator.",
-            variant: "destructive",
-          });
-          return { error: "Temporary password required" };
-        }
-
-        if (data.requires_reset) {
-          return { 
-            error: null, 
-            requires_reset: true, 
-            user_id: data.user_id,
-            email: data.email 
-          };
-        }
-
-        // If temp password was wrong, don't fall through to normal auth
-        toast({
-          title: "Password reset required",
-          description: "You must use the temporary password provided by your administrator.",
-          variant: "destructive",
-        });
-        return { error: "Temporary password required" };
+      // If verify-login succeeded and requires reset, trigger the reset flow
+      if (data?.requires_reset && data?.user_id && data?.email) {
+        return { 
+          error: null, 
+          requires_reset: true, 
+          user_id: data.user_id,
+          email: data.email 
+        };
       }
 
-      // Normal login with regular Supabase auth (only if no temp password required)
+      // If verify-login says to try normal auth, or if it failed, try normal login
+      // This handles cases where user doesn't have temp password requirement
       console.log('Attempting normal auth login');
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -208,7 +179,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error('Normal auth login failed:', error);
         toast({
           title: "Sign in failed",
-          description: error.message,
+          description: "Invalid login credentials",
           variant: "destructive",
         });
         return { error };
@@ -217,6 +188,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: null };
     } catch (error: any) {
       console.error('signIn catch error:', error);
+      toast({
+        title: "Sign in failed",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
       return { error };
     }
   };
