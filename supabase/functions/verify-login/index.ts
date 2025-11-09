@@ -119,12 +119,12 @@ Deno.serve(async (req) => {
       );
     }
 
-    // User doesn't require password reset - return error indicating normal auth should be used
+    // User doesn't require password reset - return success indicating normal auth should be used
     // We don't create sessions here, just validate temp passwords
     console.log('No temp password requirement, indicating to try normal auth');
     return new Response(
-      JSON.stringify({ error: 'Invalid login credentials', try_normal_auth: true }),
-      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ try_normal_auth: true }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
