@@ -77,9 +77,18 @@ Deno.serve(async (req) => {
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 48);
 
-    // CRITICAL: Invalidate the old auth password by setting it to a random unusable value
-    // This forces the user to use the temporary password
+    // CRITICAL: Invalidate ALL active sessions and change the auth password
+    // This immediately logs out the user from all devices
     const randomPassword = generateStrongPassword() + generateStrongPassword(); // Extra long and random
+    
+    // Sign out all sessions for this user
+    const { error: signOutError } = await supabaseAdmin.auth.admin.signOut(user_id, 'global');
+    if (signOutError) {
+      console.error('Error signing out user sessions:', signOutError);
+      // Continue anyway - password change is more critical
+    }
+    
+    // Change the auth password to random value
     const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(
       user_id,
       { password: randomPassword }
