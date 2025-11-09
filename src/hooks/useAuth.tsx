@@ -136,7 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq('email', email)
         .maybeSingle();
 
-      // If user requires password reset, verify with edge function
+      // If user requires password reset, ONLY allow temporary password
       if (profile?.requires_password_reset && profile?.temporary_password_hash) {
         const { data, error } = await supabase.functions.invoke('verify-login', {
           body: { email, password },
@@ -144,11 +144,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (error || data.error) {
           toast({
-            title: "Sign in failed",
-            description: data?.error || error.message,
+            title: "Password reset required",
+            description: "You must use the temporary password provided by your administrator.",
             variant: "destructive",
           });
-          return { error: data?.error || error };
+          return { error: "Temporary password required" };
         }
 
         if (data.requires_reset) {
@@ -159,9 +159,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email: data.email 
           };
         }
+
+        // If temp password was wrong, don't fall through to normal auth
+        toast({
+          title: "Password reset required",
+          description: "You must use the temporary password provided by your administrator.",
+          variant: "destructive",
+        });
+        return { error: "Temporary password required" };
       }
 
-      // Normal login with regular Supabase auth
+      // Normal login with regular Supabase auth (only if no temp password required)
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
