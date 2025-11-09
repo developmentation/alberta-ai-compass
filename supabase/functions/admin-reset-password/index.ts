@@ -82,12 +82,12 @@ Deno.serve(async (req) => {
     const randomPassword = generateStrongPassword() + generateStrongPassword(); // Extra long and random
     
     // Delete all sessions and refresh tokens for this user using our custom RPC
-    const { data: sessionsDeleted, error: deleteSessionsError } = await supabaseAdmin.rpc(
+    const { error: deleteSessionsError } = await supabaseAdmin.rpc(
       'delete_user_sessions',
       { target_user_id: user_id }
     );
     
-    if (deleteSessionsError || !sessionsDeleted) {
+    if (deleteSessionsError) {
       console.error('Error deleting user sessions:', deleteSessionsError);
       return new Response(
         JSON.stringify({ error: 'Failed to invalidate user sessions' }),
