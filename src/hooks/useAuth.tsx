@@ -129,31 +129,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke('verify-login', {
-        body: { email, password },
+      // First check if user has temp password requirement
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id, requires_password_reset, temporary_password_hash, temp_password_expires_at')
+        .eq('email', email)
+        .maybeSingle();
+
+      // If user requires password reset, verify with edge function
+      if (profile?.requires_password_reset && profile?.temporary_password_hash) {
+        const { data, error } = await supabase.functions.invoke('verify-login', {
+          body: { email, password },
+        });
+
+        if (error || data.error) {
+          toast({
+            title: "Sign in failed",
+            description: data?.error || error.message,
+            variant: "destructive",
+          });
+          return { error: data?.error || error };
+        }
+
+        if (data.requires_reset) {
+          return { 
+            error: null, 
+            requires_reset: true, 
+            user_id: data.user_id,
+            email: data.email 
+          };
+        }
+      }
+
+      // Normal login with regular Supabase auth
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
 
-      if (error || data.error) {
+      if (error) {
         toast({
           title: "Sign in failed",
-          description: data?.error || error.message,
+          description: error.message,
           variant: "destructive",
         });
-        return { error: data?.error || error };
-      }
-
-      if (data.requires_reset) {
-        return { 
-          error: null, 
-          requires_reset: true, 
-          user_id: data.user_id,
-          email: data.email 
-        };
-      }
-
-      // Normal login - set session
-      if (data.session) {
-        await supabase.auth.setSession(data.session);
+        return { error };
       }
 
       return { error: null };
