@@ -27,10 +27,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Edit, Shield, Users } from "lucide-react";
+import { Search, Edit, Shield, Users, KeyRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { PasswordResetModal } from "@/components/admin/PasswordResetModal";
 
 interface User {
   id: string;
@@ -50,6 +51,8 @@ export function AdminUsers() {
   const [searchTerm, setSearchTerm] = useState("");
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [resetPasswordUser, setResetPasswordUser] = useState<User | null>(null);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const { isAdmin } = useAuth();
   const { toast } = useToast();
 
@@ -277,13 +280,27 @@ export function AdminUsers() {
                     }
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEditUser(user)}
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditUser(user)}
+                        title="Edit user"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setResetPasswordUser(user);
+                          setIsResetModalOpen(true);
+                        }}
+                        title="Reset password"
+                      >
+                        <KeyRound className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -296,6 +313,16 @@ export function AdminUsers() {
             </div>
           )}
         </Card>
+
+        {/* Password Reset Modal */}
+        <PasswordResetModal
+          isOpen={isResetModalOpen}
+          onClose={() => {
+            setIsResetModalOpen(false);
+            setResetPasswordUser(null);
+          }}
+          user={resetPasswordUser}
+        />
 
         {/* Edit User Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

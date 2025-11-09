@@ -9,34 +9,52 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { PasswordResetFlow } from '@/components/PasswordResetFlow';
 
 export default function Auth() {
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [signupForm, setSignupForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
   const [showPassword, setShowPassword] = useState({ login: false, signup: false, confirm: false });
   const [loading, setLoading] = useState(false);
+  const [resetUserId, setResetUserId] = useState<string | null>(null);
+  const [resetEmail, setResetEmail] = useState<string | null>(null);
   
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, user, completePasswordReset } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
+    if (user && !resetUserId) {
       navigate('/admin');
     }
-  }, [user, navigate]);
+  }, [user, resetUserId, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
-    const { error } = await signIn(loginForm.email, loginForm.password);
+    const result = await signIn(loginForm.email, loginForm.password);
     
-    if (!error) {
+    if (result.requires_reset && result.user_id && result.email) {
+      setResetUserId(result.user_id);
+      setResetEmail(result.email);
+    } else if (!result.error) {
       navigate('/admin');
     }
     
     setLoading(false);
+  };
+
+  const handlePasswordResetComplete = async (newPassword: string) => {
+    if (!resetUserId || !resetEmail) return;
+    
+    setLoading(true);
+    const { error } = await completePasswordReset(resetUserId, resetEmail, newPassword);
+    setLoading(false);
+    
+    if (!error) {
+      navigate('/');
+    }
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -57,6 +75,17 @@ export default function Auth() {
     
     setLoading(false);
   };
+
+  if (resetUserId && resetEmail) {
+    return (
+      <PasswordResetFlow
+        userId={resetUserId}
+        email={resetEmail}
+        onComplete={handlePasswordResetComplete}
+        loading={loading}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4">

@@ -1,5 +1,14 @@
 project_id = "hzttqloyamcivctsfxkk"
 
+[functions.admin-reset-password]
+verify_jwt = true
+
+[functions.verify-login]
+verify_jwt = false
+
+[functions.complete-password-reset]
+verify_jwt = false
+
 [functions.generate-module]
 verify_jwt = false
 

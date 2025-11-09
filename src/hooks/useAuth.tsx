@@ -20,8 +20,9 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: any; requires_reset?: boolean; user_id?: string; email?: string }>;
   signOut: () => Promise<void>;
+  completePasswordReset: (userId: string, email: string, newPassword: string) => Promise<{ error: any }>;
   isAdmin: boolean;
   isFacilitator: boolean;
 }
@@ -128,20 +129,79 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const { data, error } = await supabase.functions.invoke('verify-login', {
+        body: { email, password },
       });
 
-      if (error) {
+      if (error || data.error) {
         toast({
           title: "Sign in failed",
-          description: error.message,
+          description: data?.error || error.message,
           variant: "destructive",
         });
+        return { error: data?.error || error };
       }
 
+      if (data.requires_reset) {
+        return { 
+          error: null, 
+          requires_reset: true, 
+          user_id: data.user_id,
+          email: data.email 
+        };
+      }
+
+      // Normal login - set session
+      if (data.session) {
+        await supabase.auth.setSession(data.session);
+      }
+
+      return { error: null };
+    } catch (error: any) {
       return { error };
+    }
+  };
+
+  const completePasswordReset = async (userId: string, email: string, newPassword: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('complete-password-reset', {
+        body: {
+          user_id: userId,
+          email,
+          new_password: newPassword,
+        },
+      });
+
+      if (error || data.error) {
+        toast({
+          title: "Password reset failed",
+          description: data?.error || error.message,
+          variant: "destructive",
+        });
+        return { error: data?.error || error };
+      }
+
+      // Sign in with new password
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password: newPassword,
+      });
+
+      if (signInError) {
+        toast({
+          title: "Sign in failed",
+          description: signInError.message,
+          variant: "destructive",
+        });
+        return { error: signInError };
+      }
+
+      toast({
+        title: "Password updated",
+        description: "Your password has been successfully changed.",
+      });
+
+      return { error: null };
     } catch (error: any) {
       return { error };
     }
@@ -187,6 +247,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signUp,
         signIn,
         signOut,
+        completePasswordReset,
         isAdmin,
         isFacilitator,
       }}

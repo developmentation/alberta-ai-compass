@@ -212,7 +212,7 @@ export type Database = {
         Row: {
           action: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           new_values: Json | null
           old_values: Json | null
           performed_at: string | null
@@ -224,7 +224,7 @@ export type Database = {
         Insert: {
           action: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           performed_at?: string | null
@@ -236,7 +236,7 @@ export type Database = {
         Update: {
           action?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           performed_at?: string | null
@@ -915,7 +915,10 @@ export type Database = {
           is_active: boolean | null
           last_login: string | null
           organization: string | null
+          requires_password_reset: boolean | null
           role: Database["public"]["Enums"]["user_role"]
+          temp_password_expires_at: string | null
+          temporary_password_hash: string | null
           updated_at: string | null
         }
         Insert: {
@@ -928,7 +931,10 @@ export type Database = {
           is_active?: boolean | null
           last_login?: string | null
           organization?: string | null
+          requires_password_reset?: boolean | null
           role?: Database["public"]["Enums"]["user_role"]
+          temp_password_expires_at?: string | null
+          temporary_password_hash?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -941,7 +947,10 @@ export type Database = {
           is_active?: boolean | null
           last_login?: string | null
           organization?: string | null
+          requires_password_reset?: boolean | null
           role?: Database["public"]["Enums"]["user_role"]
+          temp_password_expires_at?: string | null
+          temporary_password_hash?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -1487,12 +1496,9 @@ export type Database = {
       }
     }
     Functions: {
-      get_current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      get_current_user_role: { Args: never; Returns: string }
       get_platform_statistics: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           total_news: number
           total_plans: number
@@ -1514,10 +1520,7 @@ export type Database = {
           role: Database["public"]["Enums"]["user_role"]
         }[]
       }
-      promote_to_admin: {
-        Args: { target_email: string }
-        Returns: boolean
-      }
+      promote_to_admin: { Args: { target_email: string }; Returns: boolean }
     }
     Enums: {
       cohort_status: "active" | "inactive" | "completed"
