@@ -39,30 +39,21 @@ Deno.serve(async (req) => {
       .from('profiles')
       .select('id, email, requires_password_reset, temporary_password_hash, temp_password_expires_at')
       .eq('email', email)
-      .single();
+      .maybeSingle();
 
     if (profileError || !profile) {
-      // Try normal login
-      const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (authError) {
-        return new Response(
-          JSON.stringify({ error: 'Invalid credentials' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
       return new Response(
-        JSON.stringify({ 
-          success: true, 
-          requires_reset: false,
-          session: authData.session,
-          user: authData.user
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'User not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // CRITICAL: This function only handles temporary password verification
+    // It should NEVER create auth sessions or allow normal logins
+    if (!profile.requires_password_reset || !profile.temporary_password_hash) {
+      return new Response(
+        JSON.stringify({ error: 'No password reset required for this account' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -104,29 +95,18 @@ Deno.serve(async (req) => {
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-    }
-
-    // Try normal login
-    const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (authError) {
+      
+      // Temp password was wrong
       return new Response(
-        JSON.stringify({ error: 'Invalid credentials' }),
+        JSON.stringify({ error: 'Invalid temporary password' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    // This should never be reached
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        requires_reset: false,
-        session: authData.session,
-        user: authData.user
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: 'Invalid request' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {

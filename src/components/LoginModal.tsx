@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from '@/hooks/useAuth';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { User, X } from "lucide-react";
+import { PasswordResetFlow } from './PasswordResetFlow';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -16,20 +17,54 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [resetUserId, setResetUserId] = useState('');
+  const [resetEmail, setResetEmail] = useState('');
+  const { signIn, completePasswordReset } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
-    const { error } = await signIn(email, password);
+    const result = await signIn(email, password);
     
-    if (!error) {
-      onClose();
+    if (!result.error) {
+      if (result.requires_reset && result.user_id && result.email) {
+        // Show password reset flow
+        setResetUserId(result.user_id);
+        setResetEmail(result.email);
+        setShowPasswordReset(true);
+      } else {
+        // Normal login success
+        onClose();
+      }
     }
     
     setLoading(false);
   };
+
+  const handlePasswordResetComplete = async (userId: string, email: string, newPassword: string) => {
+    setLoading(true);
+    const { error } = await completePasswordReset(userId, email, newPassword);
+    if (!error) {
+      setShowPasswordReset(false);
+      onClose();
+      navigate('/');
+    }
+    setLoading(false);
+  };
+
+  if (showPasswordReset) {
+    return (
+      <PasswordResetFlow
+        userId={resetUserId}
+        email={resetEmail}
+        onComplete={(newPassword) => handlePasswordResetComplete(resetUserId, resetEmail, newPassword)}
+        loading={loading}
+      />
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
