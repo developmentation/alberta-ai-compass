@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Eye, Trash2, Loader2, BookOpen } from 'lucide-react';
+import { Plus, Edit, Eye, Trash2, Loader2, BookOpen, Copy } from 'lucide-react';
 import { ModuleCreator } from '@/components/admin/ModuleCreator';
 import { ModuleViewer } from '@/components/ModuleViewer';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -87,6 +87,43 @@ export default function AdminLearningModules() {
       toast({
         title: "Error",
         description: error.message || "Failed to delete module",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDuplicate = async (module: Module) => {
+    try {
+      const duplicateData = {
+        name: `${module.name || 'Untitled Module'} (Copy)`,
+        description: module.description,
+        level: module.level,
+        status: "draft" as const,
+        language: module.language,
+        image_url: module.image_url || null,
+        video_url: module.video_url || null,
+        json_data: module.json_data,
+        created_by: user?.id,
+        updated_by: user?.id,
+      };
+
+      const { error } = await supabase
+        .from("modules")
+        .insert([duplicateData]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Module duplicated successfully",
+      });
+
+      fetchModules();
+    } catch (error: any) {
+      console.error("Error duplicating module:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to duplicate module",
         variant: "destructive",
       });
     }
@@ -373,6 +410,14 @@ export default function AdminLearningModules() {
                         title="Edit Module"
                       >
                         <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDuplicate(module)}
+                        title="Duplicate Module"
+                      >
+                        <Copy className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
