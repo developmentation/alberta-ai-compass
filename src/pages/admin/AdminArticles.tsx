@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Edit, Trash2, Eye, Move3D, X } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Move3D, X, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -203,6 +203,44 @@ export function AdminArticles() {
       toast({
         title: "Error",
         description: "Failed to update article status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDuplicate = async (item: ArticleItem) => {
+    try {
+      const duplicateData = {
+        title: `${item.title} (Copy)`,
+        description: item.description,
+        level: item.level as "1" | "2" | "3" | "RED",
+        status: "draft" as const,
+        language: item.language,
+        image_url: item.image_url || null,
+        video_url: item.video_url || null,
+        json_data: item.json_data,
+        is_active: false,
+        created_by: user?.id,
+        updated_by: user?.id,
+      };
+
+      const { error } = await supabase
+        .from("articles")
+        .insert([duplicateData]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Article duplicated successfully",
+      });
+
+      fetchArticles();
+    } catch (error) {
+      console.error("Error duplicating article:", error);
+      toast({
+        title: "Error",
+        description: "Failed to duplicate article",
         variant: "destructive",
       });
     }
@@ -591,6 +629,15 @@ export function AdminArticles() {
                       >
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDuplicate(article)}
+                        title="Duplicate Article"
+                      >
+                        <Copy className="w-4 h-4 mr-2" />
+                        Duplicate
                       </Button>
                       <Button
                         variant="outline"
