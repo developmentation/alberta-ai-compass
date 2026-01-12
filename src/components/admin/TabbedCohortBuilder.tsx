@@ -65,44 +65,62 @@ export function TabbedCohortBuilder({
 
   const [editingDay, setEditingDay] = useState<CohortDay | null>(null);
   const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
-  const [hasLoadedInitialData, setHasLoadedInitialData] = useState(false);
 
-  // Load initial data when dialog opens - simplified and more robust
+  // Load initial data when dialog opens or initialData changes - more reliable pattern
   useEffect(() => {
-    if (isOpen && initialData && Object.keys(initialData).length > 0 && !hasLoadedInitialData) {
-      console.log('COHORT BUILDER - Loading initial data:', {
-        name: initialData.name,
-        daysCount: initialData.days?.length || 0,
-        days: initialData.days?.map((d: any) => ({
-          day_number: d.day_number,
-          day_name: d.day_name,
-          contentCount: d.content_items?.length || 0
-        }))
+    if (isOpen) {
+      console.log('COHORT BUILDER - Dialog opened, checking initialData:', {
+        hasInitialData: !!initialData,
+        name: initialData?.name,
+        daysCount: initialData?.days?.length || 0,
       });
-      
-      // Deep clone the days to prevent reference issues
-      const clonedDays = initialData.days 
-        ? JSON.parse(JSON.stringify(initialData.days)) 
-        : [];
-      
-      setFormData({
-        name: initialData.name || "",
-        description: initialData.description || "",
-        start_date: initialData.start_date || "",
-        end_date: initialData.end_date || "",
-        status: initialData.status || "active",
-        image_url: initialData.image_url || "",
-        video_url: initialData.video_url || "",
-        days: clonedDays,
-      });
-      setHasLoadedInitialData(true);
-    }
-  }, [initialData, isOpen, hasLoadedInitialData]);
 
-  // Reset state when dialog closes
+      if (initialData && Object.keys(initialData).length > 0) {
+        console.log('COHORT BUILDER - Loading initial data:', {
+          name: initialData.name,
+          daysCount: initialData.days?.length || 0,
+          days: initialData.days?.map((d: any) => ({
+            day_number: d.day_number,
+            day_name: d.day_name,
+            contentCount: d.content_items?.length || 0
+          }))
+        });
+        
+        // Deep clone the days to prevent reference issues
+        const clonedDays = initialData.days 
+          ? JSON.parse(JSON.stringify(initialData.days)) 
+          : [];
+        
+        setFormData({
+          name: initialData.name || "",
+          description: initialData.description || "",
+          start_date: initialData.start_date || "",
+          end_date: initialData.end_date || "",
+          status: initialData.status || "active",
+          image_url: initialData.image_url || "",
+          video_url: initialData.video_url || "",
+          days: clonedDays,
+        });
+      } else {
+        // Reset to empty for new cohort
+        console.log('COHORT BUILDER - No initial data, resetting to empty form');
+        setFormData({
+          name: "",
+          description: "",
+          start_date: "",
+          end_date: "",
+          status: "active",
+          image_url: "",
+          video_url: "",
+          days: [],
+        });
+      }
+    }
+  }, [isOpen, initialData?.name, initialData?.days?.length]); // Watch specific values, not just reference
+
+  // Reset editing state when dialog closes
   useEffect(() => {
     if (!isOpen) {
-      setHasLoadedInitialData(false);
       setEditingDay(null);
       setSelectedDayIndex(null);
     }

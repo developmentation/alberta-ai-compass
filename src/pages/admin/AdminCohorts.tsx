@@ -217,6 +217,26 @@ export function AdminCohorts() {
     });
 
     try {
+      // SAFETY CHECK: If editing and formData.days is empty but cohort has existing content,
+      // this is likely a state loading issue - block the save
+      if (editingCohort) {
+        const { data: existingContentCheck } = await supabase
+          .from("cohort_content")
+          .select("id")
+          .eq("cohort_id", editingCohort.id)
+          .limit(1);
+
+        if (existingContentCheck && existingContentCheck.length > 0 && (!formData.days || formData.days.length === 0)) {
+          console.error('COHORT SAVE - BLOCKED: Empty days but cohort has existing content. Likely state issue.');
+          toast({
+            title: "Cannot save",
+            description: "Schedule data didn't load correctly. Please close and reopen the cohort editor.",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
       const cohortData = {
         name: formData.name,
         description: formData.description || null,
@@ -248,7 +268,7 @@ export function AdminCohorts() {
 
       if (result.error) throw result.error;
       
-      // SAFE UPSERT PATTERN: Never bulk delete, use upsert instead
+      // TRULY SAFE UPSERT PATTERN: Never bulk delete, use individual operations
       if (cohortId) {
         // Step 1: Fetch existing content to compare
         const { data: existingContent, error: fetchError } = await supabase
@@ -263,31 +283,14 @@ export function AdminCohorts() {
         console.log('COHORT SAVE - Existing content count:', existingContent?.length || 0);
         console.log('COHORT SAVE - New days count:', formData.days?.length || 0);
 
-        // Step 2: Validate - warn if we're about to clear existing content
-        if (editingCohort && existingContent && existingContent.length > 0) {
-          if (!formData.days || formData.days.length === 0) {
-            const confirmed = window.confirm(
-              `⚠️ Warning: This cohort has ${existingContent.length} content items, but you're saving with 0 days.\n\n` +
-              `This will REMOVE all existing schedule content. Are you sure?`
-            );
-            if (!confirmed) {
-              toast({
-                title: "Save cancelled",
-                description: "No changes were made to the cohort schedule.",
-              });
-              return;
-            }
-          }
-        }
-
-        // Step 3: Build content to upsert
-        const contentToUpsert: any[] = [];
+        // Step 2: Build content records from form data
+        const contentToSave: any[] = [];
         
         if (formData.days && formData.days.length > 0) {
           formData.days.forEach((day: any) => {
             if (!day.content_items || day.content_items.length === 0) {
               // Create a day placeholder record
-              contentToUpsert.push({
+              contentToSave.push({
                 cohort_id: cohortId,
                 day_number: day.day_number,
                 day_name: day.day_name || `Day ${day.day_number}`,
@@ -301,7 +304,7 @@ export function AdminCohorts() {
             } else {
               // Create records for each content item
               day.content_items.forEach((item: any, itemIndex: number) => {
-                contentToUpsert.push({
+                contentToSave.push({
                   cohort_id: cohortId,
                   day_number: day.day_number,
                   day_name: day.day_name || `Day ${day.day_number}`,
@@ -317,11 +320,11 @@ export function AdminCohorts() {
           });
         }
 
-        console.log('COHORT SAVE - Content to upsert:', contentToUpsert.length);
+        console.log('COHORT SAVE - Content to save:', contentToSave.length);
 
-        // Step 4: Determine what to delete (items in DB but not in new data)
+        // Step 3: Determine what to delete (items in DB but not in new data)
         const newContentKeys = new Set(
-          contentToUpsert.map(item => 
+          contentToSave.map(item => 
             `${item.day_number}-${item.content_type}-${item.content_id || 'null'}`
           )
         );
@@ -335,7 +338,7 @@ export function AdminCohorts() {
 
         console.log('COHORT SAVE - Items to delete:', idsToDelete.length);
 
-        // Step 5: Delete removed items (only specific items, not bulk delete)
+        // Step 4: Delete only specific removed items (NOT bulk delete)
         if (idsToDelete.length > 0) {
           const { error: deleteError } = await supabase
             .from("cohort_content")
@@ -344,44 +347,93 @@ export function AdminCohorts() {
 
           if (deleteError) {
             console.error('COHORT SAVE - Error deleting removed items:', deleteError);
+          } else {
+            console.log('COHORT SAVE - Successfully deleted', idsToDelete.length, 'items');
           }
         }
 
-        // Step 6: Upsert new/updated content
-        if (contentToUpsert.length > 0) {
-          // We need to delete and re-insert because upsert requires unique constraint match
-          // But now we only delete the specific items that are being replaced
-          const { error: upsertError } = await supabase
-            .from("cohort_content")
-            .upsert(contentToUpsert, {
-              onConflict: 'cohort_id,day_number,content_type,content_id',
-              ignoreDuplicates: false
-            });
+        // Step 5: Process each content item individually (NO DESTRUCTIVE FALLBACK)
+        if (contentToSave.length > 0) {
+          let successCount = 0;
+          let errorCount = 0;
 
-          if (upsertError) {
-            console.error('COHORT SAVE - Upsert error, falling back to insert:', upsertError);
-            // Fallback: delete remaining for this cohort and insert fresh
-            // This is safer than before because we validated above
-            await supabase
+          for (const item of contentToSave) {
+            // Check if this exact record exists by matching key fields
+            const { data: existingRecord } = await supabase
               .from("cohort_content")
-              .delete()
-              .eq("cohort_id", cohortId);
-              
-            const { error: insertError } = await supabase
-              .from("cohort_content")
-              .insert(contentToUpsert);
-              
-            if (insertError) {
-              console.error('COHORT SAVE - Insert error:', insertError);
-              throw insertError;
+              .select("id")
+              .eq("cohort_id", item.cohort_id)
+              .eq("day_number", item.day_number)
+              .eq("content_type", item.content_type)
+              .is("content_id", item.content_id === null ? null : undefined)
+              .eq("content_id", item.content_id !== null ? item.content_id : "SKIP_THIS_CHECK")
+              .maybeSingle();
+
+            // Better matching for null content_id
+            let matchingRecord = existingRecord;
+            if (!matchingRecord && item.content_id === null) {
+              const { data: nullRecord } = await supabase
+                .from("cohort_content")
+                .select("id")
+                .eq("cohort_id", item.cohort_id)
+                .eq("day_number", item.day_number)
+                .eq("content_type", item.content_type)
+                .is("content_id", null)
+                .maybeSingle();
+              matchingRecord = nullRecord;
+            } else if (!matchingRecord && item.content_id !== null) {
+              const { data: exactRecord } = await supabase
+                .from("cohort_content")
+                .select("id")
+                .eq("cohort_id", item.cohort_id)
+                .eq("day_number", item.day_number)
+                .eq("content_type", item.content_type)
+                .eq("content_id", item.content_id)
+                .maybeSingle();
+              matchingRecord = exactRecord;
+            }
+
+            if (matchingRecord) {
+              // Update existing record
+              const { error } = await supabase
+                .from("cohort_content")
+                .update({
+                  day_name: item.day_name,
+                  day_description: item.day_description,
+                  day_image_url: item.day_image_url,
+                  order_index: item.order_index,
+                })
+                .eq("id", matchingRecord.id);
+
+              if (error) {
+                console.error('COHORT SAVE - Update error for item:', item, error);
+                errorCount++;
+              } else {
+                successCount++;
+              }
+            } else {
+              // Insert new record
+              const { error } = await supabase
+                .from("cohort_content")
+                .insert([item]);
+
+              if (error) {
+                console.error('COHORT SAVE - Insert error for item:', item, error);
+                errorCount++;
+              } else {
+                successCount++;
+              }
             }
           }
-        } else if (editingCohort && existingContent && existingContent.length > 0) {
-          // User confirmed they want to clear all content
-          await supabase
-            .from("cohort_content")
-            .delete()
-            .eq("cohort_id", cohortId);
+
+          console.log(`COHORT SAVE - Processed ${successCount} items successfully, ${errorCount} errors`);
+
+          if (errorCount > 0) {
+            toast({
+              title: "Partial save",
+              description: `Saved ${successCount} items, but ${errorCount} had errors. Your data was preserved.`,
+            });
+          }
         }
 
         console.log('COHORT SAVE - Save completed successfully');
