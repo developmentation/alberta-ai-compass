@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Edit, Trash2, Calendar, Users, Clock } from "lucide-react";
+import { Plus, Edit, Trash2, Calendar, Users, Clock, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -489,6 +489,98 @@ export function AdminCohorts() {
     }
   };
 
+  const handleDuplicate = async (cohort: Cohort) => {
+    try {
+      console.log('COHORT DUPLICATE - Starting clone for cohort:', cohort.id, cohort.name);
+
+      // Step 1: Create the new cohort record with copied metadata
+      const newCohortData = {
+        name: `${cohort.name} (Copy)`,
+        description: cohort.description,
+        start_date: cohort.start_date,
+        end_date: cohort.end_date,
+        status: "inactive" as const, // Set to inactive for review
+        image_url: cohort.image_url || null,
+        video_url: cohort.video_url || null,
+        created_by: user?.id,
+        updated_by: user?.id,
+      };
+
+      const { data: newCohort, error: cohortError } = await supabase
+        .from("cohorts")
+        .insert(newCohortData)
+        .select()
+        .single();
+
+      if (cohortError) {
+        console.error('COHORT DUPLICATE - Error creating cohort:', cohortError);
+        throw cohortError;
+      }
+
+      console.log('COHORT DUPLICATE - Created new cohort:', newCohort.id);
+
+      // Step 2: Fetch all existing cohort_content for the source cohort
+      const { data: sourceContent, error: contentFetchError } = await supabase
+        .from("cohort_content")
+        .select("*")
+        .eq("cohort_id", cohort.id);
+
+      if (contentFetchError) {
+        console.error('COHORT DUPLICATE - Error fetching source content:', contentFetchError);
+        throw contentFetchError;
+      }
+
+      console.log('COHORT DUPLICATE - Found', sourceContent?.length || 0, 'content items to copy');
+
+      // Step 3: Clone all content items with the new cohort_id
+      if (sourceContent && sourceContent.length > 0) {
+        const clonedContent = sourceContent.map(item => ({
+          cohort_id: newCohort.id,
+          day_number: item.day_number,
+          day_name: item.day_name,
+          day_description: item.day_description,
+          day_image_url: item.day_image_url,
+          content_type: item.content_type,
+          content_id: item.content_id, // Keep same content links
+          order_index: item.order_index,
+          created_by: user?.id,
+        }));
+
+        const { error: insertError } = await supabase
+          .from("cohort_content")
+          .insert(clonedContent);
+
+        if (insertError) {
+          console.error('COHORT DUPLICATE - Error inserting cloned content:', insertError);
+          // Still show success for cohort creation, warn about content
+          toast({
+            title: "Partial success",
+            description: `Cohort created but content cloning failed. You may need to re-add content.`,
+            variant: "destructive",
+          });
+          fetchCohorts();
+          return;
+        }
+
+        console.log('COHORT DUPLICATE - Successfully cloned', clonedContent.length, 'content items');
+      }
+
+      toast({
+        title: "Success",
+        description: `Cohort "${cohort.name}" duplicated successfully as "${newCohortData.name}"`,
+      });
+
+      fetchCohorts();
+    } catch (error) {
+      console.error("COHORT DUPLICATE - Error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to duplicate cohort",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getInitialData = (cohort?: Cohort) => {
     if (!cohort) return {};
     
@@ -608,13 +700,23 @@ export function AdminCohorts() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleEdit(cohort)}
+                        title="Edit cohort"
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => handleDuplicate(cohort)}
+                        title="Duplicate cohort"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => handleDelete(cohort.id)}
+                        title="Delete cohort"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
