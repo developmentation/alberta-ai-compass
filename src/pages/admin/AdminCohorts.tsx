@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Edit, Trash2, Calendar, Users, Clock, Copy } from "lucide-react";
+import { Plus, Edit, Trash2, Calendar, Users, Clock, Copy, Download, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -581,6 +581,60 @@ export function AdminCohorts() {
     }
   };
 
+  const [exporting, setExporting] = useState<string | null>(null);
+
+  const handleExport = async (cohortId: string, cohortName: string) => {
+    try {
+      setExporting(cohortId);
+      const response = await supabase.functions.invoke("export-content", {
+        body: { type: "cohort", cohort_id: cohortId },
+      });
+      if (response.error) throw response.error;
+
+      const blob = new Blob([JSON.stringify(response.data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `cohort-${cohortName.replace(/[^a-z0-9]/gi, "-").toLowerCase()}-export.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast({ title: "Success", description: `Exported "${cohortName}" successfully` });
+    } catch (error: any) {
+      console.error("Export error:", error);
+      toast({ title: "Export failed", description: error.message, variant: "destructive" });
+    } finally {
+      setExporting(null);
+    }
+  };
+
+  const handleExportLibrary = async () => {
+    try {
+      setExporting("library");
+      const response = await supabase.functions.invoke("export-content", {
+        body: { type: "library" },
+      });
+      if (response.error) throw response.error;
+
+      const blob = new Blob([JSON.stringify(response.data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `full-library-export-${new Date().toISOString().split("T")[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast({ title: "Success", description: "Full library exported successfully" });
+    } catch (error: any) {
+      console.error("Export error:", error);
+      toast({ title: "Export failed", description: error.message, variant: "destructive" });
+    } finally {
+      setExporting(null);
+    }
+  };
+
   const getInitialData = (cohort?: Cohort) => {
     if (!cohort) return {};
     
@@ -656,10 +710,24 @@ export function AdminCohorts() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Cohorts Management</h1>
-          <Button onClick={() => { setEditingCohort(null); setIsTabbedBuilderOpen(true); }}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Cohort
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={handleExportLibrary}
+              disabled={exporting === "library"}
+            >
+              {exporting === "library" ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4 mr-2" />
+              )}
+              Export All Content
+            </Button>
+            <Button onClick={() => { setEditingCohort(null); setIsTabbedBuilderOpen(true); }}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Cohort
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-4">
@@ -711,6 +779,19 @@ export function AdminCohorts() {
                         title="Duplicate cohort"
                       >
                         <Copy className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleExport(cohort.id, cohort.name)}
+                        disabled={exporting === cohort.id}
+                        title="Export cohort"
+                      >
+                        {exporting === cohort.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Download className="w-4 h-4" />
+                        )}
                       </Button>
                       <Button
                         variant="outline"
