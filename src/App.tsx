@@ -33,6 +33,7 @@ import { AdminCohorts } from "./pages/admin/AdminCohorts";
 import { AdminResources } from "./pages/admin/AdminResources";
 import AdminSystemSetup from "./pages/admin/AdminSystemSetup";
 import { AdminProfile } from "./pages/admin/AdminProfile";
+import AdminDownload from "./pages/admin/AdminDownload";
 import { ResourceDetail } from "./pages/ResourceDetail";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -71,6 +72,7 @@ const App = () => (
             <Route path="/admin/learning/modules" element={<ProtectedRoute requireFacilitator><AdminLearningModules /></ProtectedRoute>} />
             <Route path="/admin/learning/cohorts" element={<ProtectedRoute requireFacilitator><AdminCohorts /></ProtectedRoute>} />
             <Route path="/admin/resources" element={<ProtectedRoute requireFacilitator><AdminResources /></ProtectedRoute>} />
+            <Route path="/admin/download" element={<ProtectedRoute requireFacilitator><AdminDownload /></ProtectedRoute>} />
             <Route path="/admin/setup" element={<ProtectedRoute requireAdmin><AdminSystemSetup /></ProtectedRoute>} />
             <Route path="/admin/profile" element={<ProtectedRoute requireFacilitator><AdminProfile /></ProtectedRoute>} />
             <Route path="/plan/:planId" element={<Plan />} />

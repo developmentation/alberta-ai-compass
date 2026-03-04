@@ -12,7 +12,8 @@ import {
   ChevronDown,
   ChevronRight,
   Shield,
-  ExternalLink
+  ExternalLink,
+  Download
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -84,6 +85,11 @@ const adminMenuItems: AdminMenuItem[] = [
     title: "Prompts",
     url: "/admin/prompts",
     icon: MessageSquare,
+  },
+  {
+    title: "Download",
+    url: "/admin/download",
+    icon: Download,
   },
   {
     title: "Setup",
